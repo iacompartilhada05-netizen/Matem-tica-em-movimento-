@@ -1,0 +1,1119 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Simulador de Probabilidade: Lei dos Grandes Números · Matemática em Movimento</title>
+  <meta name="description" content="Laboratório experimental com pesos customizáveis (moedas e dados viciados). Simule lançamentos e observe a convergência das frequências observadas para os valores teóricos." />
+  <link rel="stylesheet" href="../css/estilo.css" />
+  <style>
+    /* Estilos específicos da demonstração com pesos e múltiplos gráficos */
+    .weights-panel {
+      background: #ffffff;
+      border: 1.5px solid var(--linha);
+      border-radius: var(--radius-md);
+      padding: 16px 18px;
+      margin-bottom: 16px;
+      box-shadow: var(--shadow-subtle);
+    }
+    .weights-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 12px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid #edf2f5;
+    }
+    .weights-title {
+      font-size: 0.92rem;
+      font-weight: 800;
+      color: var(--navy);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .weights-presets {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+    .btn-preset {
+      font-size: 0.76rem;
+      font-weight: 700;
+      padding: 4px 10px;
+      border-radius: 6px;
+      border: 1px solid var(--linha);
+      background: #f8fafc;
+      color: var(--navy);
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    .btn-preset:hover {
+      background: #edf5f8;
+      border-color: var(--azul);
+    }
+
+    /* Controles de peso da moeda */
+    .coin-weights-grid {
+      display: grid;
+      grid-template-columns: 1.2fr 1fr 1fr;
+      gap: 16px;
+      align-items: center;
+    }
+    @media (max-width: 640px) {
+      .coin-weights-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+    .prob-display-card {
+      background: #f6f9fb;
+      border: 1px solid var(--linha);
+      border-radius: var(--radius-sm);
+      padding: 8px 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .prob-display-label {
+      font-size: 0.82rem;
+      font-weight: 700;
+      color: var(--navy);
+    }
+    .prob-display-val {
+      font-size: 1.05rem;
+      font-weight: 800;
+      font-family: var(--font-mono);
+    }
+
+    /* Controles de peso do dado */
+    .dice-weights-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      gap: 12px;
+    }
+    .dice-weight-box {
+      background: #f8fafc;
+      border: 1px solid var(--linha);
+      border-radius: var(--radius-sm);
+      padding: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .dice-weight-title {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.8rem;
+      font-weight: 800;
+      color: var(--navy);
+    }
+    .dice-weight-prob {
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: var(--teal);
+    }
+
+    /* Faixa de destaque pedagógico */
+    .weights-callout {
+      background: #f0f7f7;
+      border-left: 4px solid var(--teal);
+      border-radius: var(--radius-sm);
+      padding: 10px 14px;
+      margin-bottom: 16px;
+      font-size: 0.88rem;
+      color: #174241;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    /* Abas dos Gráficos */
+    .chart-tabs-bar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 12px;
+    }
+    .chart-tab-btn {
+      padding: 7px 14px;
+      border-radius: 8px;
+      font-size: 0.82rem;
+      font-weight: 700;
+      border: 1px solid var(--linha);
+      background: #ffffff;
+      color: var(--muted);
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      transition: all 0.2s ease;
+    }
+    .chart-tab-btn:hover {
+      background: #f4f8fa;
+      color: var(--navy);
+    }
+    .chart-tab-btn.active {
+      background: var(--navy);
+      color: #ffffff;
+      border-color: var(--navy);
+    }
+
+    /* Botões de lote */
+    .batch-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 0.88rem;
+      font-weight: 700;
+      padding: 9px 14px;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      border: 1px solid var(--linha);
+      background: #ffffff;
+      color: var(--navy);
+      transition: all 0.15s ease;
+    }
+    .batch-btn:hover {
+      background: #eef5f8;
+      border-color: var(--azul);
+      transform: translateY(-1px);
+    }
+    .batch-btn:active {
+      transform: translateY(1px);
+    }
+    .batch-btn-teal {
+      background: #edf6f6;
+      border-color: #99cfcb;
+      color: var(--teal);
+    }
+
+    /* Elementos visuais dos gráficos SVG */
+    .theoretical-line {
+      stroke: var(--dourado);
+      stroke-width: 2.5;
+      stroke-dasharray: 6 5;
+    }
+    .hist-bar {
+      transition: height 0.25s cubic-bezier(0.2, 0.8, 0.2, 1), y 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
+    }
+    .conv-line {
+      fill: none;
+      stroke-width: 2.5;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header Institucional -->
+  <header class="site-header">
+    <div class="header-container">
+      <a href="../index.html" class="brand-wrapper" title="Voltar para a página inicial">
+        <div class="brand-logo" aria-hidden="true">
+          <svg viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 19L12 5l8 14H4z" />
+          </svg>
+        </div>
+        <div class="brand-texts">
+          <span class="brand-title">Matemática em Movimento</span>
+          <span class="brand-slogan">Explore. Manipule. Compreenda.</span>
+        </div>
+      </a>
+      <div class="header-actions">
+        <a href="../index.html" class="btn-header">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+          Início
+        </a>
+        <button id="btnFullscreen" class="btn-header" title="Alternar modo tela cheia para projeção em sala de aula">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>
+          Projeção
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Breadcrumbs -->
+  <nav class="breadcrumb-bar" aria-label="Navegação estrutural">
+    <div class="breadcrumb-container">
+      <a href="../index.html">Início</a>
+      <span class="breadcrumb-sep">/</span>
+      <span>Probabilidade e Estatística</span>
+      <span class="breadcrumb-sep">/</span>
+      <span class="breadcrumb-current">Lei dos Grandes Números (Pesos &amp; Convergência)</span>
+    </div>
+  </nav>
+
+  <!-- Conteúdo Principal -->
+  <main class="main-content">
+    <div class="demo-grid">
+
+      <!-- Coluna 1: Laboratório Interativo -->
+      <section class="card" aria-labelledby="lab-heading">
+        <div class="card-eyebrow">
+          <span class="badge-tag badge-medio">Ensino Médio</span>
+          <span>· LABORATÓRIO DE ESTATÍSTICA E PROBABILIDADE</span>
+        </div>
+        <h2 id="lab-heading" class="card-title">Simulador de Probabilidade: Lei dos Grandes Números</h2>
+        <p class="card-subtitle">
+          Defina pesos para criar moedas e dados <strong>justos ou viciados</strong>. Observe como a probabilidade teórica se adapta instantaneamente e as frequências observadas convergem para o novo valor teórico.
+        </p>
+
+        <!-- Seletor de Modo: Moeda vs Dado -->
+        <div style="display:flex; gap:10px; margin-bottom:14px;">
+          <button id="tabCoin" class="btn btn-primary" style="padding:8px 16px; font-size:0.88rem;">🪙 Moeda (Cara / Coroa)</button>
+          <button id="tabDice" class="btn btn-secondary" style="padding:8px 16px; font-size:0.88rem;">🎲 Dado (6 Faces)</button>
+        </div>
+
+        <!-- Painel de Definição de Pesos (Moeda e Dado Viciados) -->
+        <div class="weights-panel" aria-labelledby="weights-heading">
+          <div class="weights-header">
+            <span id="weights-heading" class="weights-title">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v18"/><path d="m6 8 6-5 6 5"/><path d="M6 13h12"/></svg>
+              Definir Chance de Cada Resultado (Pesos de Probabilidade)
+            </span>
+            <div class="weights-presets" id="presetsBar">
+              <!-- Presets inseridos dinamicamente -->
+            </div>
+          </div>
+
+          <!-- Controles de Peso: Moeda -->
+          <div id="coinControlsWrapper">
+            <div class="coin-weights-grid">
+              <div class="slider-group">
+                <div class="slider-label-row">
+                  <label for="sliderCoinP">Probabilidade de CARA:</label>
+                  <span id="badgeCoinP" class="slider-val-badge">50%</span>
+                </div>
+                <input type="range" id="sliderCoinP" min="5" max="95" step="5" value="50" aria-label="Probabilidade de Cara" />
+              </div>
+              <div class="prob-display-card">
+                <span class="prob-display-label">🪙 Cara:</span>
+                <span id="dispProbCara" class="prob-display-val" style="color:var(--teal);">50.0%</span>
+              </div>
+              <div class="prob-display-card">
+                <span class="prob-display-label">🪙 Coroa:</span>
+                <span id="dispProbCoroa" class="prob-display-val" style="color:var(--azul);">50.0%</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Controles de Peso: Dado -->
+          <div id="diceControlsWrapper" style="display:none;">
+            <div style="font-size:0.78rem; color:var(--muted); margin-bottom:8px;">
+              Ajuste o peso relativo de cada face. Os pesos não precisam somar 100: o simulador normaliza automaticamente.
+            </div>
+            <div class="dice-weights-grid" id="diceWeightsGrid">
+              <!-- Gerado via JS para faces 1 a 6 -->
+            </div>
+          </div>
+        </div>
+
+        <!-- Faixa de Destaque Pedagógico -->
+        <div class="weights-callout">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="flex-shrink:0;">
+            <path d="M12 2v4"/><path d="m4.93 4.93 2.83 2.83"/><path d="M2 12h4"/><path d="m4.93 19.07 2.83-2.83"/><path d="M12 22v-4"/><path d="m19.07 19.07-2.83-2.83"/><path d="M22 12h-4"/><path d="m19.07 4.93-2.83 2.83"/>
+          </svg>
+          <span>Com pesos diferentes, a <strong>probabilidade teórica muda</strong> — e os resultados reais acompanham esse novo valor à medida que você lança!</span>
+        </div>
+
+        <!-- Painel de Disparo de Lançamentos -->
+        <div class="sliders-panel" style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px; margin-bottom:14px;">
+          <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+            <button id="btnRoll1" class="batch-btn" title="Simular 1 lançamento">+1 Lançamento</button>
+            <button id="btnRoll10" class="batch-btn" title="Simular 10 lançamentos">+10</button>
+            <button id="btnRoll100" class="batch-btn" title="Simular 100 lançamentos">+100</button>
+            <button id="btnRoll1000" class="batch-btn batch-btn-teal" title="Simular 1.000 lançamentos">+1.000</button>
+            <button id="btnRoll5000" class="batch-btn" style="background:#e8f0fe; color:var(--navy);" title="Simular 5.000 lançamentos">+5.000</button>
+          </div>
+
+          <div style="font-size:0.88rem; font-weight:700; color:var(--navy);">
+            Lançamentos Acumulados: <span id="totalTrialsCount" style="font-size:1.15rem; color:var(--azul);">0</span>
+          </div>
+        </div>
+
+        <!-- Abas para Selecionar o Tipo de Gráfico -->
+        <div class="chart-tabs-bar" role="tablist" aria-label="Tipos de visualização gráfica">
+          <button class="chart-tab-btn active" data-chart="hist" role="tab" aria-selected="true">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 20V10"/><path d="M12 20V4"/><path d="M6 20v-6"/></svg>
+            Histograma de Frequências
+          </button>
+          <button class="chart-tab-btn" data-chart="convergence" role="tab" aria-selected="false">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg>
+            Linha de Convergência
+          </button>
+          <button class="chart-tab-btn" data-chart="sidebyside" role="tab" aria-selected="false">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="4" height="14" x="4" y="6"/><rect width="4" height="10" x="10" y="10"/><rect width="4" height="16" x="16" y="4"/></svg>
+            Barras: Observado vs. Teórico
+          </button>
+          <button class="chart-tab-btn" data-chart="deviation" role="tab" aria-selected="false">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m21 16-4 4-4-4"/><path d="M17 20V4"/><path d="m3 8 4-4 4 4"/><path d="M7 4v16"/></svg>
+            Linha do Desvio (Erro)
+          </button>
+        </div>
+
+        <!-- Palco do Gráfico SVG Dinâmico -->
+        <div class="svg-stage-wrapper">
+          <svg id="probSvg" class="svg-stage" viewBox="0 0 620 380" aria-label="Gráfico interativo de probabilidade e convergência"></svg>
+        </div>
+
+        <!-- Dica de manipulação -->
+        <div class="manipulation-hint">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/>
+          </svg>
+          <span id="manipulationHintText">
+            Experimente definir a moeda em <strong>70% Cara</strong> ou o dado com peso 5 na <strong>Face 6</strong>, clique em <strong>+1.000</strong> e veja os dados reais convergirem para a nova meta teórica.
+          </span>
+        </div>
+
+        <!-- Resultado dinâmico em destaque -->
+        <div class="dynamic-result-box" aria-live="polite">
+          <div class="result-title" id="dynamicResultTitle">Estatística do Experimento Atual</div>
+          <div id="dynamicProbOutput" class="result-formula">
+            Total: 0 lançamentos
+          </div>
+          <div id="convergenceNote" style="margin-top:6px; font-size:0.92rem; color:var(--muted); font-weight:600;">
+            Defina os pesos desejados e inicie os lançamentos para observar a convergência empírica.
+          </div>
+        </div>
+
+        <!-- Barra de Botões -->
+        <div class="controls-toolbar">
+          <button id="btnResetDataOnly" class="btn btn-secondary" title="Limpa o histórico de lançamentos, mantendo os pesos configurados">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+            Zerar Lançamentos
+          </button>
+          <button id="btnRestoreAll" class="btn btn-primary" title="Restaura lançamentos e volta os pesos para a condição de moeda/dado justos">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="m10 15 5-3-5-3v6Z"/></svg>
+            Restaurar (Tudo Justo)
+          </button>
+        </div>
+      </section>
+
+      <!-- Coluna 2: Card "Entenda a Ideia" -->
+      <aside class="card idea-card" aria-labelledby="idea-heading">
+        <div class="card-eyebrow">
+          <span>FUNDAMENTAÇÃO CONCEITUAL</span>
+        </div>
+        <h2 id="idea-heading" class="card-title">Entenda a ideia</h2>
+        <p class="card-subtitle">
+          A Lei dos Grandes Números vale tanto para moedas perfeitas quanto para objetos viciados.
+        </p>
+
+        <!-- Fórmula em Destaque -->
+        <div class="formula-highlight-card">
+          <div class="formula-highlight-label">Probabilidade Ponderada e Limite Empírico</div>
+          <div class="formula-highlight-math">P(i) = wᵢ / ∑w &nbsp;|&nbsp; lim (fₙ) = P(i)</div>
+        </div>
+
+        <!-- Passos Numerados -->
+        <div class="explanation-steps">
+          <div class="step-item">
+            <span class="step-number" aria-hidden="true">1</span>
+            <div class="step-text">
+              <strong>Pesos e Normalização Teórica:</strong> Em um objeto viciado, cada face possui um peso relativo <em>wᵢ</em>. A probabilidade teórica não é mais 50% ou 1/6, e sim calculada pela razão direta do seu peso em relação à soma total dos pesos: <strong>P(i) = wᵢ / ∑w</strong>.
+            </div>
+          </div>
+          <div class="step-item">
+            <span class="step-number" aria-hidden="true">2</span>
+            <div class="step-text">
+              <strong>Amostras Pequenas e Flutuação:</strong> Com apenas 10 ou 20 repetições, o acaso gera desvios perceptíveis. Uma moeda viciada em 70% de cara pode perfeitamente sortear 5 caras e 5 coroas em uma rodada isolada.
+            </div>
+          </div>
+          <div class="step-item">
+            <span class="step-number" aria-hidden="true">3</span>
+            <div class="step-text">
+              <strong>Convergência Rigorosa:</strong> Com centenas ou milhares de lançamentos, as flutuações se diluem. A frequência real observada converge para a probabilidade teórica definida pelos pesos — evidenciando que a Lei dos Grandes Números guia qualquer distribuição de probabilidade.
+            </div>
+          </div>
+        </div>
+
+        <!-- Pergunta para investigar (requisito explícito do usuário) -->
+        <div class="investigation-box">
+          <div class="investigation-header">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+              <path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5"/>
+              <path d="M9 18h6"/><path d="M10 22h4"/>
+            </svg>
+            <span>Pergunta para investigar</span>
+          </div>
+          <p class="investigation-text">
+            Se a moeda tem <strong>70% de chance de dar cara</strong>, quantas caras você espera em <strong>1000 lançamentos</strong>? Teste com o simulador. O que acontece com a frequência de coroa?
+          </p>
+        </div>
+      </aside>
+
+    </div>
+  </main>
+
+  <!-- Rodapé Institucional -->
+  <footer class="site-footer">
+    <div class="site-footer-inner">
+      <p><strong>Matemática em Movimento</strong> · Recurso educacional aberto e gratuito para professores e estudantes.</p>
+      <div class="footer-links">
+        <a href="../index.html">Todas as Demonstrações</a>
+        <span>•</span>
+        <a href="../trigonometria/circulo.html">Círculo Trigonométrico</a>
+        <span>•</span>
+        <a href="../funcoes/quadratica.html">Função Quadrática</a>
+        <span>•</span>
+        <a href="../geometria/pitagoras.html">Teorema de Pitágoras</a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Lógica Matemática e Interatividade -->
+  <script>
+    /**
+     * Matemática em Movimento — Demonstração: Lei dos Grandes Números com Pesos (Viciados)
+     * Suporta Moeda e Dado viciados com múltiplos gráficos:
+     * - Histograma de Frequências com linha teórica ponderada
+     * - Linha de Convergência Histórica
+     * - Barras Lado a Lado (Observado vs. Teórico)
+     * - Linha do Desvio / Erro Absoluto
+     */
+
+    // Paleta de cores coordenadas
+    const COLORS = ['#2c7a78', '#356b8c', '#d5a64a', '#8c5ca3', '#3993a4', '#d97d54'];
+
+    // Estado Geral da Demonstração
+    const state = {
+      mode: 'coin',          // 'coin' ou 'dice'
+      activeChart: 'hist',   // 'hist', 'convergence', 'sidebyside', 'deviation'
+      
+      // Configuração de Pesos
+      coinP: 50,             // Probabilidade de cara em % (5 a 95)
+      diceWeights: [1, 1, 1, 1, 1, 1], // Pesos brutos das faces 1 a 6
+
+      // Dados dos Lançamentos
+      counts: [0, 0],        // Moeda: [cara, coroa]; Dado: [face1..face6]
+      total: 0,              // Total acumulado N
+      
+      // Histórico amostral para as linhas de evolução (amostras para não estourar memória)
+      history: []            // Array de { n, freqs: [..], maxDev }
+    };
+
+    // Elementos DOM principais
+    const tabCoin = document.getElementById('tabCoin');
+    const tabDice = document.getElementById('tabDice');
+    const presetsBar = document.getElementById('presetsBar');
+    const coinControlsWrapper = document.getElementById('coinControlsWrapper');
+    const diceControlsWrapper = document.getElementById('diceControlsWrapper');
+    const sliderCoinP = document.getElementById('sliderCoinP');
+    const badgeCoinP = document.getElementById('badgeCoinP');
+    const dispProbCara = document.getElementById('dispProbCara');
+    const dispProbCoroa = document.getElementById('dispProbCoroa');
+    const diceWeightsGrid = document.getElementById('diceWeightsGrid');
+    const totalTrialsCount = document.getElementById('totalTrialsCount');
+    const probSvg = document.getElementById('probSvg');
+    const dynamicOutput = document.getElementById('dynamicProbOutput');
+    const convergenceNote = document.getElementById('convergenceNote');
+
+    /**
+     * Calcula as probabilidades teóricas normalizadas (em porcentagem)
+     */
+    function getTheoreticalProbabilities() {
+      if (state.mode === 'coin') {
+        const pCara = state.coinP;
+        const pCoroa = 100 - pCara;
+        return [pCara, pCoroa];
+      } else {
+        const sumWeights = state.diceWeights.reduce((a, b) => a + b, 0) || 1;
+        return state.diceWeights.map(w => (w / sumWeights) * 100);
+      }
+    }
+
+    /**
+     * Sorteio aleatório ponderado (Weighted Random Choice)
+     * Fórmula: escolhe o índice i onde o número randômico acumulado atinge o peso
+     */
+    function rollWeightedOutcome() {
+      const probs = getTheoreticalProbabilities();
+      const rand = Math.random() * 100;
+      let cum = 0;
+      for (let i = 0; i < probs.length; i++) {
+        cum += probs[i];
+        if (rand < cum || i === probs.length - 1) {
+          return i;
+        }
+      }
+      return probs.length - 1;
+    }
+
+    /**
+     * Executa N lançamentos e salva snapshots no histórico para as linhas de convergência
+     */
+    function roll(amount) {
+      const isCoin = state.mode === 'coin';
+      const numCategories = isCoin ? 2 : 6;
+      const theos = getTheoreticalProbabilities();
+
+      // Para lotes grandes, podemos sortear com eficiência
+      for (let i = 0; i < amount; i++) {
+        const outcome = rollWeightedOutcome();
+        state.counts[outcome]++;
+        state.total++;
+
+        // Grava snapshot no histórico periodicamente para gerar gráficos de linha nítidos
+        const shouldRecord = (state.total <= 50) ||
+                             (state.total <= 200 && state.total % 5 === 0) ||
+                             (state.total <= 1000 && state.total % 25 === 0) ||
+                             (state.total % 100 === 0);
+
+        if (shouldRecord) {
+          const freqs = state.counts.map(c => (c / state.total) * 100);
+          let maxDev = 0;
+          for (let k = 0; k < numCategories; k++) {
+            const dev = Math.abs(freqs[k] - theos[k]);
+            if (dev > maxDev) maxDev = dev;
+          }
+          state.history.push({
+            n: state.total,
+            freqs: [...freqs],
+            maxDev: maxDev
+          });
+        }
+      }
+
+      // Garante snapshot do estado final
+      const freqsFinal = state.counts.map(c => (c / state.total) * 100);
+      let maxDevFinal = 0;
+      for (let k = 0; k < numCategories; k++) {
+        const dev = Math.abs(freqsFinal[k] - theos[k]);
+        if (dev > maxDevFinal) maxDevFinal = dev;
+      }
+      state.history.push({
+        n: state.total,
+        freqs: [...freqsFinal],
+        maxDev: maxDevFinal
+      });
+
+      // Limita o histórico se ficar excessivamente grande
+      if (state.history.length > 250) {
+        state.history = state.history.filter((_, idx) => idx % 2 === 0 || idx === state.history.length - 1);
+      }
+
+      updateScene();
+    }
+
+    /**
+     * Constrói os botões de Presets para a barra superior
+     */
+    function updatePresetsBar() {
+      if (state.mode === 'coin') {
+        presetsBar.innerHTML = `
+          <button class="btn-preset" data-preset="coin-fair">Moeda Justa (50/50)</button>
+          <button class="btn-preset" data-preset="coin-70">Viciada em Cara (70%)</button>
+          <button class="btn-preset" data-preset="coin-90">Muito Viciada (90%)</button>
+          <button class="btn-preset" data-preset="coin-coroa">Viciada em Coroa (30%)</button>
+        `;
+      } else {
+        presetsBar.innerHTML = `
+          <button class="btn-preset" data-preset="dice-fair">Dado Justo (Todos 1)</button>
+          <button class="btn-preset" data-preset="dice-six">Viciado no 6 (Peso 5)</button>
+          <button class="btn-preset" data-preset="dice-evens">Pares com Peso 2x</button>
+          <button class="btn-preset" data-preset="dice-extreme">1 e 6 Fortes (Peso 4)</button>
+        `;
+      }
+
+      // Vincula cliques
+      presetsBar.querySelectorAll('.btn-preset').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const p = btn.getAttribute('data-preset');
+          if (p === 'coin-fair') state.coinP = 50;
+          else if (p === 'coin-70') state.coinP = 70;
+          else if (p === 'coin-90') state.coinP = 90;
+          else if (p === 'coin-coroa') state.coinP = 30;
+          else if (p === 'dice-fair') state.diceWeights = [1, 1, 1, 1, 1, 1];
+          else if (p === 'dice-six') state.diceWeights = [1, 1, 1, 1, 1, 5];
+          else if (p === 'dice-evens') state.diceWeights = [1, 2, 1, 2, 1, 2];
+          else if (p === 'dice-extreme') state.diceWeights = [4, 1, 1, 1, 1, 4];
+          
+          syncControlsUI();
+          updateScene();
+        });
+      });
+    }
+
+    /**
+     * Constrói os controles de peso das 6 faces do dado
+     */
+    function initDiceControls() {
+      const diceIcons = ['⚀', '⚁', '⚂', '⚃', '⚄', '⚅'];
+      let html = '';
+      for (let i = 0; i < 6; i++) {
+        html += `
+          <div class="dice-weight-box">
+            <div class="dice-weight-title">
+              <span>Face ${i + 1} ${diceIcons[i]}</span>
+              <span id="badgeWeightVal_${i}" class="slider-val-badge">1</span>
+            </div>
+            <input type="range" class="dice-weight-slider" data-face="${i}" min="1" max="10" step="1" value="${state.diceWeights[i]}" aria-label="Peso da Face ${i+1}" />
+            <div class="dice-weight-prob">
+              Teórico: <strong id="dispDiceProb_${i}">16.7%</strong>
+            </div>
+          </div>
+        `;
+      }
+      diceWeightsGrid.innerHTML = html;
+
+      // Eventos dos sliders do dado
+      diceWeightsGrid.querySelectorAll('.dice-weight-slider').forEach(slider => {
+        slider.addEventListener('input', (e) => {
+          const face = parseInt(e.target.getAttribute('data-face'), 10);
+          state.diceWeights[face] = parseInt(e.target.value, 10);
+          syncControlsUI();
+          updateScene();
+        });
+      });
+    }
+
+    /**
+     * Sincroniza os valores exibidos nos sliders e badges de peso
+     */
+    function syncControlsUI() {
+      if (state.mode === 'coin') {
+        sliderCoinP.value = state.coinP;
+        badgeCoinP.textContent = `${state.coinP}%`;
+        dispProbCara.textContent = `${state.coinP.toFixed(1)}%`;
+        dispProbCoroa.textContent = `${(100 - state.coinP).toFixed(1)}%`;
+      } else {
+        const theos = getTheoreticalProbabilities();
+        for (let i = 0; i < 6; i++) {
+          const slider = diceWeightsGrid.querySelector(`[data-face="${i}"]`);
+          if (slider) slider.value = state.diceWeights[i];
+          const badge = document.getElementById(`badgeWeightVal_${i}`);
+          if (badge) badge.textContent = state.diceWeights[i];
+          const disp = document.getElementById(`dispDiceProb_${i}`);
+          if (disp) disp.textContent = `${theos[i].toFixed(1)}%`;
+        }
+      }
+    }
+
+    /**
+     * Alterna modo entre Moeda e Dado
+     */
+    function setMode(mode) {
+      if (state.mode === mode) return;
+      state.mode = mode;
+      if (mode === 'coin') {
+        tabCoin.classList.add('btn-primary');
+        tabCoin.classList.remove('btn-secondary');
+        tabDice.classList.add('btn-secondary');
+        tabDice.classList.remove('btn-primary');
+        coinControlsWrapper.style.display = 'block';
+        diceControlsWrapper.style.display = 'none';
+        state.counts = [0, 0];
+      } else {
+        tabDice.classList.add('btn-primary');
+        tabDice.classList.remove('btn-secondary');
+        tabCoin.classList.add('btn-secondary');
+        tabCoin.classList.remove('btn-primary');
+        diceControlsWrapper.style.display = 'block';
+        coinControlsWrapper.style.display = 'none';
+        state.counts = [0, 0, 0, 0, 0, 0];
+      }
+      state.total = 0;
+      state.history = [];
+      updatePresetsBar();
+      syncControlsUI();
+      updateScene();
+    }
+
+    // ===================================================================
+    // Renderização dos 4 Tipos de Gráficos em SVG
+    // ===================================================================
+
+    /**
+     * Renderiza o Gráfico 1: Histograma com as frequências observadas e linhas teóricas
+     */
+    function renderHistogramChart(theos, labels, numCats) {
+      const BASE_Y = 320;
+      const MAX_H = 240;
+      const barW = state.mode === 'coin' ? 140 : 54;
+      const spacing = (520 - (numCats * barW)) / (numCats + 1);
+
+      let svgContent = '';
+
+      // Grade de porcentagem (0%, 25%, 50%, 75%, 100%)
+      [0, 25, 50, 75, 100].forEach(pct => {
+        const y = BASE_Y - (pct / 100) * MAX_H;
+        svgContent += `
+          <line x1="50" y1="${y}" x2="580" y2="${y}" stroke="#e8eef3" stroke-width="1" />
+          <text x="42" y="${y + 4}" font-size="10" fill="#8ca0ae" text-anchor="end">${pct}%</text>
+        `;
+      });
+
+      // Desenha cada barra com sua respectiva linha teórica individual
+      for (let i = 0; i < numCats; i++) {
+        const count = state.counts[i];
+        const pct = state.total > 0 ? (count / state.total) * 100 : 0;
+        const barH = (pct / 100) * MAX_H;
+        const x = 70 + spacing * (i + 1) + barW * i;
+        const y = BASE_Y - barH;
+        const color = COLORS[i % COLORS.length];
+
+        // Altura da linha teórica desta face
+        const theoPct = theos[i];
+        const theoY = BASE_Y - (theoPct / 100) * MAX_H;
+
+        // Barra observada
+        svgContent += `
+          <g>
+            <rect class="hist-bar" x="${x}" y="${y}" width="${barW}" height="${barH}" fill="${color}" rx="6" />
+            <!-- Porcentagem observada -->
+            <text class="freq-label" x="${x + barW / 2}" y="${y - 8}" fill="${color}">
+              ${pct.toFixed(1)}%
+            </text>
+            <!-- Contagem absoluta -->
+            <text class="count-label" x="${x + barW / 2}" y="${y - 23}">
+              ${count.toLocaleString('pt-BR')}x
+            </text>
+            <!-- Rótulo da Categoria na Base -->
+            <text class="category-label" x="${x + barW / 2}" y="${BASE_Y + 22}">
+              ${labels[i]}
+            </text>
+            
+            <!-- Linha Teórica Dourada Ponderada para esta barra -->
+            <line x1="${x - 8}" y1="${theoY}" x2="${x + barW + 8}" y2="${theoY}" class="theoretical-line" />
+            <text x="${x + barW / 2}" y="${theoY - 5}" font-size="10" font-weight="800" fill="#9c731e" text-anchor="middle">
+              Meta: ${theoPct.toFixed(1)}%
+            </text>
+          </g>
+        `;
+      }
+
+      // Legenda geral
+      svgContent += `
+        <g transform="translate(420, 24)">
+          <line x1="0" y1="0" x2="30" y2="0" class="theoretical-line" />
+          <text x="36" y="4" font-size="11" font-weight="700" fill="#9c731e">Meta Teórica (Pesos)</text>
+        </g>
+      `;
+
+      probSvg.innerHTML = svgContent;
+    }
+
+    /**
+     * Renderiza o Gráfico 2: Linha Histórica de Convergência (Evolução no tempo)
+     */
+    function renderConvergenceChart(theos, labels, numCats) {
+      const W = 520;
+      const H = 250;
+      const OX = 60;
+      const OY = 320;
+
+      let svgContent = '';
+
+      // Grade e eixos
+      [0, 25, 50, 75, 100].forEach(pct => {
+        const y = OY - (pct / 100) * H;
+        svgContent += `
+          <line x1="${OX}" y1="${y}" x2="${OX + W}" y2="${y}" stroke="#e8eef3" stroke-width="1" />
+          <text x="${OX - 8}" y="${y + 4}" font-size="10" fill="#8ca0ae" text-anchor="end">${pct}%</text>
+        `;
+      });
+
+      // Linhas teóricas de cada resultado
+      theos.forEach((theoPct, i) => {
+        const y = OY - (theoPct / 100) * H;
+        svgContent += `
+          <line x1="${OX}" y1="${y}" x2="${OX + W}" y2="${y}" stroke="#d5a64a" stroke-width="1.8" stroke-dasharray="4 4" />
+          <text x="${OX + W + 6}" y="${y + 3}" font-size="10" font-weight="700" fill="#9c731e">${theoPct.toFixed(1)}%</text>
+        `;
+      });
+
+      // Se houver histórico de lançamentos, traça a curva de cada face
+      if (state.history.length > 1) {
+        const maxN = state.total;
+        for (let i = 0; i < numCats; i++) {
+          let pathD = '';
+          state.history.forEach((snap, idx) => {
+            const x = OX + (snap.n / maxN) * W;
+            const y = OY - (snap.freqs[i] / 100) * H;
+            if (idx === 0) pathD += `M ${x.toFixed(1)} ${y.toFixed(1)}`;
+            else pathD += ` L ${x.toFixed(1)} ${y.toFixed(1)}`;
+          });
+          svgContent += `
+            <path d="${pathD}" class="conv-line" stroke="${COLORS[i % COLORS.length]}" />
+          `;
+        }
+      } else {
+        svgContent += `
+          <text x="${OX + W/2}" y="${OY - H/2}" font-size="13" font-weight="700" fill="#8ca0ae" text-anchor="middle">
+            Lance moedas ou dados para acompanhar a linha de convergência
+          </text>
+        `;
+      }
+
+      // Eixos principais
+      svgContent += `
+        <line x1="${OX}" y1="${OY}" x2="${OX + W}" y2="${OY}" stroke="var(--navy)" stroke-width="1.5" />
+        <line x1="${OX}" y1="${OY - H}" x2="${OX}" y2="${OY}" stroke="var(--navy)" stroke-width="1.5" />
+        <text x="${OX + W}" y="${OY + 20}" font-size="11" font-weight="700" fill="var(--navy)" text-anchor="end">Lançamentos (N = ${state.total})</text>
+        <text x="${OX}" y="${OY - H - 10}" font-size="11" font-weight="700" fill="var(--navy)">Frequência Relativa (%)</text>
+      `;
+
+      probSvg.innerHTML = svgContent;
+    }
+
+    /**
+     * Renderiza o Gráfico 3: Barras Lado a Lado (Observado vs. Teórico Ponderado)
+     */
+    function renderSideBySideChart(theos, labels, numCats) {
+      const BASE_Y = 320;
+      const MAX_H = 240;
+      const groupW = state.mode === 'coin' ? 150 : 70;
+      const barW = state.mode === 'coin' ? 44 : 22;
+      const spacing = (520 - (numCats * groupW)) / (numCats + 1);
+
+      let svgContent = '';
+
+      // Grade horizontal
+      [0, 25, 50, 75, 100].forEach(pct => {
+        const y = BASE_Y - (pct / 100) * MAX_H;
+        svgContent += `
+          <line x1="50" y1="${y}" x2="580" y2="${y}" stroke="#e8eef3" stroke-width="1" />
+          <text x="42" y="${y + 4}" font-size="10" fill="#8ca0ae" text-anchor="end">${pct}%</text>
+        `;
+      });
+
+      // Legenda de cores
+      svgContent += `
+        <g transform="translate(360, 20)">
+          <rect x="0" y="0" width="14" height="14" rx="3" fill="#2c7a78" />
+          <text x="20" y="11" font-size="11" font-weight="700" fill="var(--navy)">Observado (%)</text>
+          <rect x="130" y="0" width="14" height="14" rx="3" fill="#d5a64a" />
+          <text x="150" y="11" font-size="11" font-weight="700" fill="var(--navy)">Teórico Ponderado (%)</text>
+        </g>
+      `;
+
+      for (let i = 0; i < numCats; i++) {
+        const count = state.counts[i];
+        const obsPct = state.total > 0 ? (count / state.total) * 100 : 0;
+        const theoPct = theos[i];
+
+        const obsH = (obsPct / 100) * MAX_H;
+        const theoH = (theoPct / 100) * MAX_H;
+
+        const groupX = 70 + spacing * (i + 1) + groupW * i;
+        const xObs = groupX + (groupW / 2) - barW - 2;
+        const xTheo = groupX + (groupW / 2) + 2;
+
+        const yObs = BASE_Y - obsH;
+        const yTheo = BASE_Y - theoH;
+
+        // Barra observada (teal)
+        svgContent += `
+          <rect x="${xObs}" y="${yObs}" width="${barW}" height="${obsH}" fill="#2c7a78" rx="4" />
+          <text x="${xObs + barW/2}" y="${yObs - 6}" font-size="10" font-weight="700" fill="#1e5a58" text-anchor="middle">${obsPct.toFixed(1)}%</text>
+        `;
+
+        // Barra teórica ponderada (dourado)
+        svgContent += `
+          <rect x="${xTheo}" y="${yTheo}" width="${barW}" height="${theoH}" fill="#d5a64a" rx="4" />
+          <text x="${xTheo + barW/2}" y="${yTheo - 6}" font-size="10" font-weight="700" fill="#9c731e" text-anchor="middle">${theoPct.toFixed(1)}%</text>
+        `;
+
+        // Rótulo da categoria
+        svgContent += `
+          <text x="${groupX + groupW/2}" y="${BASE_Y + 22}" font-size="12" font-weight="800" fill="var(--navy)" text-anchor="middle">${labels[i]}</text>
+        `;
+      }
+
+      probSvg.innerHTML = svgContent;
+    }
+
+    /**
+     * Renderiza o Gráfico 4: Linha do Desvio / Erro Absoluto
+     */
+    function renderDeviationChart() {
+      const W = 520;
+      const H = 250;
+      const OX = 60;
+      const OY = 320;
+
+      let svgContent = '';
+
+      // Grade de erro de 0% a 50%
+      [0, 10, 20, 30, 40, 50].forEach(err => {
+        const y = OY - (err / 50) * H;
+        svgContent += `
+          <line x1="${OX}" y1="${y}" x2="${OX + W}" y2="${y}" stroke="#e8eef3" stroke-width="1" />
+          <text x="${OX - 8}" y="${y + 4}" font-size="10" fill="#8ca0ae" text-anchor="end">${err}%</text>
+        `;
+      });
+
+      // Linha de erro zero (ideal)
+      svgContent += `
+        <line x1="${OX}" y1="${OY}" x2="${OX + W}" y2="${OY}" stroke="var(--teal)" stroke-width="2" />
+        <text x="${OX + W - 60}" y="${OY - 8}" font-size="10" font-weight="700" fill="var(--teal)">Erro = 0% (Alvo)</text>
+      `;
+
+      if (state.history.length > 1) {
+        const maxN = state.total;
+        let pathD = '';
+        state.history.forEach((snap, idx) => {
+          const x = OX + (snap.n / maxN) * W;
+          const y = OY - Math.min(50, snap.maxDev) / 50 * H;
+          if (idx === 0) pathD += `M ${x.toFixed(1)} ${y.toFixed(1)}`;
+          else pathD += ` L ${x.toFixed(1)} ${y.toFixed(1)}`;
+        });
+        svgContent += `
+          <path d="${pathD}" class="conv-line" stroke="#c94a4a" stroke-width="2.8" />
+        `;
+      } else {
+        svgContent += `
+          <text x="${OX + W/2}" y="${OY - H/2}" font-size="13" font-weight="700" fill="#8ca0ae" text-anchor="middle">
+            Faça lançamentos para ver o desvio cair em direção a 0%
+          </text>
+        `;
+      }
+
+      // Eixos
+      svgContent += `
+        <line x1="${OX}" y1="${OY - H}" x2="${OX}" y2="${OY}" stroke="var(--navy)" stroke-width="1.5" />
+        <text x="${OX + W}" y="${OY + 20}" font-size="11" font-weight="700" fill="var(--navy)" text-anchor="end">Lançamentos (N = ${state.total})</text>
+        <text x="${OX}" y="${OY - H - 10}" font-size="11" font-weight="700" fill="var(--navy)">Desvio Máximo em Relação aos Pesos (%)</text>
+      `;
+
+      probSvg.innerHTML = svgContent;
+    }
+
+    /**
+     * Atualização global da cena
+     */
+    function updateScene() {
+      const isCoin = state.mode === 'coin';
+      const numCats = isCoin ? 2 : 6;
+      const theos = getTheoreticalProbabilities();
+      const labels = isCoin 
+        ? ['Cara 🪙', 'Coroa 🪙'] 
+        : ['Face 1 ⚀', 'Face 2 ⚁', 'Face 3 ⚂', 'Face 4 ⚃', 'Face 5 ⚄', 'Face 6 ⚅'];
+
+      // Atualiza mostrador do total
+      totalTrialsCount.textContent = state.total.toLocaleString('pt-BR');
+
+      // 1. Renderiza o gráfico ativo
+      if (state.activeChart === 'hist') {
+        renderHistogramChart(theos, labels, numCats);
+      } else if (state.activeChart === 'convergence') {
+        renderConvergenceChart(theos, labels, numCats);
+      } else if (state.activeChart === 'sidebyside') {
+        renderSideBySideChart(theos, labels, numCats);
+      } else if (state.activeChart === 'deviation') {
+        renderDeviationChart();
+      }
+
+      // 2. Atualiza resumo dinâmico e mensagem de convergência
+      if (state.total === 0) {
+        if (isCoin) {
+          dynamicOutput.innerHTML = `Meta Teórica: <span class="highlight-teal">Cara ${theos[0].toFixed(1)}%</span> · <span class="highlight-azul">Coroa ${theos[1].toFixed(1)}%</span>`;
+        } else {
+          dynamicOutput.innerHTML = `Pesos Atuais: ${state.diceWeights.join(' : ')} · Maior Meta: <span class="highlight-dourado">${Math.max(...theos).toFixed(1)}%</span>`;
+        }
+        convergenceNote.textContent = 'Clique nos botões de lançamento para observar os dados convergirem para essas metas.';
+      } else {
+        let maxDev = 0;
+        for (let i = 0; i < numCats; i++) {
+          const obs = (state.counts[i] / state.total) * 100;
+          const d = Math.abs(obs - theos[i]);
+          if (d > maxDev) maxDev = d;
+        }
+
+        const devStr = maxDev.toFixed(1);
+        dynamicOutput.innerHTML = `
+          Lançamentos: <strong>${state.total.toLocaleString('pt-BR')}</strong> · 
+          Desvio Máximo da Meta: <span class="highlight-${maxDev < 2 ? 'teal' : 'dourado'}">${devStr}%</span>
+        `;
+
+        if (state.total < 30) {
+          convergenceNote.innerHTML = `⚠️ <strong>Pequena Amostra (${state.total} lançamentos):</strong> Alta oscilação empírica. Observe o desvio de ${devStr}%.`;
+        } else if (state.total < 500) {
+          convergenceNote.innerHTML = `📈 <strong>Amostra Intermediária (${state.total} lançamentos):</strong> As frequências começam a convergir para as metas ponderadas.`;
+        } else {
+          convergenceNote.innerHTML = `✨ <strong>Lei dos Grandes Números Comprovada (${state.total.toLocaleString('pt-BR')} lançamentos):</strong> Os resultados reais aderiram rigorosamente às metas teóricas calculadas pelos pesos!`;
+        }
+      }
+    }
+
+    // ===================================================================
+    // Eventos e Interatividade
+    // ===================================================================
+
+    // Alternância de Abas de Gráficos (mantém todo o estado e pesos intactos!)
+    document.querySelectorAll('.chart-tab-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.chart-tab-btn').forEach(b => {
+          b.classList.remove('active');
+          b.setAttribute('aria-selected', 'false');
+        });
+        btn.classList.add('active');
+        btn.setAttribute('aria-selected', 'true');
+        state.activeChart = btn.getAttribute('data-chart');
+        updateScene();
+      });
+    });
+
+    // Alternância de Modo (Moeda / Dado)
+    tabCoin.addEventListener('click', () => setMode('coin'));
+    tabDice.addEventListener('click', () => setMode('dice'));
+
+    // Slider de Peso da Moeda
+    sliderCoinP.addEventListener('input', (e) => {
+      state.coinP = parseInt(e.target.value, 10);
+      syncControlsUI();
+      updateScene();
+    });
+
+    // Botões de Lote de Lançamento
+    document.getElementById('btnRoll1').addEventListener('click', () => roll(1));
+    document.getElementById('btnRoll10').addEventListener('click', () => roll(10));
+    document.getElementById('btnRoll100').addEventListener('click', () => roll(100));
+    document.getElementById('btnRoll1000').addEventListener('click', () => roll(1000));
+    document.getElementById('btnRoll5000').addEventListener('click', () => roll(5000));
+
+    // Botão Zerar Lançamentos (mantém os pesos atuais conforme requisito 4)
+    document.getElementById('btnResetDataOnly').addEventListener('click', () => {
+      const isCoin = state.mode === 'coin';
+      state.counts = isCoin ? [0, 0] : [0, 0, 0, 0, 0, 0];
+      state.total = 0;
+      state.history = [];
+      updateScene();
+    });
+
+    // Botão Restaurar Tudo Justo (reseta lançamentos E restaura pesos justos conforme requisito 4)
+    document.getElementById('btnRestoreAll').addEventListener('click', () => {
+      state.coinP = 50;
+      state.diceWeights = [1, 1, 1, 1, 1, 1];
+      state.counts = state.mode === 'coin' ? [0, 0] : [0, 0, 0, 0, 0, 0];
+      state.total = 0;
+      state.history = [];
+      syncControlsUI();
+      updateScene();
+    });
+
+    // Modo Projeção em Tela Cheia
+    document.getElementById('btnFullscreen').addEventListener('click', () => {
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().catch(() => {});
+      } else {
+        document.exitFullscreen().catch(() => {});
+      }
+    });
+
+    // Inicialização da Página
+    initDiceControls();
+    updatePresetsBar();
+    syncControlsUI();
+    updateScene();
+  </script>
+</body>
+</html>

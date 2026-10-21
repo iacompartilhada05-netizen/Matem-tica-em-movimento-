@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Função Afim: y = ax + b · Matemática em Movimento</title>
+  <meta name="description" content="Laboratório interativo da Função Afim. Altere os coeficientes angular e linear com sliders táteis, visualize a reta, tabela de valores e pontos notáveis." />
+  <link rel="stylesheet" href="../css/estilo.css" />
+  <style>
+    .axis-line {
+      stroke: var(--navy);
+      stroke-width: 2;
+    }
+    .grid-line {
+      stroke: #e4ebf0;
+      stroke-width: 1;
+    }
+    .function-line {
+      stroke: var(--azul);
+      stroke-width: 3.5;
+      stroke-linecap: round;
+    }
+    .slope-triangle {
+      fill: #e6f4f1;
+      stroke: #2c7a78;
+      stroke-width: 1.5;
+      stroke-dasharray: 4 3;
+    }
+    .key-point {
+      stroke: #ffffff;
+      stroke-width: 2.5;
+      cursor: pointer;
+    }
+    .badge-status {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 0.78rem;
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: 4px;
+      text-transform: uppercase;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header Institucional -->
+  <header class="site-header">
+    <div class="header-container">
+      <a href="../index.html" class="brand-wrapper" title="Voltar para a página inicial">
+        <div class="brand-logo" aria-hidden="true">
+          <svg viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 19L12 5l8 14H4z" />
+          </svg>
+        </div>
+        <div class="brand-texts">
+          <span class="brand-title">Matemática em Movimento</span>
+          <span class="brand-slogan">Explore. Manipule. Compreenda.</span>
+        </div>
+      </a>
+      <div class="header-actions">
+        <a href="../index.html" class="btn-header">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+          Início
+        </a>
+        <button id="btnFullscreen" class="btn-header" title="Alternar modo tela cheia para projeção em sala de aula">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>
+          Projeção
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Breadcrumbs -->
+  <nav class="breadcrumb-bar" aria-label="Navegação estrutural">
+    <div class="breadcrumb-container">
+      <a href="../index.html">Início</a>
+      <span class="breadcrumb-sep">/</span>
+      <span>Funções</span>
+      <span class="breadcrumb-sep">/</span>
+      <span class="breadcrumb-current">Função Afim (y = ax + b)</span>
+    </div>
+  </nav>
+
+  <!-- Conteúdo Principal -->
+  <main class="main-content">
+    <div class="demo-grid">
+
+      <!-- Coluna 1: Laboratório Interativo -->
+      <section class="card" aria-labelledby="lab-heading">
+        <div class="card-eyebrow">
+          <span class="badge-tag badge-medio">Ensino Médio</span>
+          <span>· LABORATÓRIO INTERATIVO DE FUNÇÕES</span>
+        </div>
+        <h2 id="lab-heading" class="card-title">Função Afim: f(x) = ax + b</h2>
+        <p class="card-subtitle">
+          Manipule o coeficiente angular <em>a</em> (inclinação) e o linear <em>b</em> (intercepto) e acompanhe o comportamento imediato da reta.
+        </p>
+
+        <!-- Sliders Táteis -->
+        <div class="sliders-panel">
+          <div class="slider-group">
+            <div class="slider-label-row">
+              <label for="sliderA">Coeficiente Angular (a):</label>
+              <span id="badgeA" class="slider-val-badge">1.0</span>
+            </div>
+            <input type="range" id="sliderA" min="-4" max="4" step="0.5" value="1.0" aria-label="Coeficiente angular a" />
+          </div>
+
+          <div class="slider-group">
+            <div class="slider-label-row">
+              <label for="sliderB">Coeficiente Linear (b):</label>
+              <span id="badgeB" class="slider-val-badge">0.0</span>
+            </div>
+            <input type="range" id="sliderB" min="-5" max="5" step="0.5" value="0.0" aria-label="Coeficiente linear b" />
+          </div>
+        </div>
+
+        <!-- Palco do Plano Cartesiano SVG -->
+        <div class="svg-stage-wrapper">
+          <svg id="afimSvg" class="svg-stage" viewBox="0 0 600 420" aria-label="Gráfico cartesiano da função afim">
+            <!-- Grid de fundo -->
+            <g id="gridGroup"></g>
+
+            <!-- Eixos X e Y -->
+            <line id="axisX" class="axis-line" x1="20" y1="210" x2="580" y2="210" />
+            <line id="axisY" class="axis-line" x1="300" y1="20" x2="300" y2="400" />
+            <!-- Setas nos eixos -->
+            <polygon points="585,210 575,205 575,215" fill="var(--navy)" />
+            <polygon points="300,15 295,25 305,25" fill="var(--navy)" />
+            <text x="580" y="230" font-size="12" font-weight="700" fill="var(--navy)">x</text>
+            <text x="312" y="24" font-size="12" font-weight="700" fill="var(--navy)">y</text>
+
+            <!-- Triângulo indicador de inclinação (Delta x / Delta y) -->
+            <path id="slopeTriangle" class="slope-triangle" />
+            <text id="slopeLabel" font-size="11" font-weight="700" fill="#2c7a78"></text>
+
+            <!-- A Reta da Função -->
+            <line id="funcLine" class="function-line" />
+
+            <!-- Ponto Intercepto em Y (0, b) -->
+            <g id="pointYGroup">
+              <circle id="pointY" class="key-point" cx="300" cy="210" r="7" fill="#d5a64a" />
+              <text id="labelPointY" font-size="11" font-weight="700" fill="#8c6412" x="312" y="205">(0, b)</text>
+            </g>
+
+            <!-- Ponto Raiz da Função (x0, 0) -->
+            <g id="pointXGroup">
+              <circle id="pointX" class="key-point" cx="300" cy="210" r="7" fill="#2c7a78" />
+              <text id="labelPointX" font-size="11" font-weight="700" fill="#1e5a58" x="300" y="235">raiz</text>
+            </g>
+          </svg>
+        </div>
+
+        <!-- Dica de manipulação -->
+        <div class="manipulation-hint">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/>
+          </svg>
+          <span>Mova os sliders para testar coeficientes positivos, negativos ou nulos. Observe o triângulo tracejado de taxa de variação.</span>
+        </div>
+
+        <!-- Resultado dinâmico em destaque -->
+        <div class="dynamic-result-box" aria-live="polite">
+          <div class="result-title">Equação e Comportamento da Reta</div>
+          <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
+            <div id="dynamicEquationOutput" class="result-formula">
+              y = 1.0x + 0
+            </div>
+            <div id="behaviorTags"></div>
+          </div>
+        </div>
+
+        <!-- Tabela Dinâmica de Valores -->
+        <div style="margin-bottom: 18px;">
+          <div style="font-size:0.8rem; font-weight:700; text-transform:uppercase; color:var(--muted); margin-bottom:6px;">
+            Tabela de Valores Calculados:
+          </div>
+          <table class="data-table" aria-label="Tabela de valores da função afim">
+            <thead>
+              <tr>
+                <th>x</th>
+                <th>-2</th>
+                <th>-1</th>
+                <th>0</th>
+                <th>1</th>
+                <th>2</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr id="tableRowY">
+                <td style="font-weight:700; color:var(--navy);">y = f(x)</td>
+                <td>-2</td>
+                <td>-1</td>
+                <td>0</td>
+                <td>1</td>
+                <td>2</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Barra de Botões -->
+        <div class="controls-toolbar">
+          <button id="btnReset" class="btn btn-secondary">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+            Restaurar (y = x)
+          </button>
+          <button id="btnAnotherForm" class="btn btn-primary">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="m10 15 5-3-5-3v6Z"/></svg>
+            Experimentar outros casos
+          </button>
+          <button id="btnCaseZeroA" class="btn btn-secondary btn-sm" title="Definir a = 0 (Função Constante)">a = 0 (Constante)</button>
+          <button id="btnCaseZeroB" class="btn btn-secondary btn-sm" title="Definir b = 0 (Função Linear)">b = 0 (Linear)</button>
+        </div>
+      </section>
+
+      <!-- Coluna 2: Card "Entenda a Ideia" -->
+      <aside class="card idea-card" aria-labelledby="idea-heading">
+        <div class="card-eyebrow">
+          <span>FUNDAMENTAÇÃO CONCEITUAL</span>
+        </div>
+        <h2 id="idea-heading" class="card-title">Entenda a ideia</h2>
+        <p class="card-subtitle">
+          Cada letra na equação possui um papel geométrico visual muito claro e direto no plano.
+        </p>
+
+        <!-- Fórmula em Destaque -->
+        <div class="formula-highlight-card">
+          <div class="formula-highlight-label">Forma Geral da Função Afim</div>
+          <div class="formula-highlight-math">f(x) = ax + b</div>
+        </div>
+
+        <!-- Passos Numerados -->
+        <div class="explanation-steps">
+          <div class="step-item">
+            <span class="step-number" aria-hidden="true">1</span>
+            <div class="step-text">
+              <strong>Coeficiente Angular (a):</strong> É a taxa de variação ou inclinação (Δy / Δx). Se <strong>a &gt; 0</strong>, a reta é crescente; se <strong>a &lt; 0</strong>, a reta é decrescente; e se <strong>a = 0</strong>, a reta fica totalmente horizontal (função constante).
+            </div>
+          </div>
+          <div class="step-item">
+            <span class="step-number" aria-hidden="true">2</span>
+            <div class="step-text">
+              <strong>Coeficiente Linear (b):</strong> É o ponto exato onde a reta corta o eixo vertical Y, ou seja, o ponto <strong>(0, b)</strong>. Quando b = 0, a reta cruza exatamente na origem (0,0).
+            </div>
+          </div>
+          <div class="step-item">
+            <span class="step-number" aria-hidden="true">3</span>
+            <div class="step-text">
+              <strong>Raiz ou Zero da Função:</strong> É o ponto onde y = 0, obtido resolvendo ax + b = 0 &rArr; <strong>x = -b/a</strong> (quando a &ne; 0). É onde a reta intercepta o eixo horizontal X.
+            </div>
+          </div>
+        </div>
+
+        <!-- Pergunta para investigar -->
+        <div class="investigation-box">
+          <div class="investigation-header">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+              <path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5"/>
+              <path d="M9 18h6"/><path d="M10 22h4"/>
+            </svg>
+            <span>Pergunta para investigar</span>
+          </div>
+          <p class="investigation-text">
+            O que acontece com a inclinação da reta quando <strong>a</strong> fica negativo? E quando <strong>a = 0</strong>, o que acontece com a raiz da função e com a dependência da variável x?
+          </p>
+        </div>
+      </aside>
+
+    </div>
+  </main>
+
+  <!-- Rodapé Institucional -->
+  <footer class="site-footer">
+    <div class="site-footer-inner">
+      <p><strong>Matemática em Movimento</strong> · Recurso educacional aberto e gratuito para professores e estudantes.</p>
+      <div class="footer-links">
+        <a href="../index.html">Todas as Demonstrações</a>
+        <span>•</span>
+        <a href="../funcoes/balanca_de_equacoes.html">Balança de Equações</a>
+        <span>•</span>
+        <a href="../funcoes/quadratica.html">Função Quadrática</a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Lógica Matemática e Interatividade -->
+  <script>
+    /**
+     * Matemática em Movimento — Demonstração 3: Função Afim (y = ax + b)
+     * Traçado vetorial no plano cartesiano, identificação de raiz, intercepto e inclinação.
+     */
+
+    // Parâmetros do sistema cartesiano
+    const CX = 300; // Origem X no SVG (pixels)
+    const CY = 210; // Origem Y no SVG (pixels)
+    const SCALE_X = 40; // 40px por unidade matemática no eixo X
+    const SCALE_Y = 32; // 32px por unidade matemática no eixo Y
+
+    // Estado dos coeficientes
+    const state = {
+      a: 1.0,
+      b: 0.0,
+      presetIndex: 0
+    };
+
+    // Casos especiais didáticos
+    const presets = [
+      { a: 2.0, b: 1.0, desc: "Crescente Íngreme (a=2, b=1)" },
+      { a: -1.5, b: 2.0, desc: "Decrescente (a=-1.5, b=2)" },
+      { a: 0.0, b: 3.0, desc: "Constante (a=0, b=3)" },
+      { a: 3.0, b: 0.0, desc: "Proporcional Direta (b=0)" },
+      { a: -0.5, b: -2.0, desc: "Decrescente Negativa (a=-0.5, b=-2)" }
+    ];
+
+    // Elementos do DOM
+    const sliderA = document.getElementById('sliderA');
+    const sliderB = document.getElementById('sliderB');
+    const badgeA = document.getElementById('badgeA');
+    const badgeB = document.getElementById('badgeB');
+    const funcLine = document.getElementById('funcLine');
+    const pointY = document.getElementById('pointY');
+    const labelPointY = document.getElementById('labelPointY');
+    const pointX = document.getElementById('pointX');
+    const labelPointX = document.getElementById('labelPointX');
+    const pointXGroup = document.getElementById('pointXGroup');
+    const slopeTriangle = document.getElementById('slopeTriangle');
+    const slopeLabel = document.getElementById('slopeLabel');
+    const dynamicOutput = document.getElementById('dynamicEquationOutput');
+    const behaviorTags = document.getElementById('behaviorTags');
+    const tableRowY = document.getElementById('tableRowY');
+    const gridGroup = document.getElementById('gridGroup');
+
+    /**
+     * Desenha a grade e marcações numéricas nos eixos
+     */
+    function initGrid() {
+      let gridHtml = '';
+      // Linhas verticais (valores de x de -6 a 6)
+      for (let x = -6; x <= 6; x++) {
+        if (x === 0) continue;
+        const px = CX + x * SCALE_X;
+        gridHtml += `<line class="grid-line" x1="${px}" y1="20" x2="${px}" y2="400" />`;
+        gridHtml += `<text x="${px}" y="${CY + 16}" font-size="10" fill="#8ca0ae" text-anchor="middle">${x}</text>`;
+      }
+      // Linhas horizontais (valores de y de -5 a 5)
+      for (let y = -5; y <= 5; y++) {
+        if (y === 0) continue;
+        const py = CY - y * SCALE_Y;
+        gridHtml += `<line class="grid-line" x1="20" y1="${py}" x2="580" y2="${py}" />`;
+        gridHtml += `<text x="${CX - 12}" y="${py + 3}" font-size="10" fill="#8ca0ae" text-anchor="end">${y}</text>`;
+      }
+      gridGroup.innerHTML = gridHtml;
+    }
+
+    /**
+     * Atualiza a reta, pontos notáveis e tabelas
+     */
+    function updateScene() {
+      const a = state.a;
+      const b = state.b;
+
+      // 1. Atualiza Sliders e Badges
+      sliderA.value = a;
+      sliderB.value = b;
+      badgeA.textContent = a.toFixed(1);
+      badgeB.textContent = b.toFixed(1);
+
+      // 2. Traçado da Reta no Domínio Visual (x de -7 a +7)
+      const xLeft = -7;
+      const xRight = 7;
+      const yLeft = a * xLeft + b;
+      const yRight = a * xRight + b;
+
+      const px1 = CX + xLeft * SCALE_X;
+      const py1 = CY - yLeft * SCALE_Y;
+      const px2 = CX + xRight * SCALE_X;
+      const py2 = CY - yRight * SCALE_Y;
+
+      funcLine.setAttribute('x1', px1);
+      funcLine.setAttribute('y1', py1);
+      funcLine.setAttribute('x2', px2);
+      funcLine.setAttribute('y2', py2);
+
+      // 3. Ponto Intercepto com o Eixo Y: (0, b)
+      const pYx = CX;
+      const pYy = CY - b * SCALE_Y;
+      pointY.setAttribute('cx', pYx);
+      pointY.setAttribute('cy', pYy);
+      labelPointY.setAttribute('x', pYx + 12);
+      labelPointY.setAttribute('y', pYy - 6);
+      labelPointY.textContent = `(0, ${b.toFixed(1).replace('.0', '')})`;
+
+      // 4. Raiz da Função (Intercepto com Eixo X): y = 0 => x = -b/a (quando a != 0)
+      if (Math.abs(a) > 0.0001) {
+        pointXGroup.style.display = 'block';
+        const rootX = -b / a;
+        const pXx = CX + rootX * SCALE_X;
+        const pXy = CY;
+        pointX.setAttribute('cx', pXx);
+        pointX.setAttribute('cy', pXy);
+        labelPointX.setAttribute('x', pXx);
+        labelPointX.setAttribute('y', pXy + 18);
+        labelPointX.textContent = `raiz = ${rootX.toFixed(2).replace('.00', '')}`;
+      } else {
+        // Se a = 0 e b != 0, a reta é paralela ao eixo X (não tem raiz real)
+        pointXGroup.style.display = 'none';
+      }
+
+      // 5. Triângulo de Inclinação (Delta x = 1, Delta y = a a partir de x=1)
+      if (Math.abs(a) > 0.001) {
+        slopeTriangle.style.display = 'block';
+        slopeLabel.style.display = 'block';
+        const stX0 = 1;
+        const stY0 = a * stX0 + b;
+        const stX1 = 2;
+        const stY1 = a * stX1 + b;
+
+        const sPx0 = CX + stX0 * SCALE_X;
+        const sPy0 = CY - stY0 * SCALE_Y;
+        const sPx1 = CX + stX1 * SCALE_X;
+        const sPy1 = CY - stY1 * SCALE_Y;
+
+        // Triângulo de vértices: (x0, y0) -> (x1, y0) -> (x1, y1)
+        slopeTriangle.setAttribute('d', `M ${sPx0} ${sPy0} L ${sPx1} ${sPy0} L ${sPx1} ${sPy1} Z`);
+        slopeLabel.setAttribute('x', sPx1 + 6);
+        slopeLabel.setAttribute('y', (sPy0 + sPy1) / 2);
+        slopeLabel.textContent = `Δy = ${a.toFixed(1)}`;
+      } else {
+        slopeTriangle.style.display = 'none';
+        slopeLabel.style.display = 'none';
+      }
+
+      // 6. Texto da Equação Formatada
+      let eqStr = 'y = ';
+      if (a === 0) {
+        eqStr += `${b.toFixed(1).replace('.0', '')}`;
+      } else {
+        const aPart = (a === 1 ? '' : a === -1 ? '-' : a.toFixed(1).replace('.0', '')) + 'x';
+        if (b > 0) {
+          eqStr += `${aPart} + ${b.toFixed(1).replace('.0', '')}`;
+        } else if (b < 0) {
+          eqStr += `${aPart} - ${Math.abs(b).toFixed(1).replace('.0', '')}`;
+        } else {
+          eqStr += `${aPart}`;
+        }
+      }
+      dynamicOutput.textContent = eqStr;
+
+      // 7. Tags de Classificação Didática
+      let tagsHtml = '';
+      if (a > 0) {
+        tagsHtml += `<span class="badge-status" style="background:#e6f4f1; color:#1e5a58;">↗ Crescente (a > 0)</span>`;
+      } else if (a < 0) {
+        tagsHtml += `<span class="badge-status" style="background:#fdeeee; color:#b52828;">↘ Decrescente (a < 0)</span>`;
+      } else {
+        tagsHtml += `<span class="badge-status" style="background:#fef8eb; color:#9c731e;">→ Constante (a = 0)</span>`;
+      }
+
+      if (b === 0) {
+        tagsHtml += `<span class="badge-status" style="background:#e8f0fe; color:#1a56db; margin-left:6px;">Origem (Linear)</span>`;
+      }
+      behaviorTags.innerHTML = tagsHtml;
+
+      // 8. Atualização da Tabela de Valores para x in [-2, -1, 0, 1, 2]
+      const sampleXs = [-2, -1, 0, 1, 2];
+      let rowHtml = `<td style="font-weight:700; color:var(--navy);">y = f(x)</td>`;
+      for (const x of sampleXs) {
+        const valY = a * x + b;
+        rowHtml += `<td><strong>${valY.toFixed(1).replace('.0', '')}</strong></td>`;
+      }
+      tableRowY.innerHTML = rowHtml;
+    }
+
+    // Eventos dos Sliders
+    sliderA.addEventListener('input', (e) => {
+      state.a = parseFloat(e.target.value);
+      updateScene();
+    });
+
+    sliderB.addEventListener('input', (e) => {
+      state.b = parseFloat(e.target.value);
+      updateScene();
+    });
+
+    // Botão Restaurar
+    document.getElementById('btnReset').addEventListener('click', () => {
+      state.a = 1.0;
+      state.b = 0.0;
+      updateScene();
+    });
+
+    // Botão Alternar Casos Especiais
+    document.getElementById('btnAnotherForm').addEventListener('click', () => {
+      state.presetIndex = (state.presetIndex + 1) % presets.length;
+      const target = presets[state.presetIndex];
+      state.a = target.a;
+      state.b = target.b;
+      updateScene();
+    });
+
+    // Casos Rápidos
+    document.getElementById('btnCaseZeroA').addEventListener('click', () => {
+      state.a = 0.0;
+      updateScene();
+    });
+
+    document.getElementById('btnCaseZeroB').addEventListener('click', () => {
+      state.b = 0.0;
+      updateScene();
+    });
+
+    // Modo Projeção
+    document.getElementById('btnFullscreen').addEventListener('click', () => {
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().catch(() => {});
+      } else {
+        document.exitFullscreen().catch(() => {});
+      }
+    });
+
+    // Inicialização
+    initGrid();
+    updateScene();
+  </script>
+</body>
+</html>

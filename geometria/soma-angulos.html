@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Soma dos Ângulos do Triângulo · Matemática em Movimento</title>
+  <meta name="description" content="Laboratório visual e interativo da soma dos ângulos internos de um triângulo. Arraste os vértices e comprove que a soma é sempre 180°." />
+  <link rel="stylesheet" href="../css/estilo.css" />
+  <style>
+    /* Estilos específicos desta demonstração */
+    .angle-arc {
+      fill-opacity: 0.25;
+      stroke-width: 2.5;
+    }
+    .angle-label {
+      font-size: 15px;
+      font-weight: 700;
+      fill: var(--navy);
+      text-anchor: middle;
+      dominant-baseline: central;
+      user-select: none;
+    }
+    .vertex-node {
+      cursor: grab;
+      touch-action: none;
+    }
+    .vertex-node:active {
+      cursor: grabbing;
+    }
+    .aux-line {
+      stroke: var(--muted);
+      stroke-dasharray: 6 5;
+      stroke-width: 2;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header Institucional -->
+  <header class="site-header">
+    <div class="header-container">
+      <a href="../index.html" class="brand-wrapper" title="Voltar para a página inicial">
+        <div class="brand-logo" aria-hidden="true">
+          <svg viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 19L12 5l8 14H4z" />
+          </svg>
+        </div>
+        <div class="brand-texts">
+          <span class="brand-title">Matemática em Movimento</span>
+          <span class="brand-slogan">Explore. Manipule. Compreenda.</span>
+        </div>
+      </a>
+      <div class="header-actions">
+        <a href="../index.html" class="btn-header">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+          Início
+        </a>
+        <button id="btnFullscreen" class="btn-header" title="Alternar modo tela cheia para projeção em sala de aula">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>
+          Projeção
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Breadcrumbs -->
+  <nav class="breadcrumb-bar" aria-label="Navegação estrutural">
+    <div class="breadcrumb-container">
+      <a href="../index.html">Início</a>
+      <span class="breadcrumb-sep">/</span>
+      <span>Geometria</span>
+      <span class="breadcrumb-sep">/</span>
+      <span class="breadcrumb-current">Soma dos Ângulos do Triângulo</span>
+    </div>
+  </nav>
+
+  <!-- Conteúdo Principal -->
+  <main class="main-content">
+    <div class="demo-grid">
+
+      <!-- Coluna 1: Laboratório Interativo -->
+      <section class="card" aria-labelledby="lab-heading">
+        <div class="card-eyebrow">
+          <span class="badge-tag badge-fundamental">Ensino Fundamental</span>
+          <span>· LABORATÓRIO INTERATIVO DE GEOMETRIA</span>
+        </div>
+        <h2 id="lab-heading" class="card-title">Soma dos Ângulos Internos de um Triângulo</h2>
+        <p class="card-subtitle">
+          Arraste qualquer um dos três vértices (A, B ou C) e observe como os ângulos se adaptam instantaneamente.
+        </p>
+
+        <!-- Palco SVG -->
+        <div class="svg-stage-wrapper">
+          <svg id="triangleSvg" class="svg-stage" viewBox="0 0 600 400" aria-label="Triângulo interativo com vértices A, B e C arrastáveis">
+            <!-- Grade sutil de fundo -->
+            <defs>
+              <pattern id="gridPattern" width="40" height="40" patternUnits="userSpaceOnUse">
+                <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#e8eef3" stroke-width="1" />
+              </pattern>
+            </defs>
+            <rect width="600" height="400" fill="url(#gridPattern)" />
+
+            <!-- Linha auxiliar euclidiana paralela à base (opcional) -->
+            <line id="auxLine" class="aux-line" x1="-100" y1="0" x2="700" y2="0" style="display: none;" />
+
+            <!-- Preenchimento do triângulo -->
+            <polygon id="trianglePoly" fill="#356b8c" fill-opacity="0.12" stroke="#356b8c" stroke-width="3.5" stroke-linejoin="round" />
+
+            <!-- Arcos dos três ângulos -->
+            <path id="arcA" class="angle-arc" fill="#356b8c" stroke="#356b8c" />
+            <path id="arcB" class="angle-arc" fill="#2c7a78" stroke="#2c7a78" />
+            <path id="arcC" class="angle-arc" fill="#d5a64a" stroke="#d5a64a" />
+
+            <!-- Rótulos de valor nos arcos -->
+            <text id="labelA" class="angle-label"></text>
+            <text id="labelB" class="angle-label"></text>
+            <text id="labelC" class="angle-label"></text>
+
+            <!-- Vértice A arrastável -->
+            <g id="handleA" class="vertex-node" role="button" tabindex="0" aria-label="Vértice A. Pressione as setas do teclado ou arraste para mover.">
+              <circle id="haloA" cx="120" cy="300" r="22" fill="#356b8c" fill-opacity="0.2" />
+              <circle id="nodeA" cx="120" cy="300" r="13" fill="#356b8c" stroke="#ffffff" stroke-width="3" />
+              <text id="nameA" x="120" y="300" fill="#ffffff" font-size="12" font-weight="800" text-anchor="middle" dominant-baseline="central" pointer-events="none">A</text>
+            </g>
+
+            <!-- Vértice B arrastável -->
+            <g id="handleB" class="vertex-node" role="button" tabindex="0" aria-label="Vértice B. Pressione as setas do teclado ou arraste para mover.">
+              <circle id="haloB" cx="480" cy="300" r="22" fill="#2c7a78" fill-opacity="0.2" />
+              <circle id="nodeB" cx="480" cy="300" r="13" fill="#2c7a78" stroke="#ffffff" stroke-width="3" />
+              <text id="nameB" x="480" y="300" fill="#ffffff" font-size="12" font-weight="800" text-anchor="middle" dominant-baseline="central" pointer-events="none">B</text>
+            </g>
+
+            <!-- Vértice C arrastável -->
+            <g id="handleC" class="vertex-node" role="button" tabindex="0" aria-label="Vértice C. Pressione as setas do teclado ou arraste para mover.">
+              <circle id="haloC" cx="280" cy="90" r="22" fill="#d5a64a" fill-opacity="0.25" />
+              <circle id="nodeC" cx="280" cy="90" r="13" fill="#d5a64a" stroke="#ffffff" stroke-width="3" />
+              <text id="nameC" x="280" y="90" fill="#ffffff" font-size="12" font-weight="800" text-anchor="middle" dominant-baseline="central" pointer-events="none">C</text>
+            </g>
+          </svg>
+        </div>
+
+        <!-- Dica de manipulação -->
+        <div class="manipulation-hint">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/>
+          </svg>
+          <span>Toque ou clique e arraste qualquer vértice <strong>A</strong>, <strong>B</strong> ou <strong>C</strong> para testar qualquer triângulo imaginável.</span>
+        </div>
+
+        <!-- Resultado dinâmico em destaque -->
+        <div class="dynamic-result-box" aria-live="polite">
+          <div class="result-title">Soma dos Três Ângulos Internos</div>
+          <div id="dynamicSumOutput" class="result-formula">
+            <span class="highlight-azul">α = 60°</span> + <span class="highlight-teal">β = 60°</span> + <span class="highlight-dourado">γ = 60°</span> = <strong>180°</strong>
+          </div>
+        </div>
+
+        <!-- Barra de Botões -->
+        <div class="controls-toolbar">
+          <button id="btnReset" class="btn btn-secondary">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+            Restaurar
+          </button>
+          <button id="btnAnotherForm" class="btn btn-primary">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m21 16-4 4-4-4"/><path d="M17 20V4"/><path d="m3 8 4-4 4 4"/><path d="M7 4v16"/></svg>
+            Experimentar outra forma
+          </button>
+          <button id="btnToggleAux" class="btn btn-secondary" aria-pressed="false">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Mostrar Reta Auxiliar
+          </button>
+        </div>
+      </section>
+
+      <!-- Coluna 2: Card "Entenda a Ideia" -->
+      <aside class="card idea-card" aria-labelledby="idea-heading">
+        <div class="card-eyebrow">
+          <span>FUNDAMENTAÇÃO CONCEITUAL</span>
+        </div>
+        <h2 id="idea-heading" class="card-title">Entenda a ideia</h2>
+        <p class="card-subtitle">
+          Por que a soma dos ângulos internos de todo triângulo plano dá exatamente 180°?
+        </p>
+
+        <!-- Fórmula em Destaque -->
+        <div class="formula-highlight-card">
+          <div class="formula-highlight-label">Teorema dos Ângulos Internos</div>
+          <div class="formula-highlight-math">α + β + γ = 180°</div>
+        </div>
+
+        <!-- Passos Numerados -->
+        <div class="explanation-steps">
+          <div class="step-item">
+            <span class="step-number" aria-hidden="true">1</span>
+            <div class="step-text">
+              <strong>Qualquer triângulo no plano:</strong> Seja ele acutângulo, retângulo ou obtusângulo, os três lados sempre fecham uma região plana com três aberturas angulares.
+            </div>
+          </div>
+          <div class="step-item">
+            <span class="step-number" aria-hidden="true">2</span>
+            <div class="step-text">
+              <strong>A reta paralela de Euclides:</strong> Ao desenhar uma reta auxiliar paralela à base passando pelo vértice oposto, os ângulos da base se projetam no topo como <em>ângulos alternos internos</em>.
+            </div>
+          </div>
+          <div class="step-item">
+            <span class="step-number" aria-hidden="true">3</span>
+            <div class="step-text">
+              <strong>O ângulo raso perfeito:</strong> Os três ângulos adjacentes sobre essa linha formam exatamente uma meia-volta contínua em torno do vértice — ou seja, uma linha reta de <strong>180°</strong>.
+            </div>
+          </div>
+        </div>
+
+        <!-- Pergunta para investigar -->
+        <div class="investigation-box">
+          <div class="investigation-header">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+              <path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5"/>
+              <path d="M9 18h6"/><path d="M10 22h4"/>
+            </svg>
+            <span>Pergunta para investigar</span>
+          </div>
+          <p class="investigation-text">
+            Existe algum triângulo plano com dois ângulos retos (90°) ou dois ângulos obtusos (maiores que 90°)? Arraste os vértices e explique por que os dois lados nunca se encontrariam.
+          </p>
+        </div>
+      </aside>
+
+    </div>
+  </main>
+
+  <!-- Rodapé Institucional -->
+  <footer class="site-footer">
+    <div class="site-footer-inner">
+      <p><strong>Matemática em Movimento</strong> · Recurso educacional aberto e gratuito para professores e estudantes.</p>
+      <div class="footer-links">
+        <a href="../index.html">Todas as Demonstrações</a>
+        <span>•</span>
+        <a href="../geometria/pitagoras.html">Teorema de Pitágoras</a>
+        <span>•</span>
+        <a href="../geometria/relacao_de_euler.html">Relação de Euler</a>
+        <span>•</span>
+        <a href="../geometria/semelhanca_de_triangulos.html">Semelhança de Triângulos</a>
+        <span>•</span>
+        <a href="../trigonometria/circulo.html">Círculo Trigonométrico</a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Lógica Matemática e Interatividade -->
+  <script>
+    /**
+     * Matemática em Movimento — Demonstração 1: Soma dos Ângulos do Triângulo
+     * Vértices arrastáveis com Pointer Events e suporte a touch.
+     * Honestidade numérica: aplicação de correção final para soma rigorosa de 180°.
+     */
+
+    // Coordenadas dos três vértices (A: inferior esquerdo, B: inferior direito, C: topo)
+    const state = {
+      A: { x: 120, y: 310 },
+      B: { x: 480, y: 310 },
+      C: { x: 260, y: 90 },
+      showAuxLine: false,
+      activeHandle: null,
+      presetIndex: 0
+    };
+
+    // Posição inicial de fábrica
+    const defaultCoords = {
+      A: { x: 120, y: 310 },
+      B: { x: 480, y: 310 },
+      C: { x: 260, y: 90 }
+    };
+
+    // Coleção de formas pedagógicas para alternar no botão "Experimentar outra forma"
+    const presets = [
+      { name: "Acutângulo Quase Equilátero", A: { x: 130, y: 320 }, B: { x: 470, y: 320 }, C: { x: 300, y: 80 } },
+      { name: "Retângulo (90° em A)", A: { x: 150, y: 320 }, B: { x: 450, y: 320 }, C: { x: 150, y: 110 } },
+      { name: "Obtusângulo (obtuso no topo)", A: { x: 100, y: 310 }, B: { x: 500, y: 310 }, C: { x: 230, y: 220 } },
+      { name: "Isósceles Alto", A: { x: 170, y: 330 }, B: { x: 430, y: 330 }, C: { x: 300, y: 60 } }
+    ];
+
+    // Elementos do DOM
+    const svg = document.getElementById('triangleSvg');
+    const poly = document.getElementById('trianglePoly');
+    const arcA = document.getElementById('arcA');
+    const arcB = document.getElementById('arcB');
+    const arcC = document.getElementById('arcC');
+    const labelA = document.getElementById('labelA');
+    const labelB = document.getElementById('labelB');
+    const labelC = document.getElementById('labelC');
+    const auxLine = document.getElementById('auxLine');
+    const dynamicOutput = document.getElementById('dynamicSumOutput');
+
+    const handles = {
+      A: { g: document.getElementById('handleA'), halo: document.getElementById('haloA'), node: document.getElementById('nodeA'), text: document.getElementById('nameA') },
+      B: { g: document.getElementById('handleB'), halo: document.getElementById('haloB'), node: document.getElementById('nodeB'), text: document.getElementById('nameB') },
+      C: { g: document.getElementById('handleC'), halo: document.getElementById('haloC'), node: document.getElementById('nodeC'), text: document.getElementById('nameC') }
+    };
+
+    /**
+     * Converte coordenadas de evento de tela para o sistema viewBox do SVG
+     */
+    function getSvgCoordinates(evt) {
+      const pt = svg.createSVGPoint();
+      pt.x = evt.clientX;
+      pt.y = evt.clientY;
+      const screenCTM = svg.getScreenCTM();
+      if (!screenCTM) return { x: 0, y: 0 };
+      const svgP = pt.matrixTransform(screenCTM.inverse());
+      return {
+        // Limita dentro de uma margem segura da área do SVG
+        x: Math.max(30, Math.min(570, svgP.x)),
+        y: Math.max(30, Math.min(370, svgP.y))
+      };
+    }
+
+    /**
+     * Calcula o ângulo no vértice V formado pelos lados VA e VB usando vetores e produto escalar.
+     * Fórmula: cos(theta) = (u . v) / (|u| * |v|)
+     */
+    function calculateCornerAngle(V, P1, P2) {
+      const v1x = P1.x - V.x;
+      const v1y = P1.y - V.y;
+      const v2x = P2.x - V.x;
+      const v2y = P2.y - V.y;
+
+      const dot = v1x * v2x + v1y * v2y;
+      const mag1 = Math.hypot(v1x, v1y);
+      const mag2 = Math.hypot(v2x, v2y);
+
+      if (mag1 === 0 || mag2 === 0) return 60;
+      const cosVal = Math.max(-1, Math.min(1, dot / (mag1 * mag2)));
+      return Math.acos(cosVal) * (180 / Math.PI);
+    }
+
+    /**
+     * Gera o caminho de um arco de ângulo em SVG no vértice V
+     */
+    function buildAngleArcPath(V, P1, P2, radius) {
+      const a1 = Math.atan2(P1.y - V.y, P1.x - V.x);
+      const a2 = Math.atan2(P2.y - V.y, P2.x - V.x);
+
+      let diff = a2 - a1;
+      while (diff < -Math.PI) diff += 2 * Math.PI;
+      while (diff > Math.PI) diff -= 2 * Math.PI;
+
+      // Sentido do arco para o interior do triângulo
+      const cross = (P1.x - V.x) * (P2.y - V.y) - (P1.y - V.y) * (P2.x - V.x);
+      const sweepFlag = cross > 0 ? 1 : 0;
+
+      const startX = V.x + radius * Math.cos(a1);
+      const startY = V.y + radius * Math.sin(a1);
+      const endX = V.x + radius * Math.cos(a2);
+      const endY = V.y + radius * Math.sin(a2);
+
+      return `M ${V.x} ${V.y} L ${startX} ${startY} A ${radius} ${radius} 0 0 ${sweepFlag} ${endX} ${endY} Z`;
+    }
+
+    /**
+     * Posiciona o rótulo do ângulo na bissetriz interna do vértice
+     */
+    function placeAngleLabel(textEl, V, P1, P2, dist, valueDeg) {
+      const a1 = Math.atan2(P1.y - V.y, P1.x - V.x);
+      const a2 = Math.atan2(P2.y - V.y, P2.x - V.x);
+
+      let diff = a2 - a1;
+      while (diff < -Math.PI) diff += 2 * Math.PI;
+      while (diff > Math.PI) diff -= 2 * Math.PI;
+
+      const midAngle = a1 + diff / 2;
+      const lx = V.x + dist * Math.cos(midAngle);
+      const ly = V.y + dist * Math.sin(midAngle);
+
+      textEl.setAttribute('x', lx.toFixed(1));
+      textEl.setAttribute('y', ly.toFixed(1));
+      textEl.textContent = `${Math.round(valueDeg)}°`;
+    }
+
+    /**
+     * Atualiza toda a geometria, cálculos e saídas na tela
+     */
+    function updateScene() {
+      const { A, B, C } = state;
+
+      // 1. Atualiza polígono do triângulo
+      poly.setAttribute('points', `${A.x},${A.y} ${B.x},${B.y} ${C.x},${C.y}`);
+
+      // 2. Atualiza alças de controle
+      for (const [key, h] of Object.entries(handles)) {
+        const pt = state[key];
+        h.halo.setAttribute('cx', pt.x);
+        h.halo.setAttribute('cy', pt.y);
+        h.node.setAttribute('cx', pt.x);
+        h.node.setAttribute('cy', pt.y);
+        h.text.setAttribute('x', pt.x);
+        h.text.setAttribute('y', pt.y);
+      }
+
+      // 3. Linha auxiliar paralela à base AB passando por C
+      if (state.showAuxLine) {
+        auxLine.style.display = 'block';
+        const dx = B.x - A.x;
+        const dy = B.y - A.y;
+        const len = Math.hypot(dx, dy) || 1;
+        const ux = dx / len;
+        const uy = dy / len;
+        auxLine.setAttribute('x1', (C.x - ux * 500).toFixed(1));
+        auxLine.setAttribute('y1', (C.y - uy * 500).toFixed(1));
+        auxLine.setAttribute('x2', (C.x + ux * 500).toFixed(1));
+        auxLine.setAttribute('y2', (C.y + uy * 500).toFixed(1));
+      } else {
+        auxLine.style.display = 'none';
+      }
+
+      // 4. Cálculo matemático dos ângulos internos
+      const rawA = calculateCornerAngle(A, B, C);
+      const rawB = calculateCornerAngle(B, C, A);
+      const rawC = calculateCornerAngle(C, A, B);
+
+      // Honestidade Numérica: Arredonda dois ângulos e ajusta o terceiro para que a soma dê exatamente 180°
+      let degA = Math.round(rawA);
+      let degB = Math.round(rawB);
+      let degC = 180 - degA - degB;
+
+      // Segurança se a deformação for extrema
+      if (degC <= 0) {
+        degC = 1;
+        degB = 179 - degA;
+      }
+
+      // 5. Desenho dos arcos visuais
+      const arcRadius = 45;
+      arcA.setAttribute('d', buildAngleArcPath(A, B, C, arcRadius));
+      arcB.setAttribute('d', buildAngleArcPath(B, C, A, arcRadius));
+      arcC.setAttribute('d', buildAngleArcPath(C, A, B, arcRadius));
+
+      // 6. Rótulos nos vértices
+      placeAngleLabel(labelA, A, B, C, arcRadius + 22, degA);
+      placeAngleLabel(labelB, B, C, A, arcRadius + 22, degB);
+      placeAngleLabel(labelC, C, A, B, arcRadius + 22, degC);
+
+      // 7. Saída dinâmica em destaque
+      dynamicOutput.innerHTML = `
+        <span class="highlight-azul">α = ${degA}°</span> + 
+        <span class="highlight-teal">β = ${degB}°</span> + 
+        <span class="highlight-dourado">γ = ${degC}°</span> = 
+        <strong>180°</strong>
+      `;
+    }
+
+    // ===================================================================
+    // Interatividade com Pointer Events (Suporte unificado a Mouse e Touch)
+    // ===================================================================
+    ['A', 'B', 'C'].forEach(key => {
+      const handle = handles[key].g;
+
+      handle.addEventListener('pointerdown', (evt) => {
+        evt.preventDefault();
+        state.activeHandle = key;
+        handle.setPointerCapture(evt.pointerId);
+        handles[key].halo.setAttribute('r', '30');
+      });
+
+      handle.addEventListener('pointermove', (evt) => {
+        if (state.activeHandle !== key) return;
+        evt.preventDefault();
+        const coords = getSvgCoordinates(evt);
+        state[key].x = coords.x;
+        state[key].y = coords.y;
+        updateScene();
+      });
+
+      const endDrag = (evt) => {
+        if (state.activeHandle === key) {
+          state.activeHandle = null;
+          try {
+            handle.releasePointerCapture(evt.pointerId);
+          } catch (e) {}
+          handles[key].halo.setAttribute('r', '22');
+        }
+      };
+
+      handle.addEventListener('pointerup', endDrag);
+      handle.addEventListener('pointercancel', endDrag);
+
+      // Acessibilidade via teclado (teclas de seta)
+      handle.addEventListener('keydown', (evt) => {
+        const step = evt.shiftKey ? 15 : 5;
+        let moved = false;
+        if (evt.key === 'ArrowLeft') { state[key].x -= step; moved = true; }
+        if (evt.key === 'ArrowRight') { state[key].x += step; moved = true; }
+        if (evt.key === 'ArrowUp') { state[key].y -= step; moved = true; }
+        if (evt.key === 'ArrowDown') { state[key].y += step; moved = true; }
+        if (moved) {
+          evt.preventDefault();
+          updateScene();
+        }
+      });
+    });
+
+    // Botão Restaurar
+    document.getElementById('btnReset').addEventListener('click', () => {
+      state.A = { ...defaultCoords.A };
+      state.B = { ...defaultCoords.B };
+      state.C = { ...defaultCoords.C };
+      state.showAuxLine = false;
+      document.getElementById('btnToggleAux').setAttribute('aria-pressed', 'false');
+      updateScene();
+    });
+
+    // Botão Experimentar Outra Forma (Alterna entre triângulos pedagógicos)
+    document.getElementById('btnAnotherForm').addEventListener('click', () => {
+      state.presetIndex = (state.presetIndex + 1) % presets.length;
+      const target = presets[state.presetIndex];
+      state.A = { ...target.A };
+      state.B = { ...target.B };
+      state.C = { ...target.C };
+      updateScene();
+    });
+
+    // Botão Alternar Reta Auxiliar
+    const btnToggleAux = document.getElementById('btnToggleAux');
+    btnToggleAux.addEventListener('click', () => {
+      state.showAuxLine = !state.showAuxLine;
+      btnToggleAux.setAttribute('aria-pressed', state.showAuxLine.toString());
+      btnToggleAux.classList.toggle('btn-teal', state.showAuxLine);
+      btnToggleAux.classList.toggle('btn-secondary', !state.showAuxLine);
+      updateScene();
+    });
+
+    // Modo Projeção em Tela Cheia
+    document.getElementById('btnFullscreen').addEventListener('click', () => {
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().catch(() => {});
+      } else {
+        document.exitFullscreen().catch(() => {});
+      }
+    });
+
+    // Inicialização da cena
+    updateScene();
+  </script>
+</body>
+</html>

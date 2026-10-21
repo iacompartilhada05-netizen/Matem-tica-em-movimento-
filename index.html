@@ -1,0 +1,973 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Matemática em Movimento · Explore. Manipule. Compreenda.</title>
+  <meta name="description" content="Plataforma gratuita de projeções visuais e laboratórios interativos de Matemática para professores e estudantes do Ensino Fundamental e Médio." />
+  <meta property="og:title" content="Matemática em Movimento" />
+  <meta property="og:description" content="Laboratórios visuais interativos de Matemática para projeção em sala de aula e estudo autônomo." />
+  <meta property="og:type" content="website" />
+  <link rel="stylesheet" href="./css/estilo.css" />
+  <style>
+    .search-box-wrapper {
+      max-width: 520px;
+      margin: 0 auto 24px;
+      position: relative;
+    }
+    .search-input {
+      width: 100%;
+      padding: 12px 18px 12px 42px;
+      border-radius: 24px;
+      border: 1px solid var(--linha);
+      background: #ffffff;
+      font-size: 0.95rem;
+      color: var(--tinta);
+      outline: none;
+      transition: all 0.2s ease;
+      box-shadow: var(--shadow-subtle);
+    }
+    .search-input:focus {
+      border-color: var(--azul);
+      box-shadow: 0 0 0 3px rgba(53, 107, 140, 0.2);
+    }
+    .search-icon {
+      position: absolute;
+      left: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--muted);
+      pointer-events: none;
+    }
+    .teacher-section {
+      margin-top: 56px;
+      background: #ffffff;
+      border: 1px solid var(--linha);
+      border-radius: var(--radius-lg);
+      padding: 32px;
+      box-shadow: var(--shadow-card);
+    }
+    .teacher-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 24px;
+      margin-top: 20px;
+    }
+    .teacher-item {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .teacher-icon-badge {
+      width: 44px;
+      height: 44px;
+      border-radius: 10px;
+      background: var(--teal-light);
+      color: var(--teal);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 6px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header Institucional -->
+  <header class="site-header">
+    <div class="header-container">
+      <a href="./index.html" class="brand-wrapper" title="Matemática em Movimento">
+        <div class="brand-logo" aria-hidden="true">
+          <svg viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 19L12 5l8 14H4z" />
+          </svg>
+        </div>
+        <div class="brand-texts">
+          <h1 class="brand-title">Matemática em Movimento</h1>
+          <span class="brand-slogan">Explore. Manipule. Compreenda.</span>
+        </div>
+      </a>
+      <div class="header-actions">
+        <a href="./matematica-em-movimento.zip" download="matematica-em-movimento.zip" class="btn-header" style="background: var(--teal-light); color: var(--teal-dark); border-color: var(--teal); font-weight: 600;" title="Baixar pacote completo em ZIP para rodar offline ou publicar no GitHub Pages">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>
+          Baixar Pacote ZIP
+        </a>
+        <a href="#catalogo" class="btn-header">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="7" height="7" x="3" y="3" rx="1"/><rect width="7" height="7" x="14" y="3" rx="1"/><rect width="7" height="7" x="14" y="14" rx="1"/><rect width="7" height="7" x="3" y="14" rx="1"/></svg>
+          Laboratórios
+        </a>
+        <a href="#como-usar" class="btn-header">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
+          Guia do Professor
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Conteúdo Principal -->
+  <main class="main-content">
+    
+    <!-- Hero Pedagógico -->
+    <section class="home-hero">
+      <div class="card-eyebrow" style="justify-content: center; margin-bottom: 10px;">
+        <span class="badge-tag badge-fundamental">Recurso Educacional Aberto</span>
+        <span>· ENSINO FUNDAMENTAL E MÉDIO</span>
+      </div>
+      <h2>Projeções Visuais Interativas de Matemática</h2>
+      <p>
+        Projetado para telas em salas de aula e dispositivos dos estudantes. Sem cadastro, sem barreiras: toque, mova os vértices, deslize os coeficientes e compreenda os conceitos no ato.
+      </p>
+    </section>
+
+    <!-- Campo de Busca Rápida -->
+    <div class="search-box-wrapper">
+      <svg class="search-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>
+      </svg>
+      <input type="text" id="searchInput" class="search-input" placeholder="Buscar por tema (ex.: ângulos, Pitágoras, parábola, seno, probabilidade)..." aria-label="Filtrar demonstrações matemáticas" />
+    </div>
+
+    <!-- Barra de Filtros por Área e Nível de Ensino -->
+    <nav class="filters-bar" id="catalogo" aria-label="Filtros de catálogo">
+      <button class="filter-btn active" data-filter="all">Todas as Demonstrações</button>
+      <button class="filter-btn" data-filter="fundamental">Ensino Fundamental</button>
+      <button class="filter-btn" data-filter="medio">Ensino Médio</button>
+      <button class="filter-btn" data-filter="geometria">Geometria</button>
+      <button class="filter-btn" data-filter="funcoes">Funções</button>
+      <button class="filter-btn" data-filter="trigonometria">Trigonometria</button>
+      <button class="filter-btn" data-filter="probabilidade">Probabilidade</button>
+      <button class="filter-btn" data-filter="estatistica">Estatística</button>
+      <button class="filter-btn" data-filter="numeros">Números</button>
+    </nav>
+
+    <!-- Grade com as Demonstrações do Catálogo -->
+    <div class="demo-cards-grid" id="cardsGrid">
+
+      <!-- 1. Soma dos Ângulos do Triângulo -->
+      <a href="geometria/soma-angulos.html" class="home-demo-card" data-area="geometria" data-level="fundamental" data-keywords="triangulo angulos euclides geometria 180 graus">
+        <div class="card-eyebrow">
+          <span class="badge-tag badge-fundamental">Ensino Fundamental</span>
+          <span>· GEOMETRIA</span>
+        </div>
+        <div class="demo-card-thumb" aria-hidden="true">
+          <svg viewBox="0 0 240 140">
+            <polygon points="40,115 200,115 120,25" fill="#356b8c" fill-opacity="0.12" stroke="#356b8c" stroke-width="2" />
+            <circle cx="40" cy="115" r="5" fill="#356b8c" />
+            <circle cx="200" cy="115" r="5" fill="#2c7a78" />
+            <circle cx="120" cy="25" r="5" fill="#d5a64a" />
+            <path d="M 60 115 A 20 20 0 0 0 52 101" fill="none" stroke="#356b8c" stroke-width="2" />
+            <path d="M 180 115 A 20 20 0 0 1 188 101" fill="none" stroke="#2c7a78" stroke-width="2" />
+            <path d="M 110 38 A 20 20 0 0 0 130 38" fill="none" stroke="#d5a64a" stroke-width="2" />
+            <text x="120" y="85" font-size="12" font-weight="800" fill="#18324b" text-anchor="middle">α + β + γ = 180°</text>
+          </svg>
+        </div>
+        <h3 class="demo-card-title">Soma dos Ângulos do Triângulo</h3>
+        <p class="demo-card-desc">
+          Arraste qualquer um dos três vértices do triângulo e comprove visualmente que a soma interna é sempre rigorosamente 180°.
+        </p>
+        <div class="demo-card-footer">
+          <span>Abrir Laboratório</span>
+          <span>→</span>
+        </div>
+      </a>
+
+      <!-- 2. Teorema de Pitágoras -->
+      <a href="geometria/pitagoras.html" class="home-demo-card" data-area="geometria" data-level="fundamental" data-keywords="pitagoras teorema triangulo retangulo hipotenusa catetos a2 b2 c2">
+        <div class="card-eyebrow">
+          <span class="badge-tag badge-fundamental">Ensino Fundamental</span>
+          <span>· GEOMETRIA</span>
+        </div>
+        <div class="demo-card-thumb" aria-hidden="true">
+          <svg viewBox="0 0 240 140">
+            <polygon points="100,95 155,95 100,50" fill="#18324b" fill-opacity="0.12" stroke="#18324b" stroke-width="2" />
+            <!-- Quadrado cateto horizontal -->
+            <rect x="100" y="95" width="55" height="35" fill="#2c7a78" fill-opacity="0.25" stroke="#2c7a78" stroke-width="1.5" />
+            <!-- Quadrado cateto vertical -->
+            <rect x="65" y="50" width="35" height="45" fill="#356b8c" fill-opacity="0.25" stroke="#356b8c" stroke-width="1.5" />
+            <!-- Quadrado hipotenusa -->
+            <polygon points="155,95 185,55 130,15 100,50" fill="#d5a64a" fill-opacity="0.25" stroke="#d5a64a" stroke-width="1.5" />
+            <text x="120" y="80" font-size="11" font-weight="800" fill="#18324b" text-anchor="middle">a² + b² = c²</text>
+          </svg>
+        </div>
+        <h3 class="demo-card-title">Teorema de Pitágoras</h3>
+        <p class="demo-card-desc">
+          Altere os catetos do triângulo retângulo e veja as áreas dos três quadrados externos se atualizarem ao vivo sem sobreposições.
+        </p>
+        <div class="demo-card-footer">
+          <span>Abrir Laboratório</span>
+          <span>→</span>
+        </div>
+      </a>
+
+      <!-- 3. Relação de Euler: V − E + F = 2 -->
+      <a href="geometria/relacao_de_euler.html" class="home-demo-card" data-area="geometria" data-level="fundamental" data-keywords="geometria espacial relacao de euler poliedros vertices arestas faces 3d v e f 2 cubo tetraedro prisma piramide octaedro">
+        <div class="card-eyebrow">
+          <span class="badge-tag badge-fundamental">Fundamental &amp; Médio</span>
+          <span>· GEOMETRIA</span>
+        </div>
+        <div class="demo-card-thumb" aria-hidden="true">
+          <svg viewBox="0 0 240 140">
+            <!-- Cubo isométrico 3D estilizado -->
+            <!-- Face superior (teal suave) -->
+            <polygon points="120,30 170,55 120,80 70,55" fill="#2c7a78" fill-opacity="0.3" stroke="#2c7a78" stroke-width="2" />
+            <!-- Face frontal esquerda (azul) -->
+            <polygon points="70,55 120,80 120,115 70,90" fill="#356b8c" fill-opacity="0.25" stroke="#356b8c" stroke-width="2" />
+            <!-- Face frontal direita (navy) -->
+            <polygon points="120,80 170,55 170,90 120,115" fill="#18324b" fill-opacity="0.2" stroke="#18324b" stroke-width="2" />
+            <!-- Arestas tracejadas traseiras ocultas -->
+            <line x1="70" y1="90" x2="120" y2="65" stroke="#94a3b8" stroke-dasharray="2 2" stroke-width="1.2" />
+            <line x1="170" y1="90" x2="120" y2="65" stroke="#94a3b8" stroke-dasharray="2 2" stroke-width="1.2" />
+            <line x1="120" y1="30" x2="120" y2="65" stroke="#94a3b8" stroke-dasharray="2 2" stroke-width="1.2" />
+            <!-- Vértices destacados em dourado -->
+            <circle cx="120" cy="30" r="4.5" fill="#d5a64a" />
+            <circle cx="170" cy="55" r="4.5" fill="#d5a64a" />
+            <circle cx="120" cy="80" r="4.5" fill="#d5a64a" />
+            <circle cx="70" cy="55" r="4.5" fill="#d5a64a" />
+            <circle cx="120" cy="115" r="4.5" fill="#d5a64a" />
+            <circle cx="70" cy="90" r="4.5" fill="#d5a64a" />
+            <circle cx="170" cy="90" r="4.5" fill="#d5a64a" />
+            <text x="120" y="132" font-size="11" font-weight="900" fill="#18324b" text-anchor="middle">V − E + F = 2</text>
+          </svg>
+        </div>
+        <h3 class="demo-card-title">Relação de Euler: V − E + F = 2</h3>
+        <p class="demo-card-desc">
+          Gire poliedros convexos em 3D, exploda as faces e conte vértices, arestas e faces diretamente na figura para comprovar a invariância topológica.
+        </p>
+        <div class="demo-card-footer">
+          <span>Abrir Laboratório</span>
+          <span>→</span>
+        </div>
+      </a>
+
+      <!-- 4. Semelhança de Triângulos -->
+      <a href="geometria/semelhanca_de_triangulos.html" class="home-demo-card" data-area="geometria" data-level="fundamental" data-keywords="semelhanca de triangulos proporcionalidade homotetia tales escala k razao de semelhanca area k2 aa lll lal angulos congruentes lados proporcionais">
+        <div class="card-eyebrow">
+          <span class="badge-tag badge-fundamental">Ensino Fundamental</span>
+          <span>· GEOMETRIA</span>
+        </div>
+        <div class="demo-card-thumb" aria-hidden="true">
+          <svg viewBox="0 0 240 140">
+            <!-- Triângulo Original ABC (menor, à esquerda) -->
+            <polygon points="35,105 105,105 65,45" fill="#356b8c" fill-opacity="0.18" stroke="#356b8c" stroke-width="2" />
+            <circle cx="35" cy="105" r="3.5" fill="#356b8c" />
+            <circle cx="105" cy="105" r="3.5" fill="#2c7a78" />
+            <circle cx="65" cy="45" r="3.5" fill="#d5a64a" />
+            <text x="70" y="90" font-size="10" font-weight="800" fill="#18324b" text-anchor="middle">ΔABC</text>
+
+            <!-- Linha divisória pontilhada -->
+            <line x1="120" y1="20" x2="120" y2="120" stroke="#dbe3e9" stroke-dasharray="3 3" stroke-width="1.2" />
+
+            <!-- Triângulo Comparado A'B'C' (maior, à direita, k = 1.5) -->
+            <polygon points="135,115 225,115 175,25" fill="#2c7a78" fill-opacity="0.18" stroke="#2c7a78" stroke-width="2" />
+            <circle cx="135" cy="115" r="4" fill="#356b8c" />
+            <circle cx="225" cy="115" r="4" fill="#2c7a78" />
+            <circle cx="175" cy="25" r="4" fill="#d5a64a" />
+            <text x="180" y="85" font-size="11" font-weight="900" fill="#2c7a78" text-anchor="middle">ΔA'B'C'</text>
+            <text x="180" y="102" font-size="9" font-weight="700" fill="#647684" text-anchor="middle">k = 1.5 · Área: k²</text>
+          </svg>
+        </div>
+        <h3 class="demo-card-title">Semelhança de Triângulos</h3>
+        <p class="demo-card-desc">
+          Arraste os vértices, varie o fator de escala k, investigue os critérios (AA, LLL, LAL), sobreponha pelo Teorema de Tales e comprove que a razão de áreas é k².
+        </p>
+        <div class="demo-card-footer">
+          <span>Abrir Laboratório</span>
+          <span>→</span>
+        </div>
+      </a>
+
+      <!-- 5. Sólidos Geométricos: Área, Volume e Perímetro -->
+      <a href="geometria/solidos_geometricos.html" class="home-demo-card" data-area="geometria" data-level="fundamental" data-keywords="solidos geometricos area volume perimetro cubo paralelepipedo prisma piramide cilindro cone esfera planificacao 3d capacidade superficie">
+        <div class="card-eyebrow">
+          <span class="badge-tag badge-fundamental">Fundamental &amp; Médio</span>
+          <span>· GEOMETRIA</span>
+        </div>
+        <div class="demo-card-thumb" aria-hidden="true">
+          <svg viewBox="0 0 240 140">
+            <!-- Cilindro 3D estilizado translúcido com raio e altura -->
+            <!-- Base inferior elipse -->
+            <ellipse cx="70" cy="105" rx="36" ry="14" fill="#2c7a78" fill-opacity="0.25" stroke="#2c7a78" stroke-width="2" />
+            <!-- Laterais -->
+            <line x1="34" y1="45" x2="34" y2="105" stroke="#356b8c" stroke-width="2" />
+            <line x1="106" y1="45" x2="106" y2="105" stroke="#356b8c" stroke-width="2" />
+            <rect x="34" y="45" width="72" height="60" fill="#356b8c" fill-opacity="0.12" stroke="none" />
+            <!-- Base superior elipse -->
+            <ellipse cx="70" cy="45" rx="36" ry="14" fill="#2c7a78" fill-opacity="0.35" stroke="#2c7a78" stroke-width="2" />
+            <!-- Altura interna e raio -->
+            <line x1="70" y1="45" x2="70" y2="105" stroke="#d5a64a" stroke-dasharray="3 2" stroke-width="1.5" />
+            <line x1="70" y1="105" x2="106" y2="105" stroke="#2c7a78" stroke-width="1.8" />
+            <text x="70" y="80" font-size="9" font-weight="800" fill="#d5a64a">h</text>
+            <text x="88" y="118" font-size="9" font-weight="800" fill="#2c7a78">r</text>
+
+            <!-- Cone comparativo ao lado -->
+            <ellipse cx="170" cy="105" rx="32" ry="12" fill="#2c7a78" fill-opacity="0.2" stroke="#2c7a78" stroke-width="1.8" />
+            <polygon points="170,40 138,105 202,105" fill="#356b8c" fill-opacity="0.12" stroke="#356b8c" stroke-width="1.8" stroke-linejoin="round" />
+            <line x1="170" y1="40" x2="170" y2="105" stroke="#d5a64a" stroke-dasharray="3 2" stroke-width="1.5" />
+            <text x="170" y="78" font-size="9" font-weight="800" fill="#d5a64a">h</text>
+
+            <text x="70" y="24" font-size="10" font-weight="800" fill="#18324b" text-anchor="middle">V = A_base · h</text>
+            <text x="170" y="24" font-size="10" font-weight="800" fill="#2c7a78" text-anchor="middle">V = ⅓ A_base · h</text>
+          </svg>
+        </div>
+        <h3 class="demo-card-title">Sólidos Geométricos: Área, Volume e Perímetro</h3>
+        <p class="demo-card-desc">
+          Gire 8 sólidos em 3D, veja o interior translúcido com altura e raio, desdobre a planificação 2D e compare volumes iguais com áreas diferentes.
+        </p>
+        <div class="demo-card-footer">
+          <span>Abrir Laboratório</span>
+          <span>→</span>
+        </div>
+      </a>
+
+      <!-- 6. Teorema de Tales -->
+      <a href="geometria/teorema_de_tales.html" class="home-demo-card" data-area="geometria" data-level="fundamental" data-keywords="teorema de tales retas paralelas feixe transversais proporcionalidade segmentos razao triangulo geometria plana">
+        <div class="card-eyebrow">
+          <span class="badge-tag badge-fundamental">8º e 9º Anos &amp; Médio</span>
+          <span>· GEOMETRIA</span>
+        </div>
+        <div class="demo-card-thumb" aria-hidden="true">
+          <svg viewBox="0 0 240 140">
+            <!-- Três retas paralelas horizontais cinza -->
+            <line x1="20" y1="35" x2="220" y2="35" stroke="#64748b" stroke-width="2" stroke-dasharray="4 3" />
+            <line x1="20" y1="75" x2="220" y2="75" stroke="#18324b" stroke-width="2" />
+            <line x1="20" y1="115" x2="220" y2="115" stroke="#64748b" stroke-width="2" stroke-dasharray="4 3" />
+            <!-- Transversal 1 (Azul) -->
+            <line x1="75" y1="20" x2="55" y2="130" stroke="#2563eb" stroke-width="2.5" stroke-linecap="round" />
+            <!-- Transversal 2 (Verde) -->
+            <line x1="160" y1="20" x2="190" y2="130" stroke="#059669" stroke-width="2.5" stroke-linecap="round" />
+            <!-- Segmentos destacados coloridos -->
+            <line x1="72" y1="35" x2="65" y2="75" stroke="#3b82f6" stroke-width="4.5" stroke-linecap="round" />
+            <line x1="65" y1="75" x2="58" y2="115" stroke="#f59e0b" stroke-width="4.5" stroke-linecap="round" />
+            <line x1="164" y1="35" x2="175" y2="75" stroke="#3b82f6" stroke-width="4.5" stroke-linecap="round" />
+            <line x1="175" y1="75" x2="186" y2="115" stroke="#f59e0b" stroke-width="4.5" stroke-linecap="round" />
+            <!-- Pontos -->
+            <circle cx="72" cy="35" r="3.5" fill="#ffffff" stroke="#2563eb" stroke-width="2" />
+            <circle cx="65" cy="75" r="3.5" fill="#ffffff" stroke="#2563eb" stroke-width="2" />
+            <circle cx="58" cy="115" r="3.5" fill="#ffffff" stroke="#2563eb" stroke-width="2" />
+            <circle cx="164" cy="35" r="3.5" fill="#ffffff" stroke="#059669" stroke-width="2" />
+            <circle cx="175" cy="75" r="3.5" fill="#ffffff" stroke="#059669" stroke-width="2" />
+            <circle cx="186" cy="115" r="3.5" fill="#ffffff" stroke="#059669" stroke-width="2" />
+            <!-- Rótulos -->
+            <text x="38" y="58" font-size="9" font-weight="900" fill="#2563eb">AB</text>
+            <text x="32" y="98" font-size="9" font-weight="900" fill="#f59e0b">BC</text>
+            <text x="198" y="58" font-size="9" font-weight="900" fill="#059669">A'B'</text>
+            <text x="208" y="98" font-size="9" font-weight="900" fill="#f59e0b">B'C'</text>
+            <text x="120" y="24" font-size="10" font-weight="800" fill="#18324b" text-anchor="middle">AB / BC = A'B' / B'C'</text>
+          </svg>
+        </div>
+        <h3 class="demo-card-title">Teorema de Tales</h3>
+        <p class="demo-card-desc">
+          Feixes de retas paralelas cortadas por transversais. Arraste as retas, investigue as razões invariantes, o teorema no triângulo e calcule incógnitas x.
+        </p>
+        <div class="demo-card-footer">
+          <span>Abrir Laboratório</span>
+          <span>→</span>
+        </div>
+      </a>
+
+      <!-- 6. Função Afim -->
+      <a href="funcoes/afim.html" class="home-demo-card" data-area="funcoes" data-level="medio" data-keywords="funcao afim primeiro grau reta coeficiente angular linear y ax b">
+        <div class="card-eyebrow">
+          <span class="badge-tag badge-medio">Ensino Médio</span>
+          <span>· FUNÇÕES</span>
+        </div>
+        <div class="demo-card-thumb" aria-hidden="true">
+          <svg viewBox="0 0 240 140">
+            <line x1="20" y1="70" x2="220" y2="70" stroke="#dbe3e9" stroke-width="1.5" />
+            <line x1="120" y1="15" x2="120" y2="125" stroke="#dbe3e9" stroke-width="1.5" />
+            <!-- Reta y = 0.8x + 10 -->
+            <line x1="40" y1="110" x2="200" y2="30" stroke="#356b8c" stroke-width="3" stroke-linecap="round" />
+            <!-- Triângulo inclinação -->
+            <path d="M 120 70 L 160 70 L 160 50 Z" fill="#e6f4f1" stroke="#2c7a78" stroke-dasharray="3 2" />
+            <circle cx="120" cy="70" r="4" fill="#d5a64a" />
+            <text x="75" y="45" font-size="12" font-weight="800" fill="#18324b">y = ax + b</text>
+          </svg>
+        </div>
+        <h3 class="demo-card-title">Função Afim: y = ax + b</h3>
+        <p class="demo-card-desc">
+          Explore o coeficiente angular e linear com sliders dinâmicos, acompanhando a inclinação, raiz, intercepto e a tabela de valores.
+        </p>
+        <div class="demo-card-footer">
+          <span>Abrir Laboratório</span>
+          <span>→</span>
+        </div>
+      </a>
+
+      <!-- 4. Função Quadrática -->
+      <a href="funcoes/quadratica.html" class="home-demo-card" data-area="funcoes" data-level="medio" data-keywords="funcao quadratica parabola segundo grau vertice delta raizes simetria">
+        <div class="card-eyebrow">
+          <span class="badge-tag badge-medio">Ensino Médio</span>
+          <span>· FUNÇÕES</span>
+        </div>
+        <div class="demo-card-thumb" aria-hidden="true">
+          <svg viewBox="0 0 240 140">
+            <line x1="20" y1="80" x2="220" y2="80" stroke="#dbe3e9" stroke-width="1.5" />
+            <line x1="120" y1="15" x2="120" y2="125" stroke="#dbe3e9" stroke-width="1.5" />
+            <!-- Parábola -->
+            <path d="M 40 20 Q 120 135 200 20" fill="none" stroke="#356b8c" stroke-width="3" stroke-linecap="round" />
+            <!-- Eixo de simetria vertical -->
+            <line x1="120" y1="15" x2="120" y2="125" stroke="#d5a64a" stroke-dasharray="3 3" stroke-width="1.5" />
+            <circle cx="120" cy="107" r="4.5" fill="#2c7a78" />
+            <circle cx="70" cy="80" r="4" fill="#c94a4a" />
+            <circle cx="170" cy="80" r="4" fill="#c94a4a" />
+            <text x="120" y="45" font-size="12" font-weight="800" fill="#18324b" text-anchor="middle">y = ax² + bx + c</text>
+          </svg>
+        </div>
+        <h3 class="demo-card-title">Função Quadrática e a Parábola</h3>
+        <p class="demo-card-desc">
+          Manipule a concavidade, o vértice e visualize o discriminante Δ definindo as duas raízes reais, a raiz dupla ou a ausência de raízes.
+        </p>
+        <div class="demo-card-footer">
+          <span>Abrir Laboratório</span>
+          <span>→</span>
+        </div>
+      </a>
+
+      <!-- 7. Balança de Equações (1º Grau) -->
+      <a href="funcoes/balanca_de_equacoes.html" class="home-demo-card" data-area="funcoes" data-level="fundamental" data-keywords="balanca de equacoes primeiro grau algebra equacao linear incognita x pesos equilibrio operacao inversa 1 grau balanca">
+        <div class="card-eyebrow">
+          <span class="badge-tag badge-fundamental">7º e 8º Anos</span>
+          <span>· ÁLGEBRA E EQUAÇÕES</span>
+        </div>
+        <div class="demo-card-thumb" aria-hidden="true">
+          <svg viewBox="0 0 240 140">
+            <!-- Balança de pratos estilizada -->
+            <rect x="105" y="115" width="30" height="8" rx="2" fill="#18324b" />
+            <path d="M 118 115 L 118 45 L 122 45 L 122 115 Z" fill="#18324b" />
+            <rect x="40" y="44" width="160" height="5" rx="2.5" fill="#475569" />
+            <polygon points="119,45 120,28 121,45" fill="#dc2626" />
+            <circle cx="120" cy="46" r="4" fill="#d5a64a" />
+            <!-- Prato esquerdo com caixa x e peso -->
+            <line x1="55" y1="46" x2="35" y2="85" stroke="#64748b" stroke-width="1.2" stroke-dasharray="2 1.5" />
+            <line x1="55" y1="46" x2="75" y2="85" stroke="#64748b" stroke-width="1.2" stroke-dasharray="2 1.5" />
+            <ellipse cx="55" cy="86" rx="24" ry="5" fill="#94a3b8" stroke="#475569" stroke-width="1.5" />
+            <rect x="42" y="70" width="15" height="15" rx="2" fill="#2c7a78" stroke="#1b5352" stroke-width="1" />
+            <text x="49.5" y="81" font-size="9" font-weight="900" fill="#ffffff" text-anchor="middle">x</text>
+            <rect x="60" y="74" width="10" height="11" rx="1.5" fill="#d5a64a" stroke="#a17826" stroke-width="1" />
+            <text x="65" y="82.5" font-size="7" font-weight="900" fill="#ffffff" text-anchor="middle">1</text>
+            <!-- Prato direito com pesos -->
+            <line x1="185" y1="46" x2="165" y2="85" stroke="#64748b" stroke-width="1.2" stroke-dasharray="2 1.5" />
+            <line x1="185" y1="46" x2="205" y2="85" stroke="#64748b" stroke-width="1.2" stroke-dasharray="2 1.5" />
+            <ellipse cx="185" cy="86" rx="24" ry="5" fill="#94a3b8" stroke="#475569" stroke-width="1.5" />
+            <rect x="174" y="73" width="10" height="12" rx="1.5" fill="#d5a64a" stroke="#a17826" stroke-width="1" />
+            <text x="179" y="82" font-size="7" font-weight="900" fill="#ffffff" text-anchor="middle">5</text>
+            <rect x="187" y="73" width="10" height="12" rx="1.5" fill="#d5a64a" stroke="#a17826" stroke-width="1" />
+            <text x="192" y="82" font-size="7" font-weight="900" fill="#ffffff" text-anchor="middle">5</text>
+            <text x="120" y="105" font-size="10" font-weight="800" fill="#18324b" text-anchor="middle">x + 1 = 10 ⟹ x = 9</text>
+          </svg>
+        </div>
+        <h3 class="demo-card-title">Balança de Equações: Equação do 1º Grau</h3>
+        <p class="demo-card-desc">
+          Entenda a equação como um equilíbrio físico dinâmico. Adicione pacotes x e pesos, equilibre os pratos e resolva passo a passo com operações inversas.
+        </p>
+        <div class="demo-card-footer">
+          <span>Abrir Laboratório</span>
+          <span>→</span>
+        </div>
+      </a>
+
+      <!-- 8. Juros Simples × Juros Compostos -->
+      <a href="funcoes/juros_simples_compostos.html" class="home-demo-card" data-area="funcoes" data-level="fundamental" data-keywords="juros simples compostos educacao financeira matematica financeira montante capital taxa tempo linear exponencial">
+        <div class="card-eyebrow">
+          <span class="badge-tag badge-fundamental">9º Ano &amp; Médio</span>
+          <span>· EDUCAÇÃO FINANCEIRA</span>
+        </div>
+        <div class="demo-card-thumb" aria-hidden="true">
+          <svg viewBox="0 0 240 140">
+            <!-- Eixos do gráfico -->
+            <line x1="30" y1="115" x2="220" y2="115" stroke="#dbe3e9" stroke-width="1.5" />
+            <line x1="30" y1="20" x2="30" y2="115" stroke="#dbe3e9" stroke-width="1.5" />
+            <!-- Área preenchida entre a curva e a reta (diferença) -->
+            <path d="M 30 95 L 80 82 L 130 69 L 180 56 L 210 48 L 210 32 L 180 43 L 130 63 L 80 80 L 30 95 Z" fill="#10b981" fill-opacity="0.18" />
+            <!-- Linha Juros Simples (Reta azul) -->
+            <line x1="30" y1="95" x2="210" y2="48" stroke="#2563eb" stroke-width="2.5" stroke-linecap="round" />
+            <!-- Linha Juros Compostos (Curva verde) -->
+            <path d="M 30 95 Q 120 78 210 32" fill="none" stroke="#059669" stroke-width="3" stroke-linecap="round" />
+            <!-- Pontos nos finais -->
+            <circle cx="30" cy="95" r="3.5" fill="#18324b" />
+            <circle cx="210" cy="48" r="4" fill="#2563eb" />
+            <circle cx="210" cy="32" r="4" fill="#059669" />
+            <!-- Rótulos -->
+            <text x="35" y="108" font-size="8" font-weight="700" fill="#64748b">C_0</text>
+            <text x="145" y="42" font-size="9" font-weight="800" fill="#059669">Compostos (Curva)</text>
+            <text x="135" y="78" font-size="9" font-weight="800" fill="#2563eb">Simples (Reta)</text>
+          </svg>
+        </div>
+        <h3 class="demo-card-title">Juros Simples × Juros Compostos</h3>
+        <p class="demo-card-desc">
+          Compare o crescimento linear com o exponencial. Varie capital, taxa e meses, visualize as curvas se distanciando e simule cenários da vida real.
+        </p>
+        <div class="demo-card-footer">
+          <span>Abrir Laboratório</span>
+          <span>→</span>
+        </div>
+      </a>
+
+      <!-- 5. Círculo Trigonométrico -->
+      <a href="trigonometria/circulo.html" class="home-demo-card" data-area="trigonometria" data-level="medio" data-keywords="circulo trigonometrico seno cosseno radianos graus unitario quadrantes">
+        <div class="card-eyebrow">
+          <span class="badge-tag badge-medio">Ensino Médio</span>
+          <span>· TRIGONOMETRIA</span>
+        </div>
+        <div class="demo-card-thumb" aria-hidden="true">
+          <svg viewBox="0 0 240 140">
+            <line x1="30" y1="70" x2="210" y2="70" stroke="#dbe3e9" stroke-width="1.5" />
+            <line x1="120" y1="10" x2="120" y2="130" stroke="#dbe3e9" stroke-width="1.5" />
+            <circle cx="120" cy="70" r="50" fill="none" stroke="#18324b" stroke-width="2" />
+            <!-- Projeções -->
+            <line x1="120" y1="70" x2="155" y2="70" stroke="#356b8c" stroke-width="3" />
+            <line x1="120" y1="70" x2="120" y2="35" stroke="#2c7a78" stroke-width="3" />
+            <line x1="120" y1="70" x2="155" y2="35" stroke="#d5a64a" stroke-width="2" />
+            <circle cx="155" cy="35" r="5" fill="#d5a64a" />
+            <text x="180" y="35" font-size="11" font-weight="800" fill="#18324b">P(cos, sen)</text>
+          </svg>
+        </div>
+        <h3 class="demo-card-title">Círculo Trigonométrico</h3>
+        <p class="demo-card-desc">
+          Arraste o ponto unitário pela circunferência, decomponha o seno e cosseno nos eixos e compreenda a alternância dos 4 quadrantes.
+        </p>
+        <div class="demo-card-footer">
+          <span>Abrir Laboratório</span>
+          <span>→</span>
+        </div>
+      </a>
+
+      <!-- 6. Trigonometria no Triângulo Retângulo -->
+      <a href="trigonometria/triangulo_retangulo.html" class="home-demo-card" data-area="trigonometria" data-level="fundamental" data-keywords="trigonometria triangulo retangulo seno cosseno tangente angulos notaveis 30 45 60 hipotenusa cateto oposto adjacente radicais">
+        <div class="card-eyebrow">
+          <span class="badge-tag badge-fundamental">9º Ano &amp; Médio</span>
+          <span>· TRIGONOMETRIA</span>
+        </div>
+        <div class="demo-card-thumb" aria-hidden="true">
+          <svg viewBox="0 0 240 140">
+            <!-- Triângulo Retângulo ilustrado -->
+            <polygon points="50,110 180,110 180,35" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5" />
+            <!-- Símbolo de 90° -->
+            <path d="M 166 110 L 166 96 L 180 96" fill="none" stroke="#18324b" stroke-width="1.5" />
+            <circle cx="173" cy="103" r="1.5" fill="#18324b" />
+            <!-- Arco do ângulo theta -->
+            <path d="M 50 110 L 75 110 A 25 25 0 0 0 71 96 Z" fill="#fef8eb" stroke="#d5a64a" stroke-width="1.5" />
+            <!-- Lados coloridos -->
+            <line x1="50" y1="110" x2="180" y2="110" stroke="#356b8c" stroke-width="3" stroke-linecap="round" />
+            <line x1="180" y1="110" x2="180" y2="35" stroke="#d5a64a" stroke-width="3" stroke-linecap="round" />
+            <line x1="50" y1="110" x2="180" y2="35" stroke="#2c7a78" stroke-width="3" stroke-linecap="round" />
+            <!-- Vértices -->
+            <circle cx="50" cy="110" r="3.5" fill="#9c731e" />
+            <circle cx="180" cy="110" r="3.5" fill="#18324b" />
+            <circle cx="180" cy="35" r="4.5" fill="#2c7a78" />
+            <text x="120" y="24" font-size="11" font-weight="900" fill="#18324b" text-anchor="middle">sen θ = CO/H · 30° 45° 60°</text>
+            <text x="115" y="125" font-size="9" font-weight="700" fill="#356b8c" text-anchor="middle">Cateto Adjacente</text>
+            <text x="195" y="75" font-size="9" font-weight="700" fill="#9c731e">CO</text>
+          </svg>
+        </div>
+        <h3 class="demo-card-title">Trigonometria no Triângulo Retângulo</h3>
+        <p class="demo-card-desc">
+          Calcule seno, cosseno e tangente com triângulo retângulo manipulável e domine a tabela e os radicais dos ângulos notáveis 30°, 45° e 60°.
+        </p>
+        <div class="demo-card-footer">
+          <span>Abrir Laboratório</span>
+          <span>→</span>
+        </div>
+      </a>
+
+      <!-- 6. Probabilidade: Moedas e Dados (Pesos e Grandes Números) -->
+      <a href="probabilidade/lei_dos_grandes_numeros.html" class="home-demo-card" data-area="probabilidade" data-level="medio" data-keywords="probabilidade estatistica moeda dado histograma grandes numeros aleatorio pesos viciado">
+        <div class="card-eyebrow">
+          <span class="badge-tag badge-medio">Ensino Médio</span>
+          <span>· PROBABILIDADE</span>
+        </div>
+        <div class="demo-card-thumb" aria-hidden="true">
+          <svg viewBox="0 0 240 140">
+            <line x1="20" y1="115" x2="220" y2="115" stroke="#dbe3e9" stroke-width="1.5" />
+            <!-- Linha teórica pontilhada -->
+            <line x1="20" y1="65" x2="220" y2="65" stroke="#d5a64a" stroke-dasharray="4 3" stroke-width="2" />
+            <!-- Barras convergentes -->
+            <rect x="50" y="66" width="35" height="49" fill="#2c7a78" rx="3" />
+            <rect x="95" y="64" width="35" height="51" fill="#356b8c" rx="3" />
+            <rect x="140" y="65" width="35" height="50" fill="#d5a64a" rx="3" />
+            <text x="120" y="40" font-size="11" font-weight="800" fill="#9c731e" text-anchor="middle">Teórico / Ponderado</text>
+          </svg>
+        </div>
+        <h3 class="demo-card-title">Probabilidade: Lei dos Grandes Números</h3>
+        <p class="demo-card-desc">
+          Defina pesos para moedas e dados justos ou viciados, dispare milhares de lançamentos e veja a convergência das frequências para a teoria.
+        </p>
+        <div class="demo-card-footer">
+          <span>Abrir Laboratório</span>
+          <span>→</span>
+        </div>
+      </a>
+
+      <!-- 7. Estatística: Média, Mediana e Moda -->
+      <a href="estatistica/media_mediana_moda.html" class="home-demo-card" data-area="estatistica" data-level="fundamental" data-keywords="estatistica media mediana moda amplitude outlier reta numerica dotplot">
+        <div class="card-eyebrow">
+          <span class="badge-tag badge-fundamental">Fundamental &amp; Médio</span>
+          <span>· ESTATÍSTICA</span>
+        </div>
+        <div class="demo-card-thumb" aria-hidden="true">
+          <svg viewBox="0 0 240 140">
+            <line x1="20" y1="90" x2="220" y2="90" stroke="#18324b" stroke-width="2" />
+            <!-- Pontos na reta -->
+            <circle cx="50" cy="80" r="7" fill="#2c7a78" />
+            <circle cx="80" cy="80" r="7" fill="#2c7a78" />
+            <circle cx="120" cy="80" r="7" fill="#d5a64a" />
+            <circle cx="120" cy="62" r="7" fill="#d5a64a" />
+            <circle cx="160" cy="80" r="7" fill="#2c7a78" />
+            <circle cx="190" cy="80" r="7" fill="#c94a4a" />
+            <!-- Marcadores média e mediana -->
+            <line x1="120" y1="20" x2="120" y2="90" stroke="#2c7a78" stroke-width="2" stroke-dasharray="3 2" />
+            <line x1="128" y1="20" x2="128" y2="90" stroke="#356b8c" stroke-width="2" stroke-dasharray="3 2" />
+            <text x="120" y="115" font-size="11" font-weight="800" fill="#18324b" text-anchor="middle">Média vs. Mediana</text>
+          </svg>
+        </div>
+        <h3 class="demo-card-title">Média, Mediana e Moda</h3>
+        <p class="demo-card-desc">
+          Arraste pontos na reta numérica, repita valores para formar modas e insira valores extremos para comprovar a resistência da mediana.
+        </p>
+        <div class="demo-card-footer">
+          <span>Abrir Laboratório</span>
+          <span>→</span>
+        </div>
+      </a>
+
+      <!-- 8. Estatística: Dispersão e Desvio Padrão -->
+      <a href="estatistica/dispersao.html" class="home-demo-card" data-area="estatistica" data-level="medio" data-keywords="estatistica dispersao desvio padrao variabilidade amplitude mesma media">
+        <div class="card-eyebrow">
+          <span class="badge-tag badge-medio">Ensino Médio</span>
+          <span>· ESTATÍSTICA</span>
+        </div>
+        <div class="demo-card-thumb" aria-hidden="true">
+          <svg viewBox="0 0 240 140">
+            <!-- Conjunto A concentrado -->
+            <rect x="90" y="30" width="60" height="25" fill="#2c7a78" fill-opacity="0.2" rx="4" />
+            <line x1="20" y1="42" x2="220" y2="42" stroke="#dbe3e9" stroke-width="1.5" />
+            <circle cx="105" cy="42" r="5" fill="#2c7a78" />
+            <circle cx="120" cy="42" r="5" fill="#2c7a78" />
+            <circle cx="135" cy="42" r="5" fill="#2c7a78" />
+            <!-- Conjunto B disperso -->
+            <rect x="40" y="80" width="160" height="25" fill="#356b8c" fill-opacity="0.2" rx="4" />
+            <line x1="20" y1="92" x2="220" y2="92" stroke="#dbe3e9" stroke-width="1.5" />
+            <circle cx="50" cy="92" r="5" fill="#356b8c" />
+            <circle cx="120" cy="92" r="5" fill="#356b8c" />
+            <circle cx="190" cy="92" r="5" fill="#356b8c" />
+            <!-- Linha da média em 120 -->
+            <line x1="120" y1="20" x2="120" y2="115" stroke="#18324b" stroke-dasharray="3 3" stroke-width="1.5" />
+            <text x="120" y="130" font-size="10" font-weight="800" fill="#18324b" text-anchor="middle">Mesma Média · Desvios Opostos</text>
+          </svg>
+        </div>
+        <h3 class="demo-card-title">Dispersão: Mesma Média, Dados Diferentes</h3>
+        <p class="demo-card-desc">
+          Compare dois grupos com rigorosamente a mesma média (50.0), mas com desvios padrão contrastantes, compreendendo o risco e a variabilidade.
+        </p>
+        <div class="demo-card-footer">
+          <span>Abrir Laboratório</span>
+          <span>→</span>
+        </div>
+      </a>
+
+      <!-- 9. Estatística: Da Tabela ao Gráfico -->
+      <a href="estatistica/graficos_estatisticos.html" class="home-demo-card" data-area="estatistica" data-level="fundamental" data-keywords="estatistica graficos barras setores pizza histograma frequencia tabela">
+        <div class="card-eyebrow">
+          <span class="badge-tag badge-fundamental">Fundamental &amp; Médio</span>
+          <span>· ESTATÍSTICA</span>
+        </div>
+        <div class="demo-card-thumb" aria-hidden="true">
+          <svg viewBox="0 0 240 140">
+            <!-- Mini pizza -->
+            <circle cx="65" cy="70" r="35" fill="#2c7a78" />
+            <path d="M 65 70 L 65 35 A 35 35 0 0 1 100 70 Z" fill="#d5a64a" />
+            <!-- Mini barras -->
+            <rect x="130" y="55" width="16" height="45" fill="#356b8c" rx="2" />
+            <rect x="155" y="35" width="16" height="65" fill="#2c7a78" rx="2" />
+            <rect x="180" y="65" width="16" height="35" fill="#d5a64a" rx="2" />
+            <line x1="120" y1="100" x2="205" y2="100" stroke="#18324b" stroke-width="1.5" />
+            <text x="120" y="125" font-size="11" font-weight="800" fill="#18324b" text-anchor="middle">Barras · Setores · Histograma</text>
+          </svg>
+        </div>
+        <h3 class="demo-card-title">Da Tabela ao Gráfico</h3>
+        <p class="demo-card-desc">
+          Edite contagens e porcentagens em uma tabela de frequência e gere em tempo real gráficos de barras, pizza (setores) e histograma contínuo.
+        </p>
+        <div class="demo-card-footer">
+          <span>Abrir Laboratório</span>
+          <span>→</span>
+        </div>
+      </a>
+
+      <!-- 10. Frações Equivalentes -->
+      <a href="numeros/fracoes_equivalentes.html" class="home-demo-card" data-area="numeros" data-level="fundamental" data-keywords="fracoes equivalentes barra circulo pizza numerador denominador simplificacao decimal porcentagem">
+        <div class="card-eyebrow">
+          <span class="badge-tag badge-fundamental">Ensino Fundamental</span>
+          <span>· NÚMEROS</span>
+        </div>
+        <div class="demo-card-thumb" aria-hidden="true">
+          <svg viewBox="0 0 240 140">
+            <!-- Barra subdividida -->
+            <rect x="25" y="25" width="90" height="26" fill="#f1f5f9" stroke="#cbd5e1" rx="4" />
+            <rect x="25" y="25" width="45" height="26" fill="#2c7a78" rx="4" />
+            <line x1="70" y1="25" x2="70" y2="51" stroke="#18324b" stroke-width="2" />
+            <!-- Barra equivalente 2/4 -->
+            <rect x="25" y="60" width="90" height="26" fill="#f1f5f9" stroke="#cbd5e1" rx="4" />
+            <rect x="25" y="60" width="45" height="26" fill="#356b8c" rx="4" />
+            <line x1="47.5" y1="60" x2="47.5" y2="86" stroke="#18324b" stroke-width="1.5" />
+            <line x1="70" y1="60" x2="70" y2="86" stroke="#18324b" stroke-width="1.5" />
+            <line x1="92.5" y1="60" x2="92.5" y2="86" stroke="#18324b" stroke-width="1.5" />
+            <!-- Círculo pizza 1/2 -->
+            <circle cx="175" cy="55" r="32" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1.5" />
+            <path d="M 175 55 L 175 23 A 32 32 0 0 1 175 87 Z" fill="#d5a64a" />
+            <text x="120" y="118" font-size="11" font-weight="800" fill="#18324b" text-anchor="middle">1/2 = 2/4 = 50% = 0,5</text>
+          </svg>
+        </div>
+        <h3 class="demo-card-title">Frações Equivalentes</h3>
+        <p class="demo-card-desc">
+          Manipule o numerador e o denominador, compare a representação em barra retangular e em círculo (pizza) e veja réguas de frações equivalentes perfeitamente alinhadas.
+        </p>
+        <div class="demo-card-footer">
+          <span>Abrir Laboratório</span>
+          <span>→</span>
+        </div>
+      </a>
+
+      <!-- 11. Operações com Frações -->
+      <a href="numeros/operacoes_com_fracoes.html" class="home-demo-card" data-area="numeros" data-level="fundamental" data-keywords="operacoes fracoes soma subtracao mmc denominador comum adicao fatias">
+        <div class="card-eyebrow">
+          <span class="badge-tag badge-fundamental">Ensino Fundamental</span>
+          <span>· NÚMEROS</span>
+        </div>
+        <div class="demo-card-thumb" aria-hidden="true">
+          <svg viewBox="0 0 240 140">
+            <!-- Barra A (1/2) -->
+            <rect x="25" y="20" width="85" height="20" fill="#f1f5f9" stroke="#cbd5e1" rx="3" />
+            <rect x="25" y="20" width="42.5" height="20" fill="#356b8c" rx="3" />
+            <text x="120" y="35" font-size="12" font-weight="800" fill="#18324b" text-anchor="middle">+</text>
+            <!-- Barra B (1/3) -->
+            <rect x="130" y="20" width="85" height="20" fill="#f1f5f9" stroke="#cbd5e1" rx="3" />
+            <rect x="130" y="20" width="28.3" height="20" fill="#2c7a78" rx="3" />
+            <!-- Barra Resultado (5/6) com subdivisões em 6 fatias -->
+            <rect x="35" y="60" width="170" height="26" fill="#f1f5f9" stroke="#18324b" stroke-width="1.5" rx="4" />
+            <!-- Bloco 3/6 azul -->
+            <rect x="35" y="60" width="85" height="26" fill="#356b8c" rx="4" />
+            <!-- Bloco 2/6 teal -->
+            <rect x="120" y="60" width="56.6" height="26" fill="#2c7a78" rx="2" />
+            <!-- Linhas verticais do MMC 6 -->
+            <line x1="63.3" y1="60" x2="63.3" y2="86" stroke="#d5a64a" stroke-dasharray="2 2" stroke-width="1.5" />
+            <line x1="91.6" y1="60" x2="91.6" y2="86" stroke="#d5a64a" stroke-dasharray="2 2" stroke-width="1.5" />
+            <line x1="120" y1="60" x2="120" y2="86" stroke="#18324b" stroke-width="2" />
+            <line x1="148.3" y1="60" x2="148.3" y2="86" stroke="#d5a64a" stroke-dasharray="2 2" stroke-width="1.5" />
+            <line x1="176.6" y1="60" x2="176.6" y2="86" stroke="#d5a64a" stroke-dasharray="2 2" stroke-width="1.5" />
+            <text x="120" y="112" font-size="11" font-weight="800" fill="#2c7a78" text-anchor="middle">1/2 + 1/3 = 3/6 + 2/6 = 5/6</text>
+          </svg>
+        </div>
+        <h3 class="demo-card-title">Operações com Frações (Soma e Subtração)</h3>
+        <p class="demo-card-desc">
+          Entenda na prática por que precisamos do MMC: visualize a conversão para fatias idênticas e acompanhe a adição e a subtração com compensação geométrica exata.
+        </p>
+        <div class="demo-card-footer">
+          <span>Abrir Laboratório</span>
+          <span>→</span>
+        </div>
+      </a>
+
+      <!-- 15. Conjuntos Numéricos: N, Z, Q, I e R -->
+      <a href="numeros/conjuntos_numericos.html" class="home-demo-card" data-area="numeros" data-level="fundamental" data-keywords="conjuntos numericos naturais inteiros racionais irracionais reais venn inclusao dizima periodica reta real n z q i r">
+        <div class="card-eyebrow">
+          <span class="badge-tag badge-fundamental">Fundamental &amp; Médio</span>
+          <span>· NÚMEROS</span>
+        </div>
+        <div class="demo-card-thumb" aria-hidden="true">
+          <svg viewBox="0 0 240 140">
+            <!-- Retângulo dos Reais R -->
+            <rect x="15" y="15" width="210" height="110" rx="8" fill="#f8fafc" stroke="#18324b" stroke-width="1.8" />
+            <text x="25" y="32" font-size="11" font-weight="900" fill="#18324b">ℝ</text>
+            <!-- Bloco dos Racionais Q -->
+            <rect x="25" y="38" width="135" height="80" rx="6" fill="#fef3c7" stroke="#d97706" stroke-width="1.5" />
+            <text x="32" y="52" font-size="10" font-weight="900" fill="#d97706">ℚ</text>
+            <!-- Bloco dos Inteiros Z -->
+            <rect x="35" y="58" width="105" height="55" rx="5" fill="#ebf8ff" stroke="#2b6cb0" stroke-width="1.3" />
+            <text x="42" y="72" font-size="9" font-weight="900" fill="#2b6cb0">ℤ</text>
+            <!-- Bloco dos Naturais N -->
+            <rect x="45" y="78" width="70" height="30" rx="4" fill="#e8f5e9" stroke="#2e7d32" stroke-width="1.2" />
+            <text x="52" y="96" font-size="10" font-weight="900" fill="#2e7d32">ℕ</text>
+            <!-- Bloco dos Irracionais I (disjunto) -->
+            <rect x="168" y="38" width="50" height="80" rx="6" fill="#f5f3ff" stroke="#7c3aed" stroke-width="1.5" />
+            <text x="175" y="55" font-size="11" font-weight="900" fill="#7c3aed">𝕀</text>
+            <text x="193" y="78" font-size="9" font-weight="800" fill="#7c3aed" text-anchor="middle">√2, π</text>
+            <text x="193" y="98" font-size="8" font-weight="700" fill="#7c3aed" text-anchor="middle">não repete</text>
+          </svg>
+        </div>
+        <h3 class="demo-card-title">Conjuntos Numéricos: N, Z, Q, I e R</h3>
+        <p class="demo-card-desc">
+          Explore o diagrama de Venn de inclusão, classifique números no jogo interativo com justificativas passo a passo, investigue dízimas periódicas e dê zoom na reta real.
+        </p>
+        <div class="demo-card-footer">
+          <span>Abrir Laboratório</span>
+          <span>→</span>
+        </div>
+      </a>
+
+    </div>
+
+    <!-- Seção de Guia para Professores -->
+    <section class="teacher-section" id="como-usar">
+      <div class="card-eyebrow">
+        <span>METODOLOGIA PEDAGÓGICA</span>
+      </div>
+      <h2 style="font-size: 1.6rem; font-weight: 800; color: var(--navy); margin-bottom: 8px;">
+        Como usar em sala de aula
+      </h2>
+      <p style="color: var(--muted); font-size: 0.95rem; max-width: 800px;">
+        A plataforma foi desenhada especificamente para facilitar o momento de ensino e aprendizagem com projetor ou lousa interativa.
+      </p>
+
+      <div class="teacher-grid">
+        <div class="teacher-item">
+          <div class="teacher-icon-badge" aria-hidden="true">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="20" height="14" x="2" y="3" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+          </div>
+          <h4 style="font-size: 1.05rem; font-weight: 700; color: var(--navy);">1. Modo Projeção</h4>
+          <p style="font-size: 0.88rem; color: var(--muted); line-height: 1.45;">
+            Clique no botão <strong>"Projeção"</strong> no canto superior de qualquer laboratório para expandir em tela cheia na lousa digital ou retroprojetor com alto contraste.
+          </p>
+        </div>
+
+        <div class="teacher-item">
+          <div class="teacher-icon-badge" aria-hidden="true">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5"/><path d="M9 18h6"/><path d="M10 22h4"/></svg>
+          </div>
+          <h4 style="font-size: 1.05rem; font-weight: 700; color: var(--navy);">2. Pergunta Disparadora</h4>
+          <p style="font-size: 0.88rem; color: var(--muted); line-height: 1.45;">
+            Use a caixa <strong>"Pergunta para investigar"</strong> antes de revelar a teoria. Provoque os alunos a deduzirem o teorema através da manipulação dos vértices.
+          </p>
+        </div>
+
+        <div class="teacher-item">
+          <div class="teacher-icon-badge" aria-hidden="true">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20"/><path d="m17 5-5-3-5 3"/><path d="m17 19-5 3-5-3"/></svg>
+          </div>
+          <h4 style="font-size: 1.05rem; font-weight: 700; color: var(--navy);">3. Honestidade Numérica</h4>
+          <p style="font-size: 0.88rem; color: var(--muted); line-height: 1.45;">
+            Os algoritmos aplicam compensação aritmética em tempo real para garantir que identidades como α + β + γ = 180° e sen² + cos² = 1 nunca apresentem resíduos de arredondamento confusos.
+          </p>
+        </div>
+
+        <div class="teacher-item">
+          <div class="teacher-icon-badge" aria-hidden="true" style="background: #e6f4ea; color: #137333;">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>
+          </div>
+          <h4 style="font-size: 1.05rem; font-weight: 700; color: var(--navy);">4. Uso Offline & GitHub Pages</h4>
+          <p style="font-size: 0.88rem; color: var(--muted); line-height: 1.45;">
+            Baixe o <a href="./matematica-em-movimento.zip" download="matematica-em-movimento.zip" style="color: var(--teal); font-weight: 600; text-decoration: underline;">pacote completo em ZIP</a> para abrir em qualquer computador sem internet ou hospede 100% grátis no GitHub Pages.
+          </p>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Rodapé Institucional -->
+  <footer class="site-footer">
+    <div class="site-footer-inner">
+      <p><strong>Matemática em Movimento</strong> · Recurso educacional aberto e 100% gratuito para professores e estudantes.</p>
+      <p style="font-size: 0.82rem; color: var(--muted);">Funciona sem instalação e offline em qualquer navegador moderno (desktop, tablet ou celular).</p>
+      <div class="footer-links">
+        <a href="#catalogo">Início do Catálogo</a>
+        <span>•</span>
+        <a href="geometria/soma-angulos.html">Soma dos Ângulos</a>
+        <span>•</span>
+        <a href="geometria/pitagoras.html">Teorema de Pitágoras</a>
+        <span>•</span>
+        <a href="geometria/relacao_de_euler.html">Relação de Euler</a>
+        <span>•</span>
+        <a href="geometria/semelhanca_de_triangulos.html">Semelhança de Triângulos</a>
+        <span>•</span>
+        <a href="geometria/solidos_geometricos.html">Sólidos Geométricos</a>
+        <span>•</span>
+        <a href="geometria/teorema_de_tales.html">Teorema de Tales</a>
+        <span>•</span>
+        <a href="funcoes/afim.html">Função Afim</a>
+        <span>•</span>
+        <a href="funcoes/quadratica.html">Função Quadrática</a>
+        <span>•</span>
+        <a href="funcoes/balanca_de_equacoes.html">Balança de Equações</a>
+        <span>•</span>
+        <a href="funcoes/juros_simples_compostos.html">Juros Simples × Compostos</a>
+        <span>•</span>
+        <a href="trigonometria/circulo.html">Círculo Trigonométrico</a>
+        <span>•</span>
+        <a href="trigonometria/triangulo_retangulo.html">Triângulo Retângulo (Notáveis)</a>
+        <span>•</span>
+        <a href="probabilidade/lei_dos_grandes_numeros.html">Probabilidade (Grandes Números)</a>
+        <span>•</span>
+        <a href="estatistica/media_mediana_moda.html">Média, Mediana e Moda</a>
+        <span>•</span>
+        <a href="estatistica/dispersao.html">Dispersão e Desvio Padrão</a>
+        <span>•</span>
+        <a href="estatistica/graficos_estatisticos.html">Da Tabela ao Gráfico</a>
+        <span>•</span>
+        <a href="numeros/fracoes_equivalentes.html">Frações Equivalentes</a>
+        <span>•</span>
+        <a href="numeros/operacoes_com_fracoes.html">Operações com Frações</a>
+        <span>•</span>
+        <a href="numeros/conjuntos_numericos.html">Conjuntos Numéricos</a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Script de Filtro e Busca -->
+  <script>
+    /**
+     * Script de filtragem e busca no catálogo da Home
+     */
+    const filterButtons = document.querySelectorAll('.filter-btn');
+    const searchInput = document.getElementById('searchInput');
+    const cards = document.querySelectorAll('.home-demo-card');
+
+    let currentFilter = 'all';
+
+    function applyFilterAndSearch() {
+      const query = searchInput.value.toLowerCase().trim();
+
+      cards.forEach(card => {
+        const area = card.getAttribute('data-area');
+        const level = card.getAttribute('data-level');
+        const keywords = card.getAttribute('data-keywords') || '';
+        const title = card.querySelector('.demo-card-title').textContent.toLowerCase();
+        const desc = card.querySelector('.demo-card-desc').textContent.toLowerCase();
+
+        // Checagem de categoria/filtro
+        let matchesFilter = false;
+        if (currentFilter === 'all') {
+          matchesFilter = true;
+        } else if (currentFilter === 'fundamental' || currentFilter === 'medio') {
+          matchesFilter = (level === currentFilter);
+        } else {
+          matchesFilter = (area === currentFilter);
+        }
+
+        // Checagem de busca por texto
+        let matchesSearch = true;
+        if (query) {
+          matchesSearch = title.includes(query) || desc.includes(query) || keywords.includes(query);
+        }
+
+        if (matchesFilter && matchesSearch) {
+          card.style.display = 'flex';
+        } else {
+          card.style.display = 'none';
+        }
+      });
+    }
+
+    filterButtons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        filterButtons.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        currentFilter = btn.getAttribute('data-filter');
+        applyFilterAndSearch();
+      });
+    });
+
+    searchInput.addEventListener('input', applyFilterAndSearch);
+  </script>
+</body>
+</html>

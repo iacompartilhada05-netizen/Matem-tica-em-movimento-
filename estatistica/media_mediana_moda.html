@@ -1,0 +1,1224 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Média, Mediana e Moda · Matemática em Movimento</title>
+  <meta name="description" content="Laboratório interativo de medidas de tendência central com entrada por caixa de texto. Digite dados separados por espaço e visualize média, mediana, moda, reta numérica e gráfico de frequência ao vivo." />
+  <link rel="stylesheet" href="../css/estilo.css" />
+  <style>
+    /* Estilos específicos da demonstração Média, Mediana e Moda */
+    .input-section-card {
+      background: #f8fafc;
+      border: 1px solid var(--linha);
+      border-radius: var(--radius-md);
+      padding: 16px;
+      margin-bottom: 16px;
+    }
+    .input-label-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .input-title {
+      font-size: 0.88rem;
+      font-weight: 800;
+      color: var(--navy);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .data-textarea {
+      width: 100%;
+      min-height: 58px;
+      max-height: 120px;
+      padding: 12px 14px;
+      border: 2px solid var(--linha);
+      border-radius: var(--radius-sm);
+      font-family: var(--font-mono);
+      font-size: 1.05rem;
+      font-weight: 600;
+      color: var(--navy);
+      background: #ffffff;
+      line-height: 1.4;
+      resize: vertical;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+    .data-textarea:focus {
+      outline: none;
+      border-color: var(--azul);
+      box-shadow: 0 0 0 3px rgba(53, 107, 140, 0.18);
+    }
+    .data-textarea.has-error {
+      border-color: var(--vermelho);
+      background: #fffafa;
+    }
+
+    .input-actions-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 10px;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    .actions-left, .actions-right {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    .btn-calc-main {
+      background: var(--navy);
+      color: #ffffff;
+      border: none;
+      border-radius: var(--radius-sm);
+      padding: 8px 18px;
+      font-size: 0.88rem;
+      font-weight: 700;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.15s ease;
+      box-shadow: 0 2px 6px rgba(24, 50, 75, 0.2);
+    }
+    .btn-calc-main:hover {
+      background: var(--navy-dark);
+      transform: translateY(-1px);
+    }
+    .btn-calc-main:focus-visible {
+      outline: 2px solid var(--azul);
+      outline-offset: 2px;
+    }
+    .btn-secondary-tool {
+      background: #ffffff;
+      color: var(--tinta);
+      border: 1px solid var(--linha);
+      border-radius: var(--radius-sm);
+      padding: 8px 14px;
+      font-size: 0.82rem;
+      font-weight: 700;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      transition: all 0.15s ease;
+    }
+    .btn-secondary-tool:hover {
+      border-color: var(--azul);
+      color: var(--navy);
+      background: #f0f7fa;
+    }
+
+    .error-alert-box {
+      background: #fdf2f2;
+      border-left: 4px solid var(--vermelho);
+      border-radius: var(--radius-sm);
+      padding: 10px 14px;
+      color: #991b1b;
+      font-size: 0.84rem;
+      font-weight: 600;
+      margin-top: 10px;
+      display: none;
+      align-items: center;
+      gap: 8px;
+    }
+    .empty-state-notice {
+      background: #f1f7f9;
+      border-left: 4px solid var(--azul);
+      border-radius: var(--radius-sm);
+      padding: 10px 14px;
+      color: var(--navy);
+      font-size: 0.85rem;
+      font-weight: 600;
+      margin-top: 10px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    /* Lista Ordenada de Dados */
+    .ordered-list-card {
+      background: #ffffff;
+      border: 1px solid var(--linha);
+      border-radius: var(--radius-md);
+      padding: 12px 16px;
+      margin-bottom: 16px;
+      box-shadow: var(--shadow-subtle);
+    }
+    .ordered-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+      font-size: 0.8rem;
+      font-weight: 800;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    .chips-flex-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      align-items: center;
+    }
+    .data-chip {
+      background: #f1f5f9;
+      border: 1px solid #cbd5e1;
+      border-radius: 6px;
+      padding: 4px 10px;
+      font-family: var(--font-mono);
+      font-size: 0.92rem;
+      font-weight: 700;
+      color: var(--tinta);
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      transition: all 0.15s ease;
+    }
+    .data-chip.median-target {
+      background: #e6f4f1;
+      border-color: var(--teal);
+      color: #1e5a58;
+      box-shadow: 0 0 0 2px rgba(44, 122, 120, 0.25);
+      font-weight: 800;
+    }
+    .data-chip.mode-target {
+      border-bottom: 3px solid var(--dourado);
+    }
+
+    /* Painel de Resultados */
+    .stat-badge-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(135px, 1fr));
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    .stat-card {
+      background: #ffffff;
+      border: 1px solid var(--linha);
+      border-radius: var(--radius-sm);
+      padding: 12px 14px;
+      box-shadow: var(--shadow-subtle);
+      transition: transform 0.15s ease;
+    }
+    .stat-card-title {
+      font-size: 0.72rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 4px;
+      color: var(--muted);
+    }
+    .stat-card-val {
+      font-size: 1.45rem;
+      font-weight: 900;
+      font-family: var(--font-mono);
+      line-height: 1.1;
+    }
+    .stat-card-sub {
+      font-size: 0.75rem;
+      color: var(--muted);
+      margin-top: 4px;
+      line-height: 1.3;
+    }
+
+    /* Detalhamento do Cálculo da Mediana */
+    .median-step-box {
+      background: #fdfefe;
+      border: 1px dashed var(--teal);
+      border-radius: var(--radius-sm);
+      padding: 10px 14px;
+      font-size: 0.85rem;
+      color: var(--navy);
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .median-step-icon {
+      color: var(--teal);
+      flex-shrink: 0;
+    }
+
+    /* Visualizações Gráficas */
+    .viz-container-card {
+      background: #ffffff;
+      border: 1px solid var(--linha);
+      border-radius: var(--radius-md);
+      padding: 16px;
+      margin-bottom: 16px;
+      box-shadow: var(--shadow-subtle);
+    }
+    .viz-header-title {
+      font-size: 0.82rem;
+      font-weight: 800;
+      color: var(--navy);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      margin-bottom: 10px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .dotplot-svg-stage {
+      width: 100%;
+      height: 180px;
+      display: block;
+      background: #fcfdfe;
+      border: 1px solid var(--linha);
+      border-radius: 6px;
+      margin-bottom: 16px;
+    }
+    .freqbar-svg-stage {
+      width: 100%;
+      height: 160px;
+      display: block;
+      background: #fcfdfe;
+      border: 1px solid var(--linha);
+      border-radius: 6px;
+    }
+
+    .legend-row {
+      display: flex;
+      gap: 14px;
+      font-size: 0.76rem;
+      font-weight: 700;
+      margin-top: 6px;
+      flex-wrap: wrap;
+    }
+    .legend-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+    }
+    .legend-swatch {
+      width: 12px;
+      height: 12px;
+      border-radius: 3px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header Institucional -->
+  <header class="site-header">
+    <div class="header-container">
+      <a href="../index.html" class="brand-wrapper" title="Voltar para a página inicial">
+        <div class="brand-logo" aria-hidden="true">
+          <svg viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 19L12 5l8 14H4z" />
+          </svg>
+        </div>
+        <div class="brand-texts">
+          <span class="brand-title">Matemática em Movimento</span>
+          <span class="brand-slogan">Explore. Manipule. Compreenda.</span>
+        </div>
+      </a>
+      <div class="header-actions">
+        <a href="../index.html" class="btn-header">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+          Início
+        </a>
+        <button id="btnFullscreen" class="btn-header" title="Alternar modo tela cheia para projeção em sala de aula">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>
+          Projeção
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Breadcrumbs -->
+  <nav class="breadcrumb-bar" aria-label="Navegação estrutural">
+    <div class="breadcrumb-container">
+      <a href="../index.html">Início</a>
+      <span class="breadcrumb-sep">/</span>
+      <a href="../index.html#catalogo">Estatística</a>
+      <span class="breadcrumb-sep">/</span>
+      <span class="breadcrumb-current">Média, Mediana e Moda</span>
+    </div>
+  </nav>
+
+  <!-- Conteúdo Principal -->
+  <main class="main-content">
+    <div class="demo-grid">
+
+      <!-- Coluna 1: Laboratório Interativo -->
+      <section class="card" aria-labelledby="lab-heading">
+        <div class="card-eyebrow">
+          <span class="badge-tag badge-fundamental">Fundamental &amp; Médio</span>
+          <span>· LABORATÓRIO DE ESTATÍSTICA DESCRITIVA</span>
+        </div>
+        <h2 id="lab-heading" class="card-title">Média, Mediana e Moda</h2>
+        <p class="card-subtitle">
+          Digite ou cole qualquer conjunto de números. O laboratório calcula instantaneamente as medidas centrais, ordena a lista, plota os pontos empilhados na reta numérica e gera o gráfico de frequências.
+        </p>
+
+        <!-- SEÇÃO DE ENTRADA DE DADOS POR CAIXA DE TEXTO -->
+        <div class="input-section-card">
+          <div class="input-label-row">
+            <label for="inputNumbers" class="input-title">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="18" height="18" x="3" y="3" rx="2"/><line x1="8" y1="9" x2="16" y2="9"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="12" y2="17"/></svg>
+              Valores numéricos (separados por espaço):
+            </label>
+            <span id="counterBadge" class="slider-val-badge" style="background:#eaf2f7; color:var(--navy); font-weight:800;">0 valores</span>
+          </div>
+
+          <textarea
+            id="inputNumbers"
+            class="data-textarea"
+            placeholder="Digite os números aqui, ex.: 12 15 15 18 22 22 22 30"
+            aria-label="Caixa de entrada de valores numéricos para cálculo estatístico"
+            rows="2"
+          >12 15 15 18 22 22 22 30</textarea>
+
+          <p class="manipulation-tip" style="margin-top: 8px; margin-bottom: 0;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
+            <span><strong>Dica:</strong> Digite os dados separados por espaço. Aceita também vírgulas (10, 20), decimais brasileiros (1,5) e negativos (-3).</span>
+          </p>
+
+          <!-- Alerta de Validação Amigável -->
+          <div id="errorAlertBox" class="error-alert-box" role="alert">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            <span id="errorMsgText">Erro na entrada.</span>
+          </div>
+
+          <!-- Mensagem de Campo Vazio -->
+          <div id="emptyNoticeBox" class="empty-state-notice" style="display: none;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
+            <span>Digite os dados para começar.</span>
+          </div>
+
+          <!-- Botões de Ação da Entrada -->
+          <div class="input-actions-bar">
+            <div class="actions-left">
+              <button type="button" id="btnCalcular" class="btn-calc-main" title="Recalcular medidas estatísticas agora">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+                Calcular
+              </button>
+              <button type="button" id="btnSampleDefault" class="btn-secondary-tool" title="Preencher com o conjunto didático padrão">
+                Usar Exemplo
+              </button>
+            </div>
+            <div class="actions-right">
+              <button type="button" id="btnSampleOutlier" class="btn-secondary-tool" title="Exemplo com valor extremo discrepante (outlier 100)">
+                + Outlier (100)
+              </button>
+              <button type="button" id="btnClearInput" class="btn-secondary-tool" title="Limpar caixa de texto">
+                Limpar
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- PAINEL DE RESULTADOS COM RÓTULOS GRANDES -->
+        <div class="stat-badge-grid" id="statsGrid">
+          <!-- Média -->
+          <div class="stat-card" style="border-top: 4px solid var(--azul);">
+            <div class="stat-card-title">Média (Σx ÷ n)</div>
+            <div id="dispMean" class="stat-card-val" style="color: var(--azul);">19,5</div>
+            <div id="dispMeanSub" class="stat-card-sub">Soma = 156 ÷ 8</div>
+          </div>
+
+          <!-- Mediana -->
+          <div class="stat-card" style="border-top: 4px solid var(--teal);">
+            <div class="stat-card-title">Mediana (Centro)</div>
+            <div id="dispMedian" class="stat-card-val" style="color: var(--teal);">20</div>
+            <div id="dispMedianSub" class="stat-card-sub">(18 + 22) ÷ 2</div>
+          </div>
+
+          <!-- Moda -->
+          <div class="stat-card" style="border-top: 4px solid var(--dourado);">
+            <div class="stat-card-title">Moda (Mais frequente)</div>
+            <div id="dispMode" class="stat-card-val" style="color: #9c731e; font-size: 1.25rem;">22</div>
+            <div id="dispModeSub" class="stat-card-sub">Aparece 3 vezes</div>
+          </div>
+
+          <!-- Amplitude -->
+          <div class="stat-card" style="border-top: 4px solid var(--navy);">
+            <div class="stat-card-title">Amplitude (Máx − Mín)</div>
+            <div id="dispRange" class="stat-card-val" style="color: var(--navy);">18</div>
+            <div id="dispRangeSub" class="stat-card-sub">30 − 12</div>
+          </div>
+        </div>
+
+        <!-- LISTA ORDENADA COM VALORES CENTRAIS DESTACADOS -->
+        <div class="ordered-list-card" id="orderedListCard">
+          <div class="ordered-header">
+            <span>Lista Ordenada dos Dados (Ordem Crescente)</span>
+            <span id="lblDataCount" style="color:var(--navy); font-weight:800;">n = 8 valores</span>
+          </div>
+          <div id="chipsContainer" class="chips-flex-container">
+            <!-- Chips gerados via JS -->
+          </div>
+        </div>
+
+        <!-- PASSO A PASSO DA MEDIANA -->
+        <div class="median-step-box" id="medianStepBox">
+          <div class="median-step-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/><circle cx="12" cy="12" r="3"/></svg>
+          </div>
+          <div id="medianStepText" style="line-height: 1.4;">
+            <strong>Cálculo da Mediana:</strong> Como n = 8 é <strong>par</strong>, tomamos a média das 4ª e 5ª posições: <code>(18 + 22) ÷ 2 = 20</code>.
+          </div>
+        </div>
+
+        <!-- VISUALIZAÇÃO: RETA NUMÉRICA (DOT PLOT) E FREQUÊNCIAS -->
+        <div class="viz-container-card">
+          <!-- 1. Reta Numérica (Dot Plot) -->
+          <div class="viz-header-title">
+            <span>1. Reta Numérica &amp; Dot Plot (Pontos Empilhados)</span>
+            <span style="font-size: 0.72rem; color: var(--muted); text-transform: none; font-weight: 600;">Escala auto-ajustável</span>
+          </div>
+          <svg id="dotPlotSvg" class="dotplot-svg-stage" viewBox="0 0 600 180" preserveAspectRatio="none" aria-label="Reta numérica com pontos empilhados dos dados e marcadores de média e mediana"></svg>
+          <div class="legend-row">
+            <div class="legend-item"><span class="legend-swatch" style="background:var(--azul);"></span> Linha Tracejada Azul: <strong>Média</strong></div>
+            <div class="legend-item"><span class="legend-swatch" style="background:var(--teal);"></span> Linha Tracejada Verde-Água: <strong>Mediana</strong></div>
+            <div class="legend-item"><span class="legend-swatch" style="background:#d5a64a;"></span> Borda Dourada: <strong>Ponto da Moda</strong></div>
+          </div>
+
+          <!-- 2. Gráfico de Barras de Frequência -->
+          <div class="viz-header-title" style="margin-top: 18px;">
+            <span>2. Gráfico de Barras de Frequência</span>
+            <span style="font-size: 0.72rem; color: var(--muted); text-transform: none; font-weight: 600;">Barra mais alta = Moda</span>
+          </div>
+          <svg id="freqBarSvg" class="freqbar-svg-stage" viewBox="0 0 600 160" preserveAspectRatio="none" aria-label="Gráfico de barras de frequência com destaque na moda"></svg>
+        </div>
+
+      </section>
+
+      <!-- Coluna 2: Entenda a Ideia Pedagógica -->
+      <aside class="card pedagogical-aside" aria-labelledby="theory-heading">
+        <div class="card-eyebrow">
+          <span>FUNDAMENTAÇÃO TEÓRICA</span>
+        </div>
+        <h2 id="theory-heading" class="card-title">Medidas de Tendência Central</h2>
+
+        <p class="aside-lead">
+          Quando temos um grupo de dados numéricos, usamos medidas centrais para resumir todo o conjunto em um único número representativo. Cada medida enxerga os dados por um ângulo diferente:
+        </p>
+
+        <!-- Fórmula em Destaque -->
+        <div class="formula-box">
+          <div class="formula-label">Fórmulas das Três Medidas Centrais:</div>
+          <div style="display: flex; flex-direction: column; gap: 8px; margin-top: 4px; font-family: var(--font-mono); font-size: 0.95rem; font-weight: 800;">
+            <div>
+              <span style="color:var(--azul);">Média (&macr;x)</span> = 
+              <span>&Sigma;x ÷ n</span>
+              <span style="font-size:0.75rem; color:var(--muted); font-family:var(--font-sans); font-weight:600;">(soma dividida pela quantidade)</span>
+            </div>
+            <div>
+              <span style="color:var(--teal);">Mediana</span> = 
+              <span>Valor do meio da lista ordenada</span>
+            </div>
+            <div>
+              <span style="color:#9c731e;">Moda</span> = 
+              <span>Valor com maior frequência absoluta</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Três Passos Didáticos Numerados -->
+        <div class="steps-list">
+          <div class="step-item">
+            <div class="step-badge" aria-hidden="true">1</div>
+            <div class="step-content">
+              <h3 class="step-title">Média: O ponto de equilíbrio da soma</h3>
+              <p class="step-text">
+                Imagine que todos os dados fossem reunidos em um pote único e redistribuídos em partes rigorosamente iguais. Essa é a média. Por somar tudo, ela é <strong>sensível a extremos</strong> (outliers).
+              </p>
+            </div>
+          </div>
+
+          <div class="step-item">
+            <div class="step-badge" aria-hidden="true">2</div>
+            <div class="step-content">
+              <h3 class="step-title">Mediana: O divisor de águas central</h3>
+              <p class="step-text">
+                Coloque os valores em ordem crescente: a mediana divide a fila exatamente ao meio (50% abaixo, 50% acima). Se a lista for par, faz-se a média dos 2 valores centrais. É <strong>imune a extremos</strong>!
+              </p>
+            </div>
+          </div>
+
+          <div class="step-item">
+            <div class="step-badge" aria-hidden="true">3</div>
+            <div class="step-content">
+              <h3 class="step-title">Moda: O valor mais popular</h3>
+              <p class="step-text">
+                É o número que mais se repete na amostra. Um conjunto pode ter uma única moda (unimodal), duas (bimodal), várias (multimodal) ou nenhuma (amodal).
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Pergunta para Investigar -->
+        <div class="investigation-box">
+          <div class="investigation-title">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+              <path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5"/>
+              <path d="M9 18h6"/><path d="M10 22h4"/>
+            </svg>
+            <span>Pergunta para investigar</span>
+          </div>
+          <p class="investigation-text">
+            Digite 5 valores onde a <strong>média seja maior que a mediana</strong>. E agora 5 valores onde a <strong>moda seja 4</strong>? Em qual das três medidas um valor muito alto (ex.: 100) causa maior mudança? Teste digitando <code>12 14 15 16 100</code> e compare com <code>12 14 15 16 17</code>!
+          </p>
+        </div>
+
+      </aside>
+
+    </div>
+  </main>
+
+  <!-- Rodapé Institucional -->
+  <footer class="site-footer">
+    <div class="site-footer-inner">
+      <p><strong>Matemática em Movimento</strong> · Recurso educacional aberto e gratuito para professores e estudantes.</p>
+      <div class="footer-links">
+        <a href="../index.html">Todas as Demonstrações</a>
+        <span>•</span>
+        <a href="../estatistica/dispersao.html">Dispersão e Desvio Padrão</a>
+        <span>•</span>
+        <a href="../estatistica/graficos_estatisticos.html">Da Tabela ao Gráfico</a>
+        <span>•</span>
+        <a href="../numeros/fracoes_equivalentes.html">Frações Equivalentes</a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Lógica Estatística, Validação e Renderização Visual -->
+  <script>
+    /**
+     * Matemática em Movimento — Demonstração: Média, Mediana e Moda
+     * Entrada por caixa de texto com debounce, validação amigável, honestidade numérica,
+     * dot plot com empilhamento vertical e gráfico de barras de frequências.
+     */
+
+    // Presets didáticos para experimentação rápida
+    const presets = {
+      default: '12 15 15 18 22 22 22 30',
+      outlier: '12 14 15 16 100',
+      bimodal: '10 10 20 30 40 40 50',
+      decimals: '1,5 2,0 2,5 2,5 3,0 4,5'
+    };
+
+    // Elementos DOM
+    const inputNumbers = document.getElementById('inputNumbers');
+    const btnCalcular = document.getElementById('btnCalcular');
+    const btnSampleDefault = document.getElementById('btnSampleDefault');
+    const btnSampleOutlier = document.getElementById('btnSampleOutlier');
+    const btnClearInput = document.getElementById('btnClearInput');
+
+    const counterBadge = document.getElementById('counterBadge');
+    const errorAlertBox = document.getElementById('errorAlertBox');
+    const errorMsgText = document.getElementById('errorMsgText');
+    const emptyNoticeBox = document.getElementById('emptyNoticeBox');
+
+    const statsGrid = document.getElementById('statsGrid');
+    const dispMean = document.getElementById('dispMean');
+    const dispMeanSub = document.getElementById('dispMeanSub');
+    const dispMedian = document.getElementById('dispMedian');
+    const dispMedianSub = document.getElementById('dispMedianSub');
+    const dispMode = document.getElementById('dispMode');
+    const dispModeSub = document.getElementById('dispModeSub');
+    const dispRange = document.getElementById('dispRange');
+    const dispRangeSub = document.getElementById('dispRangeSub');
+
+    const orderedListCard = document.getElementById('orderedListCard');
+    const lblDataCount = document.getElementById('lblDataCount');
+    const chipsContainer = document.getElementById('chipsContainer');
+
+    const medianStepBox = document.getElementById('medianStepBox');
+    const medianStepText = document.getElementById('medianStepText');
+
+    const dotPlotSvg = document.getElementById('dotPlotSvg');
+    const freqBarSvg = document.getElementById('freqBarSvg');
+
+    let debounceTimer = null;
+
+    // -----------------------------------------------------------------
+    // PARSER E VALIDAÇÃO ROBUSTA DA CAIXA DE TEXTO
+    // -----------------------------------------------------------------
+
+    /**
+     * Analisa o texto digitado aceitando espaços, vírgulas separadoras,
+     * ponto e vírgula, negativos e decimais com vírgula ou ponto brasileiro.
+     */
+    function parseNumbersInput(rawText) {
+      if (!rawText || !rawText.trim()) {
+        return { success: true, empty: true, numbers: [] };
+      }
+
+      // Substitui ponto e vírgula por espaço
+      let cleaned = rawText.replace(/;/g, ' ');
+
+      // Trata vírgulas seguidas de espaço: "10, 20, 30" -> "10 20 30"
+      cleaned = cleaned.replace(/,\s+/g, ' ');
+
+      // Quebra por espaços em branco contínuos
+      const rawTokens = cleaned.trim().split(/\s+/);
+      const numbers = [];
+
+      for (let i = 0; i < rawTokens.length; i++) {
+        let token = rawTokens[i].trim();
+        if (!token) continue;
+
+        // Remove vírgula residual no final do token se houver: "20," -> "20"
+        if (token.endsWith(',')) {
+          token = token.slice(0, -1);
+        }
+        if (!token) continue;
+
+        // Se o token tiver mais de uma vírgula (ex.: "10,20,30" sem espaço), quebra por vírgula
+        if ((token.match(/,/g) || []).length > 1) {
+          const subTokens = token.split(',');
+          for (let st of subTokens) {
+            if (!st) continue;
+            const subClean = st.trim();
+            if (!/^-?\d+(\.\d+)?$/.test(subClean)) {
+              return {
+                success: false,
+                error: `Não entendi '${st}' na lista. Separe os números com espaço (ex.: 10 20 30).`
+              };
+            }
+            numbers.push(parseFloat(subClean));
+          }
+          continue;
+        }
+
+        // Converte vírgula decimal brasileira para ponto: "1,5" -> "1.5"
+        let standardized = token.replace(',', '.');
+
+        // Validação estrita: aceita apenas números válidos (opcional negativo, dígitos e decimal)
+        if (!/^-?\d+(\.\d+)?$/.test(standardized)) {
+          return {
+            success: false,
+            error: `Não entendi '${token}' na lista. Separe os números com espaço (ex.: 10 20 30).`
+          };
+        }
+
+        const val = parseFloat(standardized);
+        if (isNaN(val)) {
+          return {
+            success: false,
+            error: `Valor numérico inválido '${token}'.`
+          };
+        }
+        numbers.push(val);
+      }
+
+      if (numbers.length === 0) {
+        return { success: true, empty: true, numbers: [] };
+      }
+
+      return { success: true, empty: false, numbers: numbers };
+    }
+
+    // Formatação honesta com vírgula brasileira e dízima "≈"
+    function formatPtNumber(val, maxDec = 2, showApprox = true) {
+      if (Number.isInteger(val)) return val.toString();
+      
+      const fixedStr = val.toFixed(maxDec);
+      const isExact = (parseFloat(fixedStr) === val);
+      const formatted = fixedStr.replace(/\.?0+$/, '').replace('.', ',');
+      
+      if (!isExact && showApprox) {
+        return `≈ ${formatted}`;
+      }
+      return formatted;
+    }
+
+    // -----------------------------------------------------------------
+    // PROCESSAMENTO E CÁLCULO ESTATÍSTICO COMPLETO
+    // -----------------------------------------------------------------
+
+    function processAndCalculate() {
+      const rawText = inputNumbers.value;
+      const parsed = parseNumbersInput(rawText);
+
+      if (!parsed.success) {
+        // Erro de validação amigável
+        inputNumbers.classList.add('has-error');
+        errorAlertBox.style.display = 'flex';
+        errorMsgText.textContent = parsed.error;
+        emptyNoticeBox.style.display = 'none';
+        counterBadge.textContent = 'Erro de entrada';
+        counterBadge.style.color = '#991b1b';
+        return;
+      }
+
+      // Limpa alertas de erro
+      inputNumbers.classList.remove('has-error');
+      errorAlertBox.style.display = 'none';
+
+      if (parsed.empty) {
+        // Campo vazio
+        emptyNoticeBox.style.display = 'flex';
+        counterBadge.textContent = '0 valores';
+        counterBadge.style.color = 'var(--muted)';
+        
+        dispMean.textContent = '—';
+        dispMeanSub.textContent = 'Aguardando dados';
+        dispMedian.textContent = '—';
+        dispMedianSub.textContent = 'Aguardando dados';
+        dispMode.textContent = '—';
+        dispModeSub.textContent = 'Aguardando dados';
+        dispRange.textContent = '—';
+        dispRangeSub.textContent = 'Aguardando dados';
+
+        lblDataCount.textContent = 'Nenhum dado digitado';
+        chipsContainer.innerHTML = '<span style="color:var(--muted); font-size:0.85rem;">Digite valores separados por espaço acima.</span>';
+        medianStepBox.style.display = 'none';
+
+        renderEmptyStages();
+        return;
+      }
+
+      emptyNoticeBox.style.display = 'none';
+      const nums = parsed.numbers;
+      const n = nums.length;
+      counterBadge.textContent = `${n} ${n === 1 ? 'valor' : 'valores'}`;
+      counterBadge.style.color = 'var(--navy)';
+
+      // 1. Ordenação dos dados
+      const sorted = [...nums].sort((a, b) => a - b);
+
+      // 2. Média
+      const sum = nums.reduce((acc, curr) => acc + curr, 0);
+      const mean = sum / n;
+
+      dispMean.textContent = formatPtNumber(mean, 2, true);
+      dispMeanSub.textContent = `Soma = ${formatPtNumber(sum, 2, false)} ÷ ${n}`;
+
+      // 3. Mediana
+      let median = 0;
+      let medianIndices = [];
+      let medianStepHtml = '';
+
+      if (n % 2 !== 0) {
+        // Ímpar: valor exatamente no meio
+        const midIdx = Math.floor(n / 2);
+        median = sorted[midIdx];
+        medianIndices = [midIdx];
+        medianStepHtml = `<strong>Cálculo da Mediana:</strong> Como n = ${n} é <strong>ímpar</strong>, a mediana é exatamente o elemento central na <strong>${midIdx + 1}ª posição</strong>: <code>${formatPtNumber(median, 2, false)}</code>.`;
+        dispMedianSub.textContent = `Posição central (${midIdx + 1}ª de ${n})`;
+      } else {
+        // Par: média dos dois centrais
+        const idx1 = n / 2 - 1;
+        const idx2 = n / 2;
+        const v1 = sorted[idx1];
+        const v2 = sorted[idx2];
+        median = (v1 + v2) / 2;
+        medianIndices = [idx1, idx2];
+        medianStepHtml = `<strong>Cálculo da Mediana:</strong> Como n = ${n} é <strong>par</strong>, tomamos a média das <strong>${idx1 + 1}ª e ${idx2 + 1}ª posições</strong>: <code>(${formatPtNumber(v1, 2, false)} + ${formatPtNumber(v2, 2, false)}) ÷ 2 = ${formatPtNumber(median, 2, false)}</code>.`;
+        dispMedianSub.textContent = `(${formatPtNumber(v1, 2, false)} + ${formatPtNumber(v2, 2, false)}) ÷ 2`;
+      }
+
+      dispMedian.textContent = formatPtNumber(median, 2, true);
+      medianStepBox.style.display = 'flex';
+      medianStepText.innerHTML = medianStepHtml;
+
+      // 4. Moda
+      const freqMap = new Map();
+      sorted.forEach(val => {
+        // chave com precisão para evitar resíduos de ponto flutuante
+        const key = Math.round(val * 10000) / 10000;
+        freqMap.set(key, (freqMap.get(key) || 0) + 1);
+      });
+
+      let maxFreq = 0;
+      freqMap.forEach(count => {
+        if (count > maxFreq) maxFreq = count;
+      });
+
+      const modeKeys = [];
+      freqMap.forEach((count, key) => {
+        if (count === maxFreq) modeKeys.push(key);
+      });
+
+      // Classificação pedagógica da moda
+      let modeText = '';
+      let modeSub = '';
+      let isAmodal = false;
+
+      if (n === 1) {
+        modeText = formatPtNumber(sorted[0], 2, false);
+        modeSub = 'Elemento único (freq. 1)';
+      } else if (maxFreq === 1) {
+        isAmodal = true;
+        modeText = 'Amodal';
+        modeSub = 'Nenhum valor se repete';
+      } else if (modeKeys.length === freqMap.size) {
+        // Todos se repetem a mesma quantidade de vezes
+        isAmodal = true;
+        modeText = 'Amodal';
+        modeSub = `Frequência uniforme (${maxFreq}x cada)`;
+      } else if (modeKeys.length === 1) {
+        modeText = formatPtNumber(modeKeys[0], 2, false);
+        modeSub = `Aparece ${maxFreq} vezes`;
+      } else if (modeKeys.length === 2) {
+        modeText = `Bimodal: ${formatPtNumber(modeKeys[0], 2, false)} e ${formatPtNumber(modeKeys[1], 2, false)}`;
+        modeSub = `${maxFreq} vezes cada`;
+      } else {
+        const formattedKeys = modeKeys.map(k => formatPtNumber(k, 2, false));
+        modeText = `Multimodal (${formattedKeys.join(', ')})`;
+        modeSub = `${maxFreq} vezes cada`;
+      }
+
+      dispMode.textContent = modeText;
+      dispModeSub.textContent = modeSub;
+
+      // 5. Amplitude
+      const minVal = sorted[0];
+      const maxVal = sorted[n - 1];
+      const range = maxVal - minVal;
+
+      dispRange.textContent = formatPtNumber(range, 2, true);
+      dispRangeSub.textContent = `${formatPtNumber(maxVal, 2, false)} − ${formatPtNumber(minVal, 2, false)}`;
+
+      // 6. Atualizar Lista Ordenada com Chips
+      lblDataCount.textContent = `n = ${n} ${n === 1 ? 'valor' : 'valores'}`;
+      chipsContainer.innerHTML = '';
+
+      sorted.forEach((val, idx) => {
+        const chip = document.createElement('div');
+        const isMedianCentral = medianIndices.includes(idx);
+        const isModeVal = !isAmodal && modeKeys.some(mk => Math.abs(mk - val) < 1e-4);
+
+        chip.className = `data-chip ${isMedianCentral ? 'median-target' : ''} ${isModeVal ? 'mode-target' : ''}`;
+        
+        let label = formatPtNumber(val, 2, false);
+        if (isMedianCentral) {
+          chip.innerHTML = `<span>${label}</span><small style="font-size:0.68rem; color:var(--teal); font-weight:800;" title="Elemento central para a Mediana">●</small>`;
+        } else {
+          chip.textContent = label;
+        }
+        chipsContainer.appendChild(chip);
+      });
+
+      // 7. Renderizar Visualizações Gráficas
+      renderDotPlot(sorted, mean, median, isAmodal ? [] : modeKeys);
+      renderFrequencyBars(freqMap, maxFreq, isAmodal ? [] : modeKeys);
+    }
+
+    // -----------------------------------------------------------------
+    // RENDERIZAÇÃO DA RETA NUMÉRICA (DOT PLOT EMPILHADO)
+    // -----------------------------------------------------------------
+
+    function renderDotPlot(sorted, mean, median, modeKeys) {
+      dotPlotSvg.innerHTML = '';
+      const w = 600;
+      const h = 180;
+      const axisY = 135;
+
+      const minVal = sorted[0];
+      const maxVal = sorted[sorted.length - 1];
+      let span = maxVal - minVal;
+
+      // Garante amplitude mínima para não dividir por zero se todos forem iguais
+      if (span === 0) span = Math.max(2, Math.abs(minVal) * 0.2 || 2);
+
+      // Margem lateral proporcional de 8%
+      const pad = span * 0.08;
+      const domainMin = Math.min(minVal, mean, median) - pad;
+      const domainMax = Math.max(maxVal, mean, median) + pad;
+      const totalDomain = domainMax - domainMin;
+
+      function scaleX(val) {
+        return 50 + ((val - domainMin) / totalDomain) * (w - 100);
+      }
+
+      // Linha Principal do Eixo X
+      const axisLine = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+      axisLine.setAttribute('x1', '25');
+      axisLine.setAttribute('y1', axisY.toString());
+      axisLine.setAttribute('x2', (w - 25).toString());
+      axisLine.setAttribute('y2', axisY.toString());
+      axisLine.setAttribute('stroke', '#18324b');
+      axisLine.setAttribute('stroke-width', '2.5');
+      axisLine.setAttribute('stroke-linecap', 'round');
+      dotPlotSvg.appendChild(axisLine);
+
+      // Graduações (Ticks) amigáveis da Reta
+      const numTicks = 6;
+      const step = totalDomain / numTicks;
+      for (let i = 0; i <= numTicks; i++) {
+        const tickVal = domainMin + i * step;
+        const tx = scaleX(tickVal);
+
+        const tickLine = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+        tickLine.setAttribute('x1', tx.toString());
+        tickLine.setAttribute('y1', (axisY - 5).toString());
+        tickLine.setAttribute('x2', tx.toString());
+        tickLine.setAttribute('y2', (axisY + 6).toString());
+        tickLine.setAttribute('stroke', '#94a3b8');
+        tickLine.setAttribute('stroke-width', '1.5');
+        dotPlotSvg.appendChild(tickLine);
+
+        const tickText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+        tickText.setAttribute('x', tx.toString());
+        tickText.setAttribute('y', (axisY + 22).toString());
+        tickText.setAttribute('font-size', '11');
+        tickText.setAttribute('font-weight', '700');
+        tickText.setAttribute('font-family', 'ui-monospace, monospace');
+        tickText.setAttribute('fill', '#647684');
+        tickText.setAttribute('text-anchor', 'middle');
+        tickText.textContent = formatPtNumber(tickVal, 1, false);
+        dotPlotSvg.appendChild(tickText);
+      }
+
+      // Empilhamento dos Pontos (Dot Plot)
+      // Agrupa pontos muito próximos para empilhar verticalmente
+      const stackCounters = new Map();
+      sorted.forEach(val => {
+        const key = Math.round(val * 1000) / 1000;
+        const stackHeight = stackCounters.get(key) || 0;
+        stackCounters.set(key, stackHeight + 1);
+
+        const cx = scaleX(val);
+        // Cada ponto sobe 15px na pilha vertical
+        const cy = axisY - 10 - stackHeight * 15;
+
+        const isModePoint = modeKeys.some(mk => Math.abs(mk - val) < 1e-4);
+
+        const dot = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+        dot.setAttribute('cx', cx.toFixed(1));
+        dot.setAttribute('cy', Math.max(55, cy).toFixed(1));
+        dot.setAttribute('r', '6');
+        dot.setAttribute('fill', isModePoint ? '#d5a64a' : '#18324b');
+        dot.setAttribute('stroke', '#ffffff');
+        dot.setAttribute('stroke-width', '2');
+
+        const title = document.createElementNS('http://www.w3.org/2000/svg', 'title');
+        title.textContent = `Valor: ${formatPtNumber(val, 2, false)}${isModePoint ? ' (Moda)' : ''}`;
+        dot.appendChild(title);
+
+        dotPlotSvg.appendChild(dot);
+      });
+
+      // Marcador da MÉDIA (Linha Azul com Losango)
+      const meanX = scaleX(mean);
+      const lineMean = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+      lineMean.setAttribute('x1', meanX.toFixed(1));
+      lineMean.setAttribute('y1', '24');
+      lineMean.setAttribute('x2', meanX.toFixed(1));
+      lineMean.setAttribute('y2', (axisY + 6).toString());
+      lineMean.setAttribute('stroke', '#356b8c');
+      lineMean.setAttribute('stroke-width', '2.5');
+      lineMean.setAttribute('stroke-dasharray', '4 3');
+      dotPlotSvg.appendChild(lineMean);
+
+      // Distinção de altura das etiquetas para evitar sobreposição caso Média e Mediana sejam próximas
+      const distMeanMed = Math.abs(scaleX(mean) - scaleX(median));
+      const badgeYMean = 18;
+      const badgeYMedian = (distMeanMed < 55) ? 40 : 18;
+
+      // Etiqueta da Média
+      const gMean = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+      const textMean = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+      textMean.setAttribute('x', meanX.toFixed(1));
+      textMean.setAttribute('y', badgeYMean.toString());
+      textMean.setAttribute('font-size', '11');
+      textMean.setAttribute('font-weight', '800');
+      textMean.setAttribute('font-family', 'system-ui, sans-serif');
+      textMean.setAttribute('fill', '#356b8c');
+      textMean.setAttribute('text-anchor', 'middle');
+      textMean.setAttribute('stroke', '#ffffff');
+      textMean.setAttribute('stroke-width', '3');
+      textMean.setAttribute('paint-order', 'stroke');
+      textMean.textContent = `◆ Média: ${formatPtNumber(mean, 2, false)}`;
+      gMean.appendChild(textMean);
+      dotPlotSvg.appendChild(gMean);
+
+      // Marcador da MEDIANA (Linha Verde-Água com Círculo)
+      const medianX = scaleX(median);
+      const lineMedian = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+      lineMedian.setAttribute('x1', medianX.toFixed(1));
+      lineMedian.setAttribute('y1', (badgeYMedian + 6).toString());
+      lineMedian.setAttribute('x2', medianX.toFixed(1));
+      lineMedian.setAttribute('y2', (axisY + 6).toString());
+      lineMedian.setAttribute('stroke', '#2c7a78');
+      lineMedian.setAttribute('stroke-width', '2.5');
+      lineMedian.setAttribute('stroke-dasharray', '4 3');
+      dotPlotSvg.appendChild(lineMedian);
+
+      // Etiqueta da Mediana
+      const gMedian = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+      const textMedian = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+      textMedian.setAttribute('x', medianX.toFixed(1));
+      textMedian.setAttribute('y', badgeYMedian.toString());
+      textMedian.setAttribute('font-size', '11');
+      textMedian.setAttribute('font-weight', '800');
+      textMedian.setAttribute('font-family', 'system-ui, sans-serif');
+      textMedian.setAttribute('fill', '#2c7a78');
+      textMedian.setAttribute('text-anchor', 'middle');
+      textMedian.setAttribute('stroke', '#ffffff');
+      textMedian.setAttribute('stroke-width', '3');
+      textMedian.setAttribute('paint-order', 'stroke');
+      textMedian.textContent = `● Mediana: ${formatPtNumber(median, 2, false)}`;
+      gMedian.appendChild(textMedian);
+      dotPlotSvg.appendChild(gMedian);
+    }
+
+    // -----------------------------------------------------------------
+    // RENDERIZAÇÃO DO GRÁFICO DE BARRAS DE FREQUÊNCIA
+    // -----------------------------------------------------------------
+
+    function renderFrequencyBars(freqMap, maxFreq, modeKeys) {
+      freqBarSvg.innerHTML = '';
+      const w = 600;
+      const h = 160;
+      const bottomY = 125;
+      const topY = 25;
+      const chartHeight = bottomY - topY;
+
+      // Ordena chaves dos valores
+      const keys = Array.from(freqMap.keys()).sort((a, b) => a - b);
+      const numBars = keys.length;
+      if (numBars === 0) return;
+
+      // Eixo de base
+      const axisLine = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+      axisLine.setAttribute('x1', '30');
+      axisLine.setAttribute('y1', bottomY.toString());
+      axisLine.setAttribute('x2', (w - 30).toString());
+      axisLine.setAttribute('y2', bottomY.toString());
+      axisLine.setAttribute('stroke', '#18324b');
+      axisLine.setAttribute('stroke-width', '2');
+      freqBarSvg.appendChild(axisLine);
+
+      // Largura das barras e espaçamento dinâmico
+      const totalWidth = w - 80;
+      const slotWidth = totalWidth / numBars;
+      const barWidth = Math.min(48, slotWidth * 0.65);
+
+      keys.forEach((key, i) => {
+        const count = freqMap.get(key);
+        const barH = (count / maxFreq) * chartHeight;
+        const bx = 40 + i * slotWidth + (slotWidth - barWidth) / 2;
+        const by = bottomY - barH;
+
+        const isMode = modeKeys.some(mk => Math.abs(mk - key) < 1e-4);
+
+        // Barra
+        const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+        rect.setAttribute('x', bx.toFixed(1));
+        rect.setAttribute('y', by.toFixed(1));
+        rect.setAttribute('width', barWidth.toFixed(1));
+        rect.setAttribute('height', Math.max(3, barH).toFixed(1));
+        rect.setAttribute('rx', '4');
+        rect.setAttribute('fill', isMode ? '#d5a64a' : '#356b8c');
+        rect.setAttribute('stroke', isMode ? '#b88628' : '#18324b');
+        rect.setAttribute('stroke-width', '1.5');
+        freqBarSvg.appendChild(rect);
+
+        // Rótulo da Frequência no topo da barra
+        const countText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+        countText.setAttribute('x', (bx + barWidth / 2).toFixed(1));
+        countText.setAttribute('y', (by - 6).toFixed(1));
+        countText.setAttribute('font-size', '11');
+        countText.setAttribute('font-weight', '800');
+        countText.setAttribute('font-family', 'ui-monospace, monospace');
+        countText.setAttribute('fill', isMode ? '#9c731e' : '#18324b');
+        countText.setAttribute('text-anchor', 'middle');
+        countText.textContent = `${count}x`;
+        freqBarSvg.appendChild(countText);
+
+        // Rótulo do Valor no Eixo X
+        const valText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+        valText.setAttribute('x', (bx + barWidth / 2).toFixed(1));
+        valText.setAttribute('y', (bottomY + 18).toString());
+        valText.setAttribute('font-size', numBars > 12 ? '9' : '11');
+        valText.setAttribute('font-weight', '700');
+        valText.setAttribute('font-family', 'ui-monospace, monospace');
+        valText.setAttribute('fill', '#243746');
+        valText.setAttribute('text-anchor', 'middle');
+        valText.textContent = formatPtNumber(key, 1, false);
+        freqBarSvg.appendChild(valText);
+
+        // Etiqueta "MODA" em destaque acima da barra mais alta
+        if (isMode) {
+          const modeLabel = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+          modeLabel.setAttribute('x', (bx + barWidth / 2).toFixed(1));
+          modeLabel.setAttribute('y', '15');
+          modeLabel.setAttribute('font-size', '9');
+          modeLabel.setAttribute('font-weight', '900');
+          modeLabel.setAttribute('fill', '#9c731e');
+          modeLabel.setAttribute('text-anchor', 'middle');
+          modeLabel.textContent = '★ MODA';
+          freqBarSvg.appendChild(modeLabel);
+        }
+      });
+    }
+
+    function renderEmptyStages() {
+      dotPlotSvg.innerHTML = `
+        <line x1="25" y1="90" x2="575" y2="90" stroke="#dbe3e9" stroke-width="2" />
+        <text x="300" y="95" font-size="12" font-weight="700" fill="#94a3b8" text-anchor="middle">Digite os números acima para desenhar a reta numérica</text>
+      `;
+      freqBarSvg.innerHTML = `
+        <line x1="25" y1="80" x2="575" y2="80" stroke="#dbe3e9" stroke-width="2" />
+        <text x="300" y="85" font-size="12" font-weight="700" fill="#94a3b8" text-anchor="middle">Aguardando dados para gerar o gráfico de frequências</text>
+      `;
+    }
+
+    // -----------------------------------------------------------------
+    // EVENTOS E OUVINTES
+    // -----------------------------------------------------------------
+
+    // Cálculo automático conforme digitação com debounce de 500ms
+    inputNumbers.addEventListener('input', () => {
+      clearTimeout(debounceTimer);
+      debounceTimer = setTimeout(() => {
+        processAndCalculate();
+      }, 500);
+    });
+
+    // Botão Calcular (ação imediata sem esperar debounce)
+    btnCalcular.addEventListener('click', () => {
+      clearTimeout(debounceTimer);
+      processAndCalculate();
+    });
+
+    // Botão Usar Exemplo Didático
+    btnSampleDefault.addEventListener('click', () => {
+      inputNumbers.value = presets.default;
+      processAndCalculate();
+      inputNumbers.focus();
+    });
+
+    // Botão Adicionar Outlier Extremo
+    btnSampleOutlier.addEventListener('click', () => {
+      inputNumbers.value = presets.outlier;
+      processAndCalculate();
+      inputNumbers.focus();
+    });
+
+    // Botão Limpar
+    btnClearInput.addEventListener('click', () => {
+      inputNumbers.value = '';
+      processAndCalculate();
+      inputNumbers.focus();
+    });
+
+    // Modo Projeção em Tela Cheia
+    document.getElementById('btnFullscreen').addEventListener('click', () => {
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().catch(() => {});
+      } else {
+        document.exitFullscreen().catch(() => {});
+      }
+    });
+
+    // Execução Inicial
+    processAndCalculate();
+  </script>
+</body>
+</html>

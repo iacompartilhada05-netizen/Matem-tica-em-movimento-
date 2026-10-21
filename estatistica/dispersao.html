@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dispersão: Mesma Média, Dados Diferentes · Matemática em Movimento</title>
+  <meta name="description" content="Laboratório visual de dispersão e desvio padrão. Compare dois conjuntos de dados com a mesma média matemática, mas variabilidades e desvios completamente distintos." />
+  <link rel="stylesheet" href="../css/estilo.css" />
+  <style>
+    .set-row {
+      background: #f8fafc;
+      border: 1.5px solid var(--linha);
+      border-radius: var(--radius-md);
+      padding: 16px;
+      margin-bottom: 16px;
+    }
+    .set-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+    .set-title {
+      font-size: 1.05rem;
+      font-weight: 800;
+      color: var(--navy);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .set-stats-bar {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      flex-wrap: wrap;
+    }
+    .set-stat-item {
+      font-size: 0.82rem;
+      font-weight: 700;
+      color: var(--muted);
+    }
+    .set-stat-item strong {
+      color: var(--navy);
+      font-family: var(--font-mono);
+      font-size: 0.95rem;
+    }
+    .axis-base-disp {
+      stroke: var(--navy);
+      stroke-width: 2;
+    }
+    .std-range-band {
+      fill-opacity: 0.18;
+      rx: 6px;
+    }
+    .mean-tick-line {
+      stroke-width: 2.5;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header Institucional -->
+  <header class="site-header">
+    <div class="header-container">
+      <a href="../index.html" class="brand-wrapper" title="Voltar para a página inicial">
+        <div class="brand-logo" aria-hidden="true">
+          <svg viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 19L12 5l8 14H4z" />
+          </svg>
+        </div>
+        <div class="brand-texts">
+          <span class="brand-title">Matemática em Movimento</span>
+          <span class="brand-slogan">Explore. Manipule. Compreenda.</span>
+        </div>
+      </a>
+      <div class="header-actions">
+        <a href="../index.html" class="btn-header">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+          Início
+        </a>
+        <button id="btnFullscreen" class="btn-header" title="Alternar modo tela cheia para projeção em sala de aula">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>
+          Projeção
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Breadcrumbs -->
+  <nav class="breadcrumb-bar" aria-label="Navegação estrutural">
+    <div class="breadcrumb-container">
+      <a href="../index.html">Início</a>
+      <span class="breadcrumb-sep">/</span>
+      <span>Estatística</span>
+      <span class="breadcrumb-sep">/</span>
+      <span class="breadcrumb-current">Dispersão e Desvio Padrão</span>
+    </div>
+  </nav>
+
+  <!-- Conteúdo Principal -->
+  <main class="main-content">
+    <div class="demo-grid">
+
+      <!-- Coluna 1: Laboratório Interativo -->
+      <section class="card" aria-labelledby="lab-heading">
+        <div class="card-eyebrow">
+          <span class="badge-tag badge-medio">Ensino Médio</span>
+          <span>· LABORATÓRIO DE DISPERSÃO E VARIABILIDADE</span>
+        </div>
+        <h2 id="lab-heading" class="card-title">Dispersão: Mesma Média, Dados Diferentes</h2>
+        <p class="card-subtitle">
+          Compare os <strong>Conjuntos A e B</strong>: ambos têm rigorosamente a <strong>mesma média (50.0)</strong>, mas os dados se espalham de formas completamente opostas.
+        </p>
+
+        <!-- Sliders Táteis de Dispersão -->
+        <div class="sliders-panel" style="grid-template-columns: 1fr 1fr;">
+          <div class="slider-group">
+            <div class="slider-label-row">
+              <label for="sliderDispA" style="color:var(--teal); font-weight:800;">Dispersão Conjunto A:</label>
+              <span id="badgeDispA" class="slider-val-badge" style="background:#e6f4f1; color:#1e5a58;">Baixa (σ = 5.8)</span>
+            </div>
+            <input type="range" id="sliderDispA" min="1" max="10" step="1" value="2" aria-label="Nível de dispersão do Conjunto A" />
+          </div>
+
+          <div class="slider-group">
+            <div class="slider-label-row">
+              <label for="sliderDispB" style="color:var(--azul); font-weight:800;">Dispersão Conjunto B:</label>
+              <span id="badgeDispB" class="slider-val-badge" style="background:#edf5f8; color:#18324b;">Alta (σ = 28.5)</span>
+            </div>
+            <input type="range" id="sliderDispB" min="1" max="10" step="1" value="8" aria-label="Nível de dispersão do Conjunto B" />
+          </div>
+        </div>
+
+        <!-- Palco Gráfico SVG Comparativo -->
+        <div class="svg-stage-wrapper">
+          <svg id="dispSvg" class="svg-stage" viewBox="0 0 640 400" aria-label="Comparação visual entre conjuntos com faixas de desvio padrão">
+            <!-- Grade sutil -->
+            <defs>
+              <pattern id="gridPatternDisp" width="20" height="20" patternUnits="userSpaceOnUse">
+                <circle cx="2" cy="2" r="1" fill="#e8edf2" />
+              </pattern>
+            </defs>
+            <rect width="640" height="400" fill="url(#gridPatternDisp)" />
+
+            <!-- Linha guia vertical central da MÉDIA = 50 que atravessa ambos os eixos -->
+            <line id="guideMean" x1="335" y1="20" x2="335" y2="370" stroke="#18324b" stroke-width="1.8" stroke-dasharray="4 4" />
+            <text x="335" y="16" font-size="11" font-weight="800" fill="var(--navy)" text-anchor="middle">Média Fixa = 50.0</text>
+
+            <!-- ================= CONJUNTO A (Y = 120) ================= -->
+            <g id="groupA">
+              <!-- Faixa translúcida da dispersão (Média ± 1 Desvio Padrão) -->
+              <rect id="bandStdA" class="std-range-band" x="300" y="55" width="70" height="70" fill="#2c7a78" />
+              <text id="bandTextA" x="335" y="50" font-size="10" font-weight="800" fill="#1e5a58" text-anchor="middle">Faixa x̄ ± 1σ</text>
+
+              <!-- Eixo da Reta A -->
+              <line class="axis-base-disp" x1="50" y1="120" x2="600" y2="120" />
+              <!-- Ticks do eixo A -->
+              <g id="ticksA"></g>
+              <!-- Marcador da média em A -->
+              <line id="meanTickA" class="mean-tick-line" x1="335" y1="95" x2="335" y2="135" stroke="var(--teal)" />
+              <!-- Pontos do Conjunto A -->
+              <g id="pointsA"></g>
+              <text x="50" y="45" font-size="12" font-weight="800" fill="var(--teal)">Conjunto A (Mais concentrado)</text>
+            </g>
+
+            <!-- ================= CONJUNTO B (Y = 270) ================= -->
+            <g id="groupB">
+              <!-- Faixa translúcida da dispersão (Média ± 1 Desvio Padrão) -->
+              <rect id="bandStdB" class="std-range-band" x="200" y="205" width="270" height="70" fill="#356b8c" />
+              <text id="bandTextB" x="335" y="200" font-size="10" font-weight="800" fill="#21445b" text-anchor="middle">Faixa x̄ ± 1σ</text>
+
+              <!-- Eixo da Reta B -->
+              <line class="axis-base-disp" x1="50" y1="270" x2="600" y2="270" />
+              <!-- Ticks do eixo B -->
+              <g id="ticksB"></g>
+              <!-- Marcador da média em B -->
+              <line id="meanTickB" class="mean-tick-line" x1="335" y1="245" x2="335" y2="285" stroke="var(--azul)" />
+              <!-- Pontos do Conjunto B -->
+              <g id="pointsB"></g>
+              <text x="50" y="195" font-size="12" font-weight="800" fill="var(--azul)">Conjunto B (Mais espalhado)</text>
+            </g>
+
+            <!-- Legenda da Escala na Base -->
+            <text x="335" y="380" font-size="11" font-weight="700" fill="var(--muted)" text-anchor="middle">Escala Comum de 0 a 100</text>
+          </svg>
+        </div>
+
+        <!-- Dica de manipulação -->
+        <div class="manipulation-hint">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/>
+          </svg>
+          <span>Mova os sliders de dispersão. Veja como a média permanece travada em <strong>50.0</strong>, mas a faixa colorida e o desvio padrão variam totalmente!</span>
+        </div>
+
+        <!-- Resultado dinâmico em destaque -->
+        <div class="dynamic-result-box" aria-live="polite">
+          <div class="result-title">Comparação de Variabilidade e Desvio Padrão</div>
+          <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px; margin-top:4px;">
+            <div>
+              <span class="highlight-teal">Conjunto A:</span> Média = 50.0 · <strong>σ = <span id="dispValA">5.8</span></strong> · Amplitude = <span id="dispRangeA">20</span>
+            </div>
+            <div>
+              <span class="highlight-azul">Conjunto B:</span> Média = 50.0 · <strong>σ = <span id="dispValB">28.5</span></strong> · Amplitude = <span id="dispRangeB">80</span>
+            </div>
+          </div>
+          <div id="dispSummaryText" style="margin-top:8px; font-size:0.92rem; color:var(--muted); font-weight:600;">
+            O Conjunto B tem 4.9x mais variabilidade que o Conjunto A, embora a média de ambos seja rigorosamente idêntica!
+          </div>
+        </div>
+
+        <!-- Barra de Botões -->
+        <div class="controls-toolbar">
+          <button id="btnReset" class="btn btn-secondary">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+            Restaurar
+          </button>
+          <button id="btnScenarios" class="btn btn-primary">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 3h5v5"/><path d="M4 20 21 3"/><path d="m21 16v5h-5"/><path d="m15 15 6 6"/><path d="M4 4l5 5"/></svg>
+            Cenários Reais (Notas, Salários, Tempo)
+          </button>
+        </div>
+      </section>
+
+      <!-- Coluna 2: Card "Entenda a Ideia" -->
+      <aside class="card idea-card" aria-labelledby="idea-heading">
+        <div class="card-eyebrow">
+          <span>FUNDAMENTAÇÃO CONCEITUAL</span>
+        </div>
+        <h2 id="idea-heading" class="card-title">Entenda a ideia</h2>
+        <p class="card-subtitle">
+          Por que a média sozinha quase nunca conta a história completa de um grupo de dados?
+        </p>
+
+        <!-- Fórmula em Destaque -->
+        <div class="formula-highlight-card">
+          <div class="formula-highlight-label">Fórmula do Desvio Padrão Populacional</div>
+          <div class="formula-highlight-math" style="font-size:1.35rem;">
+            σ = √ [ ∑(x - x̄)² / n ]
+          </div>
+        </div>
+
+        <!-- Passos Numerados -->
+        <div class="explanation-steps">
+          <div class="step-item">
+            <span class="step-number" aria-hidden="true">1</span>
+            <div class="step-text">
+              <strong>A Ilusão da Média:</strong> Dois alunos podem ter a mesma média final 7.0: o primeiro tirando notas <em>7, 7 e 7</em> (desvio zero, ultra-previsível) e o segundo tirando <em>4, 7 e 10</em> (alta variabilidade).
+            </div>
+          </div>
+          <div class="step-item">
+            <span class="step-number" aria-hidden="true">2</span>
+            <div class="step-text">
+              <strong>O que é o Desvio Padrão (σ)?</strong> Em palavras simples, ele mede o <em>afastamento típico</em> dos pontos em relação à média. Quanto menor o desvio, mais agrupados os dados estão perto do centro.
+            </div>
+          </div>
+          <div class="step-item">
+            <span class="step-number" aria-hidden="true">3</span>
+            <div class="step-text">
+              <strong>A Regra da Faixa (x̄ ± σ):</strong> Em muitas distribuições, a maior parte dos dados fica contida na faixa colorida de 1 desvio padrão acima e abaixo da média.
+            </div>
+          </div>
+        </div>
+
+        <!-- Pergunta para investigar (requisito do usuário) -->
+        <div class="investigation-box">
+          <div class="investigation-header">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+              <path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5"/>
+              <path d="M9 18h6"/><path d="M10 22h4"/>
+            </svg>
+            <span>Pergunta para investigar</span>
+          </div>
+          <p class="investigation-text">
+            Dois jogadores de basquete têm rigorosamente a mesma média de 20 pontos por partida. O jogador A tem desvio padrão de 2 pontos e o jogador B tem desvio padrão de 12 pontos. Qual deles é mais confiável e previsível para o treinador?
+          </p>
+        </div>
+      </aside>
+
+    </div>
+  </main>
+
+  <!-- Rodapé Institucional -->
+  <footer class="site-footer">
+    <div class="site-footer-inner">
+      <p><strong>Matemática em Movimento</strong> · Recurso educacional aberto e gratuito para professores e estudantes.</p>
+      <div class="footer-links">
+        <a href="../index.html">Todas as Demonstrações</a>
+        <span>•</span>
+        <a href="../estatistica/media_mediana_moda.html">Média, Mediana e Moda</a>
+        <span>•</span>
+        <a href="../estatistica/graficos_estatisticos.html">Da Tabela ao Gráfico</a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Lógica Matemática e Interatividade -->
+  <script>
+    /**
+     * Matemática em Movimento — Demonstração: Dispersão e Desvio Padrão
+     * Geração controlada de conjuntos com média constante fixa em 50.0.
+     */
+
+    const AXIS_X_MIN = 60;
+    const AXIS_X_MAX = 590;
+    const VAL_MIN = 0;
+    const VAL_MAX = 100;
+    const TARGET_MEAN = 50.0;
+
+    // Estado da dispersão (níveis de 1 a 10)
+    const state = {
+      levelA: 2, // Baixa dispersão
+      levelB: 8, // Alta dispersão
+      scenarioIdx: 0
+    };
+
+    // Cenários pedagógicos com títulos e dados pré-calculados
+    const scenarios = [
+      {
+        title: "Cenário 1: Notas de Prova (Turma Uniforme vs Turma Desigual)",
+        desc: "Uma turma teve notas compactas em torno de 50; a outra teve alunos com notas muito baixas e muito altas.",
+        levelA: 2,
+        levelB: 8
+      },
+      {
+        title: "Cenário 2: Controle de Qualidade em Fábrica",
+        desc: "Máquina A produz peças com desvio mínimo (alta precisão). Máquina B está desregulada e oscila muito.",
+        levelA: 1,
+        levelB: 7
+      },
+      {
+        title: "Cenário 3: Salários em Duas Empresas com Mesma Média",
+        desc: "Na Empresa A os salários são parecidos; na Empresa B há estagiários e diretores com salários extremos.",
+        levelA: 3,
+        levelB: 9
+      }
+    ];
+
+    // Elementos do DOM
+    const sliderDispA = document.getElementById('sliderDispA');
+    const sliderDispB = document.getElementById('sliderDispB');
+    const badgeDispA = document.getElementById('badgeDispA');
+    const badgeDispB = document.getElementById('badgeDispB');
+
+    const bandStdA = document.getElementById('bandStdA');
+    const bandStdB = document.getElementById('bandStdB');
+    const bandTextA = document.getElementById('bandTextA');
+    const bandTextB = document.getElementById('bandTextB');
+
+    const pointsA = document.getElementById('pointsA');
+    const pointsB = document.getElementById('pointsB');
+    const ticksA = document.getElementById('ticksA');
+    const ticksB = document.getElementById('ticksB');
+
+    const dispValA = document.getElementById('dispValA');
+    const dispValB = document.getElementById('dispValB');
+    const dispRangeA = document.getElementById('dispRangeA');
+    const dispRangeB = document.getElementById('dispRangeB');
+    const dispSummaryText = document.getElementById('dispSummaryText');
+
+    function valToPx(val) {
+      return AXIS_X_MIN + ((val - VAL_MIN) / (VAL_MAX - VAL_MIN)) * (AXIS_X_MAX - AXIS_X_MIN);
+    }
+
+    /**
+     * Gera um conjunto simétrico de 7 pontos centrados em 50.0 com base no nível de dispersão (1 a 10)
+     */
+    function generateDataSet(level) {
+      // Vetores de afastamento normalizados com média 0
+      const spread = level * 4.2;
+      const pts = [
+        TARGET_MEAN - spread * 1.0,
+        TARGET_MEAN - spread * 0.65,
+        TARGET_MEAN - spread * 0.3,
+        TARGET_MEAN,
+        TARGET_MEAN + spread * 0.3,
+        TARGET_MEAN + spread * 0.65,
+        TARGET_MEAN + spread * 1.0
+      ];
+
+      // Garante limites [0, 100]
+      const clamped = pts.map(p => Math.max(0, Math.min(100, Math.round(p * 10) / 10)));
+      
+      // Ajuste de honestidade numérica: compensa o ponto central para que a soma dê exatamente 350 (média exata 50.0)
+      const currentSum = clamped.reduce((a, b) => a + b, 0);
+      const diff = 350.0 - currentSum;
+      clamped[3] = Math.round((clamped[3] + diff) * 10) / 10;
+
+      // Cálculo do desvio padrão populacional: sqrt( sum( (x - 50)^2 ) / n )
+      const n = clamped.length;
+      const variance = clamped.reduce((acc, x) => acc + Math.pow(x - TARGET_MEAN, 2), 0) / n;
+      const stdDev = Math.sqrt(variance);
+      const range = Math.max(...clamped) - Math.min(...clamped);
+
+      return {
+        points: clamped,
+        mean: TARGET_MEAN,
+        stdDev: stdDev,
+        range: range
+      };
+    }
+
+    function initTicks() {
+      let htmlA = '';
+      let htmlB = '';
+      for (let v = 0; v <= 100; v += 10) {
+        const px = valToPx(v);
+        htmlA += `
+          <line x1="${px}" y1="120" x2="${px}" y2="126" stroke="#b7cad6" stroke-width="1.2" />
+          <text x="${px}" y="138" font-size="9" font-weight="700" fill="#8ca0ae" text-anchor="middle">${v}</text>
+        `;
+        htmlB += `
+          <line x1="${px}" y1="270" x2="${px}" y2="276" stroke="#b7cad6" stroke-width="1.2" />
+          <text x="${px}" y="288" font-size="9" font-weight="700" fill="#8ca0ae" text-anchor="middle">${v}</text>
+        `;
+      }
+      ticksA.innerHTML = htmlA;
+      ticksB.innerHTML = htmlB;
+    }
+
+    function updateScene() {
+      const dataA = generateDataSet(state.levelA);
+      const dataB = generateDataSet(state.levelB);
+
+      // Sliders e Badges
+      sliderDispA.value = state.levelA;
+      sliderDispB.value = state.levelB;
+      badgeDispA.textContent = `σ = ${dataA.stdDev.toFixed(1)}`;
+      badgeDispB.textContent = `σ = ${dataB.stdDev.toFixed(1)}`;
+
+      // 1. Renderização Faixa x̄ ± σ para o Conjunto A
+      const lowPxA = valToPx(Math.max(0, TARGET_MEAN - dataA.stdDev));
+      const highPxA = valToPx(Math.min(100, TARGET_MEAN + dataA.stdDev));
+      bandStdA.setAttribute('x', lowPxA);
+      bandStdA.setAttribute('width', highPxA - lowPxA);
+      bandTextA.setAttribute('x', (lowPxA + highPxA) / 2);
+      bandTextA.textContent = `Faixa ±1σ [${(TARGET_MEAN - dataA.stdDev).toFixed(1)} a ${(TARGET_MEAN + dataA.stdDev).toFixed(1)}]`;
+
+      // 2. Renderização Faixa x̄ ± σ para o Conjunto B
+      const lowPxB = valToPx(Math.max(0, TARGET_MEAN - dataB.stdDev));
+      const highPxB = valToPx(Math.min(100, TARGET_MEAN + dataB.stdDev));
+      bandStdB.setAttribute('x', lowPxB);
+      bandStdB.setAttribute('width', highPxB - lowPxB);
+      bandTextB.setAttribute('x', (lowPxB + highPxB) / 2);
+      bandTextB.textContent = `Faixa ±1σ [${(TARGET_MEAN - dataB.stdDev).toFixed(1)} a ${(TARGET_MEAN + dataB.stdDev).toFixed(1)}]`;
+
+      // 3. Pontos do Conjunto A (Teal)
+      let ptsAHtml = '';
+      dataA.points.forEach(p => {
+        const px = valToPx(p);
+        ptsAHtml += `
+          <g>
+            <circle cx="${px}" cy="120" r="10" fill="#2c7a78" stroke="#ffffff" stroke-width="2" />
+            <text x="${px}" y="105" font-size="9" font-weight="800" fill="#1e5a58" text-anchor="middle">${p.toFixed(0)}</text>
+          </g>
+        `;
+      });
+      pointsA.innerHTML = ptsAHtml;
+
+      // 4. Pontos do Conjunto B (Azul)
+      let ptsBHtml = '';
+      dataB.points.forEach(p => {
+        const px = valToPx(p);
+        ptsBHtml += `
+          <g>
+            <circle cx="${px}" cy="270" r="10" fill="#356b8c" stroke="#ffffff" stroke-width="2" />
+            <text x="${px}" y="255" font-size="9" font-weight="800" fill="#21445b" text-anchor="middle">${p.toFixed(0)}</text>
+          </g>
+        `;
+      });
+      pointsB.innerHTML = ptsBHtml;
+
+      // 5. Atualiza Caixa Dinâmica de Resultados
+      dispValA.textContent = dataA.stdDev.toFixed(1);
+      dispValB.textContent = dataB.stdDev.toFixed(1);
+      dispRangeA.textContent = dataA.range.toFixed(0);
+      dispRangeB.textContent = dataB.range.toFixed(0);
+
+      const ratio = (dataB.stdDev / (dataA.stdDev || 1)).toFixed(1);
+      dispSummaryText.innerHTML = `
+        Embora a média de ambos seja idêntica (<strong>50.0</strong>), o <strong>Conjunto B</strong> possui um desvio padrão <strong>${ratio}x maior</strong>, indicando muito mais incerteza e dispersão nos dados.
+      `;
+    }
+
+    sliderDispA.addEventListener('input', (e) => {
+      state.levelA = parseInt(e.target.value, 10);
+      updateScene();
+    });
+
+    sliderDispB.addEventListener('input', (e) => {
+      state.levelB = parseInt(e.target.value, 10);
+      updateScene();
+    });
+
+    document.getElementById('btnReset').addEventListener('click', () => {
+      state.levelA = 2;
+      state.levelB = 8;
+      updateScene();
+    });
+
+    document.getElementById('btnScenarios').addEventListener('click', () => {
+      state.scenarioIdx = (state.scenarioIdx + 1) % scenarios.length;
+      const scn = scenarios[state.scenarioIdx];
+      state.levelA = scn.levelA;
+      state.levelB = scn.levelB;
+      updateScene();
+    });
+
+    document.getElementById('btnFullscreen').addEventListener('click', () => {
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().catch(() => {});
+      } else {
+        document.exitFullscreen().catch(() => {});
+      }
+    });
+
+    initTicks();
+    updateScene();
+  </script>
+</body>
+</html>

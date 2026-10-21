@@ -1,0 +1,1564 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Semelhança de Triângulos · Matemática em Movimento</title>
+  <meta name="description" content="Laboratório visual e interativo de Semelhança de Triângulos. Arraste vértices, varie a razão de escala k, investigue os casos AA, LLL e LAL, e comprove que a razão de áreas é k²." />
+  <link rel="stylesheet" href="../css/estilo.css" />
+  <style>
+    /* Estilos específicos da demonstração de Semelhança de Triângulos */
+    .sim-stage-container {
+      position: relative;
+      background: #ffffff;
+      border: 1px solid var(--linha);
+      border-radius: var(--radius-md);
+      box-shadow: inset 0 2px 6px rgba(24, 50, 75, 0.03);
+      overflow: hidden;
+      margin-bottom: 16px;
+      touch-action: none;
+    }
+
+    .sim-svg {
+      display: block;
+      width: 100%;
+      height: 420px;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    /* Vértices arrastáveis */
+    .vertex-drag-node {
+      cursor: grab;
+      touch-action: none;
+      outline: none;
+      transition: filter 0.15s ease;
+    }
+
+    .vertex-drag-node:hover {
+      filter: drop-shadow(0 0 6px rgba(44, 122, 120, 0.6));
+    }
+
+    .vertex-drag-node:active,
+    .vertex-drag-node.dragging {
+      cursor: grabbing;
+      filter: drop-shadow(0 0 8px rgba(24, 50, 75, 0.7));
+    }
+
+    /* Rótulos e arcos de ângulos */
+    .angle-arc-shape {
+      fill-opacity: 0.22;
+      stroke-width: 2;
+    }
+
+    .angle-arc-shape.highlighted {
+      fill-opacity: 0.45;
+      stroke-width: 3;
+      stroke-dasharray: none;
+      animation: pulseGlow 1.4s ease-in-out infinite alternate;
+    }
+
+    @keyframes pulseGlow {
+      from { filter: drop-shadow(0 0 2px rgba(213, 166, 74, 0.4)); }
+      to { filter: drop-shadow(0 0 7px rgba(213, 166, 74, 0.9)); }
+    }
+
+    .angle-label-text {
+      font-size: 13px;
+      font-weight: 800;
+      fill: var(--navy);
+      text-anchor: middle;
+      dominant-baseline: central;
+      user-select: none;
+      pointer-events: none;
+    }
+
+    .side-label-text {
+      font-size: 12px;
+      font-weight: 700;
+      fill: var(--navy);
+      text-anchor: middle;
+      dominant-baseline: central;
+      user-select: none;
+      pointer-events: none;
+      background: #ffffff;
+    }
+
+    .side-label-rect {
+      fill: #ffffff;
+      fill-opacity: 0.92;
+      stroke-width: 1;
+      rx: 4;
+    }
+
+    .side-label-rect.highlighted {
+      stroke-width: 2;
+      fill: #fef8eb;
+    }
+
+    /* Linhas de homotetia / projeção */
+    .homothetic-ray {
+      stroke: var(--muted);
+      stroke-dasharray: 4 4;
+      stroke-width: 1.5;
+      opacity: 0.75;
+    }
+
+    /* Painel de Controle de Escala k */
+    .scale-control-panel {
+      background: #f8fafc;
+      border: 1px solid var(--linha);
+      border-radius: var(--radius-md);
+      padding: 14px 18px;
+      margin-bottom: 16px;
+    }
+
+    .scale-header-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 10px;
+    }
+
+    .scale-title {
+      font-size: 0.92rem;
+      font-weight: 700;
+      color: var(--navy);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .scale-val-badge {
+      font-size: 1.05rem;
+      font-weight: 800;
+      color: var(--teal);
+      background: var(--teal-light);
+      border: 1px solid var(--teal-border);
+      padding: 3px 12px;
+      border-radius: var(--radius-sm);
+      font-family: var(--font-mono);
+    }
+
+    .scale-slider-row {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 10px;
+    }
+
+    .scale-slider-row input[type="range"] {
+      flex: 1;
+    }
+
+    .scale-shortcuts {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    .btn-chip {
+      background: #ffffff;
+      border: 1px solid var(--linha);
+      color: var(--tinta);
+      font-size: 0.78rem;
+      font-weight: 600;
+      padding: 4px 10px;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .btn-chip:hover {
+      border-color: var(--azul);
+      color: var(--azul);
+      background: #f0f7fb;
+    }
+
+    .btn-chip.active {
+      background: var(--azul);
+      color: #ffffff;
+      border-color: var(--azul);
+    }
+
+    /* Seletor de Modo e Casos */
+    .cases-panel {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+
+    .mode-tabs {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    .mode-tab-btn {
+      background: #ffffff;
+      border: 1.5px solid var(--linha);
+      color: var(--tinta);
+      padding: 9px 12px;
+      border-radius: var(--radius-sm);
+      font-size: 0.84rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .mode-tab-btn:hover {
+      border-color: var(--azul);
+      color: var(--azul);
+    }
+
+    .mode-tab-btn.active {
+      background: var(--navy);
+      border-color: var(--navy);
+      color: #ffffff;
+      box-shadow: 0 2px 6px rgba(24, 50, 75, 0.2);
+    }
+
+    .criteria-selector-bar {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+      background: #f1f5f9;
+      padding: 6px 8px;
+      border-radius: var(--radius-sm);
+    }
+
+    .criteria-label {
+      font-size: 0.76rem;
+      font-weight: 700;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-right: 4px;
+    }
+
+    .criteria-btn {
+      background: transparent;
+      border: 1px solid transparent;
+      padding: 4px 10px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: var(--tinta);
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .criteria-btn:hover {
+      background: #ffffff;
+      border-color: var(--linha);
+    }
+
+    .criteria-btn.active {
+      background: #ffffff;
+      border-color: var(--teal);
+      color: var(--teal);
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+    }
+
+    /* Cartão Didático do Caso Ativo */
+    .criteria-callout {
+      background: #fdfaf3;
+      border-left: 4px solid var(--dourado);
+      border-radius: var(--radius-sm);
+      padding: 10px 14px;
+      font-size: 0.85rem;
+      color: var(--tinta);
+      line-height: 1.45;
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+
+    .criteria-callout svg {
+      color: var(--dourado);
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+
+    /* Tabela de Relações e Métricas ao Vivo */
+    .similarity-metrics-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+
+    @media (max-width: 650px) {
+      .similarity-metrics-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .metric-card {
+      background: #f8fafc;
+      border: 1px solid var(--linha);
+      border-radius: var(--radius-sm);
+      padding: 10px 12px;
+      text-align: center;
+    }
+
+    .metric-card-header {
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--muted);
+      margin-bottom: 4px;
+    }
+
+    .metric-card-value {
+      font-size: 1.15rem;
+      font-weight: 800;
+      color: var(--navy);
+      font-family: var(--font-mono);
+      margin-bottom: 2px;
+    }
+
+    .metric-card-formula {
+      font-size: 0.76rem;
+      color: var(--muted);
+    }
+
+    /* Painel Detalhado de Proporções e Lados */
+    .proportions-table-card {
+      background: #ffffff;
+      border: 1px solid var(--linha);
+      border-radius: var(--radius-md);
+      padding: 14px 16px;
+      margin-bottom: 16px;
+    }
+
+    .table-title {
+      font-size: 0.82rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--navy);
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .proportions-row {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+    }
+
+    @media (max-width: 600px) {
+      .proportions-row {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .ratio-fraction-box {
+      background: #f8fafc;
+      border: 1px solid var(--linha);
+      border-radius: var(--radius-sm);
+      padding: 8px 10px;
+      text-align: center;
+      font-size: 0.82rem;
+    }
+
+    .ratio-fraction-box.highlight {
+      background: var(--teal-light);
+      border-color: var(--teal-border);
+    }
+
+    .fraction-display {
+      display: inline-flex;
+      flex-direction: column;
+      vertical-align: middle;
+      text-align: center;
+      padding: 0 4px;
+      font-family: var(--font-mono);
+      font-weight: 700;
+    }
+
+    .fraction-num {
+      border-bottom: 1.5px solid currentColor;
+      padding-bottom: 1px;
+    }
+
+    .fraction-den {
+      padding-top: 1px;
+    }
+
+    /* Destaque da Razão de Áreas k² */
+    .area-quad-box {
+      background: #edf5f8;
+      border: 1.5px solid var(--azul);
+      border-radius: var(--radius-md);
+      padding: 14px 18px;
+      margin-bottom: 18px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .area-quad-left {
+      flex: 1;
+      min-width: 200px;
+    }
+
+    .area-quad-title {
+      font-size: 0.78rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--azul);
+      margin-bottom: 4px;
+    }
+
+    .area-quad-formula {
+      font-size: 1.15rem;
+      font-weight: 800;
+      color: var(--navy);
+      line-height: 1.3;
+    }
+
+    .area-visual-badge {
+      background: var(--navy);
+      color: #ffffff;
+      padding: 8px 14px;
+      border-radius: var(--radius-sm);
+      font-size: 0.88rem;
+      font-weight: 700;
+      text-align: center;
+      white-space: nowrap;
+    }
+
+    .area-visual-badge span {
+      display: block;
+      font-size: 1.3rem;
+      font-weight: 900;
+      color: #ffd875;
+      font-family: var(--font-mono);
+    }
+
+    /* Legenda de cores dos vértices */
+    .legend-row {
+      display: flex;
+      gap: 14px;
+      font-size: 0.8rem;
+      color: var(--muted);
+      margin-bottom: 12px;
+      flex-wrap: wrap;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .legend-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header Institucional -->
+  <header class="site-header">
+    <div class="header-container">
+      <a href="../index.html" class="brand-wrapper" title="Voltar para a página inicial">
+        <div class="brand-logo" aria-hidden="true">
+          <svg viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 19L12 5l8 14H4z" />
+          </svg>
+        </div>
+        <div class="brand-texts">
+          <span class="brand-title">Matemática em Movimento</span>
+          <span class="brand-slogan">Explore. Manipule. Compreenda.</span>
+        </div>
+      </a>
+      <div class="header-actions">
+        <a href="../index.html" class="btn-header">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+          Início
+        </a>
+        <button id="btnFullscreen" class="btn-header" title="Alternar modo tela cheia para projeção em sala de aula">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>
+          Projeção
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Breadcrumbs -->
+  <nav class="breadcrumb-bar" aria-label="Navegação estrutural">
+    <div class="breadcrumb-container">
+      <a href="../index.html">Início</a>
+      <span class="breadcrumb-sep">/</span>
+      <a href="../index.html#catalogo">Geometria</a>
+      <span class="breadcrumb-sep">/</span>
+      <span class="breadcrumb-current">Semelhança de Triângulos</span>
+    </div>
+  </nav>
+
+  <!-- Conteúdo Principal -->
+  <main class="main-content">
+    <div class="demo-grid">
+
+      <!-- Coluna 1: Laboratório Interativo -->
+      <section class="card" aria-labelledby="lab-heading">
+        <div class="card-eyebrow">
+          <span class="badge-tag badge-fundamental">Ensino Fundamental (8º e 9º anos)</span>
+          <span>· LABORATÓRIO INTERATIVO DE GEOMETRIA</span>
+        </div>
+        <h2 id="lab-heading" class="card-title">Semelhança de Triângulos: Lados Proporcionais e Ângulos Iguais</h2>
+        <p class="card-subtitle">
+          Manipule o triângulo original <strong>ABC</strong> à esquerda e altere a razão de semelhança <strong>k</strong> para transformar o triângulo comparado <strong>A'B'C'</strong>. Comprove que os ângulos são invariantes e as áreas escalam com <strong>k²</strong>.
+        </p>
+
+        <!-- Legenda de Cores dos Vértices Homólogos -->
+        <div class="legend-row" aria-label="Cores dos vértices correspondentes">
+          <div class="legend-item">
+            <span class="legend-dot" style="background:#356b8c;"></span>
+            <span>Vértice A e A' (Azul)</span>
+          </div>
+          <div class="legend-item">
+            <span class="legend-dot" style="background:#2c7a78;"></span>
+            <span>Vértice B e B' (Teal)</span>
+          </div>
+          <div class="legend-item">
+            <span class="legend-dot" style="background:#d5a64a;"></span>
+            <span>Vértice C e C' (Ouro)</span>
+          </div>
+        </div>
+
+        <!-- Palco SVG com Dois Triângulos -->
+        <div class="sim-stage-container">
+          <svg id="stageSvg" class="sim-svg" viewBox="0 0 820 420" aria-label="Palco interativo com dois triângulos semelhantes">
+            <defs>
+              <!-- Grade quadriculada suave -->
+              <pattern id="gridPattern" width="30" height="30" patternUnits="userSpaceOnUse">
+                <path d="M 30 0 L 0 0 0 30" fill="none" stroke="#f0f4f8" stroke-width="1" />
+              </pattern>
+            </defs>
+
+            <!-- Fundo quadriculado -->
+            <rect width="820" height="420" fill="url(#gridPattern)" />
+
+            <!-- Divisória suave entre lado esquerdo e direito (apenas no modo Lado a Lado) -->
+            <g id="separatorGroup">
+              <line x1="410" y1="20" x2="410" y2="400" stroke="#dbe3e9" stroke-width="1.5" stroke-dasharray="5 5" />
+              <text x="205" y="32" fill="#647684" font-size="12" font-weight="700" text-anchor="middle" letter-spacing="0.05em">TRIÂNGULO ORIGINAL (ABC)</text>
+              <text x="615" y="32" fill="#2c7a78" font-size="12" font-weight="700" text-anchor="middle" letter-spacing="0.05em">TRIÂNGULO COMPARADO (A'B'C')</text>
+            </g>
+
+            <!-- Linhas de Homotetia (visíveis apenas no modo Sobrepor) -->
+            <g id="homotheticLinesGroup" style="display: none;">
+              <line id="rayAB" class="homothetic-ray" />
+              <line id="rayAC" class="homothetic-ray" />
+              <line id="rayBC" class="homothetic-ray" />
+            </g>
+
+            <!-- ================= TRIÂNGULO COMPARADO A'B'C' (Atrás para visualização clara no modo sobrepor) ================= -->
+            <g id="comparedTriangleGroup">
+              <!-- Polígono A'B'C' -->
+              <polygon id="polyCompared" fill="#2c7a78" fill-opacity="0.14" stroke="#2c7a78" stroke-width="3" stroke-linejoin="round" />
+
+              <!-- Arcos de ângulos A'B'C' -->
+              <path id="arcA_comp" class="angle-arc-shape" fill="#356b8c" stroke="#356b8c" />
+              <path id="arcB_comp" class="angle-arc-shape" fill="#2c7a78" stroke="#2c7a78" />
+              <path id="arcC_comp" class="angle-arc-shape" fill="#d5a64a" stroke="#d5a64a" />
+
+              <!-- Textos de ângulos A'B'C' -->
+              <text id="angleLabelA_comp" class="angle-label-text"></text>
+              <text id="angleLabelB_comp" class="angle-label-text"></text>
+              <text id="angleLabelC_comp" class="angle-label-text"></text>
+
+              <!-- Rótulos de lados A'B'C' com fundo branco -->
+              <g id="sideGroupC_comp">
+                <rect id="sideRectC_comp" class="side-label-rect" stroke="#2c7a78" />
+                <text id="sideLabelC_comp" class="side-label-text"></text>
+              </g>
+              <g id="sideGroupA_comp">
+                <rect id="sideRectA_comp" class="side-label-rect" stroke="#2c7a78" />
+                <text id="sideLabelA_comp" class="side-label-text"></text>
+              </g>
+              <g id="sideGroupB_comp">
+                <rect id="sideRectB_comp" class="side-label-rect" stroke="#2c7a78" />
+                <text id="sideLabelB_comp" class="side-label-text"></text>
+              </g>
+
+              <!-- Vértices A'B'C' (Marcadores visuais) -->
+              <g id="nodeA_comp">
+                <circle id="circleA_comp" r="10" fill="#356b8c" stroke="#ffffff" stroke-width="2.5" />
+                <text id="textA_comp" fill="#ffffff" font-size="10" font-weight="800" text-anchor="middle" dominant-baseline="central">A'</text>
+              </g>
+              <g id="nodeB_comp">
+                <circle id="circleB_comp" r="10" fill="#2c7a78" stroke="#ffffff" stroke-width="2.5" />
+                <text id="textB_comp" fill="#ffffff" font-size="10" font-weight="800" text-anchor="middle" dominant-baseline="central">B'</text>
+              </g>
+              <g id="nodeC_comp">
+                <circle id="circleC_comp" r="10" fill="#d5a64a" stroke="#ffffff" stroke-width="2.5" />
+                <text id="textC_comp" fill="#ffffff" font-size="10" font-weight="800" text-anchor="middle" dominant-baseline="central">C'</text>
+              </g>
+            </g>
+
+            <!-- ================= TRIÂNGULO ORIGINAL ABC (Frente com nós arrastáveis) ================= -->
+            <g id="originalTriangleGroup">
+              <!-- Polígono ABC -->
+              <polygon id="polyOriginal" fill="#356b8c" fill-opacity="0.18" stroke="#356b8c" stroke-width="3" stroke-linejoin="round" />
+
+              <!-- Arcos de ângulos ABC -->
+              <path id="arcA_orig" class="angle-arc-shape" fill="#356b8c" stroke="#356b8c" />
+              <path id="arcB_orig" class="angle-arc-shape" fill="#2c7a78" stroke="#2c7a78" />
+              <path id="arcC_orig" class="angle-arc-shape" fill="#d5a64a" stroke="#d5a64a" />
+
+              <!-- Textos de ângulos ABC -->
+              <text id="angleLabelA_orig" class="angle-label-text"></text>
+              <text id="angleLabelB_orig" class="angle-label-text"></text>
+              <text id="angleLabelC_orig" class="angle-label-text"></text>
+
+              <!-- Rótulos de lados ABC com fundo branco -->
+              <g id="sideGroupC_orig">
+                <rect id="sideRectC_orig" class="side-label-rect" stroke="#356b8c" />
+                <text id="sideLabelC_orig" class="side-label-text"></text>
+              </g>
+              <g id="sideGroupA_orig">
+                <rect id="sideRectA_orig" class="side-label-rect" stroke="#356b8c" />
+                <text id="sideLabelA_orig" class="side-label-text"></text>
+              </g>
+              <g id="sideGroupB_orig">
+                <rect id="sideRectB_orig" class="side-label-rect" stroke="#356b8c" />
+                <text id="sideLabelB_orig" class="side-label-text"></text>
+              </g>
+
+              <!-- Vértice A Arrastável -->
+              <g id="handleA" class="vertex-drag-node" role="button" tabindex="0" aria-label="Vértice A. Use as setas do teclado ou arraste para mover.">
+                <circle id="haloA" r="22" fill="#356b8c" fill-opacity="0.2" />
+                <circle id="circleA" r="13" fill="#356b8c" stroke="#ffffff" stroke-width="3" />
+                <text id="textA" fill="#ffffff" font-size="12" font-weight="800" text-anchor="middle" dominant-baseline="central">A</text>
+              </g>
+
+              <!-- Vértice B Arrastável -->
+              <g id="handleB" class="vertex-drag-node" role="button" tabindex="0" aria-label="Vértice B. Use as setas do teclado ou arraste para mover.">
+                <circle id="haloB" r="22" fill="#2c7a78" fill-opacity="0.2" />
+                <circle id="circleB" r="13" fill="#2c7a78" stroke="#ffffff" stroke-width="3" />
+                <text id="textB" fill="#ffffff" font-size="12" font-weight="800" text-anchor="middle" dominant-baseline="central">B</text>
+              </g>
+
+              <!-- Vértice C Arrastável -->
+              <g id="handleC" class="vertex-drag-node" role="button" tabindex="0" aria-label="Vértice C. Use as setas do teclado ou arraste para mover.">
+                <circle id="haloC" r="22" fill="#d5a64a" fill-opacity="0.25" />
+                <circle id="circleC" r="13" fill="#d5a64a" stroke="#ffffff" stroke-width="3" />
+                <text id="textC" fill="#ffffff" font-size="12" font-weight="800" text-anchor="middle" dominant-baseline="central">C</text>
+              </g>
+            </g>
+          </svg>
+        </div>
+
+        <!-- Dica de manipulação -->
+        <div class="manipulation-hint">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/>
+          </svg>
+          <span>Arraste os nós <strong>A</strong>, <strong>B</strong> ou <strong>C</strong> para mudar o formato do triângulo. Ajuste o fator de ampliação ou redução no controle deslizante abaixo.</span>
+        </div>
+
+        <!-- Painel de Controle de Escala k -->
+        <div class="scale-control-panel">
+          <div class="scale-header-row">
+            <div class="scale-title">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/><path d="M11 8v6M8 11h6"/></svg>
+              <span>Razão de Semelhança (k):</span>
+            </div>
+            <span id="badgeScaleK" class="scale-val-badge">k = 1.50</span>
+          </div>
+
+          <div class="scale-slider-row">
+            <span style="font-size:0.8rem; font-weight:700; color:var(--muted);">0.50× (Redução)</span>
+            <input type="range" id="sliderK" min="0.5" max="2.5" step="0.1" value="1.5" aria-label="Razão de semelhança k" />
+            <span style="font-size:0.8rem; font-weight:700; color:var(--muted);">2.50× (Ampliação)</span>
+          </div>
+
+          <div class="scale-shortcuts">
+            <span style="font-size:0.75rem; color:var(--muted); font-weight:700; align-self:center; margin-right:4px;">Atalhos rápidos:</span>
+            <button class="btn-chip" data-k="0.5">0.50× (Metade)</button>
+            <button class="btn-chip" data-k="1.0">1.00× (Congruência)</button>
+            <button class="btn-chip active" data-k="1.5">1.50×</button>
+            <button class="btn-chip" data-k="2.0">2.00× (Dobro)</button>
+            <button class="btn-chip" data-k="2.5">2.50×</button>
+          </div>
+        </div>
+
+        <!-- Painel de Modos e Casos Didáticos -->
+        <div class="cases-panel">
+          <div class="mode-tabs">
+            <button id="btnModeSideBySide" class="mode-tab-btn active">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="7" height="16" rx="1"/><rect x="14" y="4" width="7" height="16" rx="1"/></svg>
+              Modo Lado a Lado
+            </button>
+            <button id="btnModeOverlay" class="mode-tab-btn">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 2 22 22 22"/><polygon points="12 8 6 20 18 20" stroke-dasharray="2 2"/></svg>
+              Sobrepor no Vértice A (Tales)
+            </button>
+          </div>
+
+          <!-- Filtro de Critérios de Semelhança -->
+          <div class="criteria-selector-bar">
+            <span class="criteria-label">Evidenciar:</span>
+            <button class="criteria-btn active" data-criteria="all">Todos os Elementos</button>
+            <button class="criteria-btn" data-criteria="aa">Caso AA~ (Ângulo-Ângulo)</button>
+            <button class="criteria-btn" data-criteria="lll">Caso LLL~ (Lado-Lado-Lado)</button>
+            <button class="criteria-btn" data-criteria="lal">Caso LAL~ (Lado-Ângulo-Lado)</button>
+          </div>
+        </div>
+
+        <!-- Caixa Explicativa do Caso Selecionado -->
+        <div id="criteriaCallout" class="criteria-callout" role="status">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/>
+          </svg>
+          <div id="criteriaCalloutText">
+            <strong>Visão Geral:</strong> Dois triângulos são semelhantes quando possuem os <strong>três ângulos correspondentes congruentes</strong> e os <strong>lados homólogos correspondentes proporcionais</strong> na razão constante <em>k</em>.
+          </div>
+        </div>
+
+        <!-- Tabela de Relações de Lados Homólogos -->
+        <div class="proportions-table-card">
+          <div class="table-title">
+            <span>Proporções dos Três Lados Homólogos</span>
+            <span id="badgeLadosK" style="color:var(--teal); font-family:var(--font-mono); font-size:0.85rem;">a'/a = b'/b = c'/c = 1.50</span>
+          </div>
+
+          <div class="proportions-row">
+            <div id="boxRatioA" class="ratio-fraction-box">
+              <div style="font-weight:700; color:var(--muted); margin-bottom:4px;">Lado a (oposto a A)</div>
+              <div>
+                <span class="fraction-display"><span class="fraction-num">B'C'</span><span class="fraction-den">BC</span></span> = 
+                <span class="fraction-display"><span id="valSideA_comp" class="fraction-num">12.0</span><span id="valSideA_orig" class="fraction-den">8.0</span></span> = 
+                <strong id="resRatioA" style="color:var(--teal); font-family:var(--font-mono);">1.50</strong>
+              </div>
+            </div>
+
+            <div id="boxRatioB" class="ratio-fraction-box">
+              <div style="font-weight:700; color:var(--muted); margin-bottom:4px;">Lado b (oposto a B)</div>
+              <div>
+                <span class="fraction-display"><span class="fraction-num">A'C'</span><span class="fraction-den">AC</span></span> = 
+                <span class="fraction-display"><span id="valSideB_comp" class="fraction-num">15.0</span><span id="valSideB_orig" class="fraction-den">10.0</span></span> = 
+                <strong id="resRatioB" style="color:var(--teal); font-family:var(--font-mono);">1.50</strong>
+              </div>
+            </div>
+
+            <div id="boxRatioC" class="ratio-fraction-box">
+              <div style="font-weight:700; color:var(--muted); margin-bottom:4px;">Lado c (oposto a C)</div>
+              <div>
+                <span class="fraction-display"><span class="fraction-num">A'B'</span><span class="fraction-den">AB</span></span> = 
+                <span class="fraction-display"><span id="valSideC_comp" class="fraction-num">18.0</span><span id="valSideC_orig" class="fraction-den">12.0</span></span> = 
+                <strong id="resRatioC" style="color:var(--teal); font-family:var(--font-mono);">1.50</strong>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Grade de Métricas Globais (Ângulos, Perímetros, Áreas) -->
+        <div class="similarity-metrics-grid">
+          <div class="metric-card">
+            <div class="metric-card-header">Ângulos Homólogos</div>
+            <div id="metricAnglesValue" class="metric-card-value" style="font-size:0.95rem; color:var(--navy);">
+              A=A' · B=B' · C=C'
+            </div>
+            <div class="metric-card-formula">Invariantes pelo zoom (Congruentes)</div>
+          </div>
+
+          <div class="metric-card">
+            <div class="metric-card-header">Razão de Perímetros</div>
+            <div id="metricPerimValue" class="metric-card-value">
+              <span id="valPerimRatio">1.50</span>
+            </div>
+            <div class="metric-card-formula">P' / P = k (Linear)</div>
+          </div>
+
+          <div class="metric-card" style="border-color:var(--azul);">
+            <div class="metric-card-header" style="color:var(--azul);">Razão de Áreas</div>
+            <div id="metricAreaRatioValue" class="metric-card-value" style="color:var(--azul);">
+              <span id="valAreaRatio">2.25</span>
+            </div>
+            <div class="metric-card-formula">Área' / Área = k² (Quadrática!)</div>
+          </div>
+        </div>
+
+        <!-- Destaque Especial: Razão Quadrática de Áreas -->
+        <div class="area-quad-box" aria-live="polite">
+          <div class="area-quad-left">
+            <div class="area-quad-title">Descoberta Visual: A Área Escala ao Quadrado</div>
+            <div class="area-quad-formula" id="areaQuadFormula">
+              Área(A'B'C') = (<span id="valFormulaK">1.50</span>)² × Área(ABC) = <span id="valFormulaK2" style="color:var(--azul);">2.25</span> × Área(ABC)
+            </div>
+          </div>
+          <div class="area-visual-badge">
+            Razão de Áreas
+            <span id="valBadgeK2">2.25×</span>
+          </div>
+        </div>
+
+        <!-- Barra de Ações e Presets -->
+        <div class="controls-toolbar" style="margin-top: 14px;">
+          <button id="btnResetDefault" class="btn btn-secondary">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+            Restaurar Padrão
+          </button>
+          <button id="btnPresetTrios" class="btn btn-primary">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+            Experimentar Outros Formatos
+          </button>
+        </div>
+      </section>
+
+      <!-- Coluna 2: Card "Entenda a Ideia" -->
+      <aside class="card idea-card" aria-labelledby="idea-heading">
+        <div class="card-eyebrow">
+          <span>FUNDAMENTAÇÃO CONCEITUAL</span>
+        </div>
+        <h2 id="idea-heading" class="card-title">Entenda a ideia</h2>
+        <p class="card-subtitle">
+          Na geometria euclidiana, duas figuras planas são <strong>semelhantes</strong> quando têm a mesma forma, independentemente do tamanho.
+        </p>
+
+        <!-- Fórmula em Destaque -->
+        <div class="formula-highlight-card">
+          <div class="formula-highlight-label">Lei da Semelhança de Triângulos</div>
+          <div class="formula-highlight-math" style="font-size:1.08rem; line-height:1.5;">
+            <div style="margin-bottom:6px;">Ângulos: Â = Â', &nbsp; B̂ = B̂', &nbsp; Ĉ = Ĉ'</div>
+            <div style="font-size:1.15rem; color:var(--teal); margin-bottom:6px;">
+              Lados: <span class="fraction-display"><span class="fraction-num">a'</span><span class="fraction-den">a</span></span> = 
+              <span class="fraction-display"><span class="fraction-num">b'</span><span class="fraction-den">b</span></span> = 
+              <span class="fraction-display"><span class="fraction-num">c'</span><span class="fraction-den">c</span></span> = k
+            </div>
+            <div style="font-size:0.95rem; color:var(--azul);">
+              Áreas: <span class="fraction-display"><span class="fraction-num">Área'</span><span class="fraction-den">Área</span></span> = k²
+            </div>
+          </div>
+        </div>
+
+        <!-- Passos Numerados -->
+        <div class="explanation-steps">
+          <div class="step-item">
+            <span class="step-number" aria-hidden="true">1</span>
+            <div class="step-text">
+              <strong>Forma vs. Tamanho:</strong> A semelhança preserva rigorosamente as direções e aberturas angulares. Observe no laboratório que ao aumentar ou diminuir <em>k</em>, nenhum dos três ângulos internos sofre a menor alteração.
+            </div>
+          </div>
+          <div class="step-item">
+            <span class="step-number" aria-hidden="true">2</span>
+            <div class="step-text">
+              <strong>Os Três Critérios de Semelhança:</strong> Não é necessário medir os seis elementos para comprovar que dois triângulos são semelhantes. Basta checar um dos casos mínimos:
+              <ul style="margin-top:6px; margin-left:16px; font-size:0.88rem; color:var(--muted); line-height:1.45;">
+                <li><strong>AA~ (Ângulo-Ângulo):</strong> Se dois pares de ângulos forem iguais, o terceiro é forçado a ser igual (soma 180°), garantindo a semelhança.</li>
+                <li><strong>LLL~ (Lado-Lado-Lado):</strong> Se as razões entre os três pares de lados homólogos forem iguais a <em>k</em>.</li>
+                <li><strong>LAL~ (Lado-Ângulo-Lado):</strong> Se dois lados homólogos forem proporcionais e o ângulo entre eles for exatamente congruente.</li>
+              </ul>
+            </div>
+          </div>
+          <div class="step-item">
+            <span class="step-number" aria-hidden="true">3</span>
+            <div class="step-text">
+              <strong>A Surpresa Quadrática das Áreas (k²):</strong> Se dobrarmos o comprimento de todos os lados de um triângulo (<em>k = 2</em>), a área não dobra: ela <strong>quadruplica</strong> (<em>2² = 4</em>)! Isso ocorre porque a área envolve duas dimensões multiplicadas (base × altura / 2), acumulando o fator <em>k × k = k²</em>.
+            </div>
+          </div>
+          <div class="step-item">
+            <span class="step-number" aria-hidden="true">4</span>
+            <div class="step-text">
+              <strong>Teorema de Tales e Homotetia:</strong> Ao ativar o botão <em>"Sobrepor no Vértice A"</em>, observe que o segmento <strong>B'C'</strong> é rigorosamente paralelo a <strong>BC</strong>. Qualquer reta paralela a um dos lados de um triângulo determina um novo triângulo semelhante ao primeiro!
+            </div>
+          </div>
+        </div>
+
+        <!-- Pergunta para Investigar -->
+        <div class="investigation-box">
+          <div class="investigation-header">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+              <path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5"/>
+              <path d="M9 18h6"/><path d="M10 22h4"/>
+            </svg>
+            <span>Pergunta para investigar</span>
+          </div>
+          <p class="investigation-text">
+            Um arquiteto faz uma maquete na escala <strong>1:50</strong> (ou seja, a casa real é uma ampliação com <em>k = 50</em>). O perímetro do telhado da casa é 50 vezes maior que o da maquete. Porém, quantas vezes mais telhas serão necessárias para cobrir o telhado real em relação ao modelo da maquete? Verifique o que acontece com a área quando <em>k</em> cresce!
+          </p>
+        </div>
+      </aside>
+
+    </div>
+  </main>
+
+  <!-- Rodapé Institucional -->
+  <footer class="site-footer">
+    <div class="site-footer-inner">
+      <p><strong>Matemática em Movimento</strong> · Recurso educacional aberto e gratuito para professores e estudantes.</p>
+      <div class="footer-links">
+        <a href="../index.html">Todas as Demonstrações</a>
+        <span>•</span>
+        <a href="../geometria/soma-angulos.html">Soma dos Ângulos</a>
+        <span>•</span>
+        <a href="../geometria/pitagoras.html">Teorema de Pitágoras</a>
+        <span>•</span>
+        <a href="../geometria/relacao_de_euler.html">Relação de Euler</a>
+        <span>•</span>
+        <a href="../geometria/semelhanca_de_triangulos.html">Semelhança de Triângulos</a>
+        <span>•</span>
+        <a href="../geometria/solidos_geometricos.html">Sólidos Geométricos</a>
+        <span>•</span>
+        <a href="../geometria/teorema_de_tales.html">Teorema de Tales</a>
+        <span>•</span>
+        <a href="../trigonometria/triangulo_retangulo.html">Trigonometria</a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Lógica Interativa da Demonstração -->
+  <script>
+    // Estado da simulação
+    const state = {
+      // Coordenadas do Triângulo Original ABC no palco esquerdo (área ~ 0..400 x 0..420)
+      A: { x: 90, y: 330 },
+      B: { x: 340, y: 330 },
+      C: { x: 190, y: 110 },
+      
+      // Fator de semelhança k
+      k: 1.5,
+      
+      // Modo de visualização: 'sideBySide' ou 'overlay'
+      viewMode: 'sideBySide',
+      
+      // Critério em foco: 'all', 'aa', 'lll', 'lal'
+      criteria: 'all',
+      
+      // Preset atual
+      presetIndex: 0
+    };
+
+    // Coordenadas padrão para restauração
+    const defaultCoords = {
+      A: { x: 90, y: 330 },
+      B: { x: 340, y: 330 },
+      C: { x: 190, y: 110 },
+      k: 1.5,
+      viewMode: 'sideBySide',
+      criteria: 'all'
+    };
+
+    // Presets pedagógicos de formatos de triângulo
+    const trianglePresets = [
+      { name: "Escaleno Geral", A: { x: 90, y: 330 }, B: { x: 340, y: 330 }, C: { x: 190, y: 110 } },
+      { name: "Triângulo Retângulo (3-4-5)", A: { x: 90, y: 330 }, B: { x: 330, y: 330 }, C: { x: 90, y: 150 } },
+      { name: "Isósceles (Simétrico)", A: { x: 80, y: 330 }, B: { x: 320, y: 330 }, C: { x: 200, y: 100 } },
+      { name: "Acutângulo", A: { x: 80, y: 330 }, B: { x: 340, y: 330 }, C: { x: 220, y: 90 } },
+      { name: "Obtusângulo", A: { x: 60, y: 330 }, B: { x: 280, y: 330 }, C: { x: 350, y: 180 } }
+    ];
+
+    // Elementos DOM
+    const stageSvg = document.getElementById('stageSvg');
+    const polyOriginal = document.getElementById('polyOriginal');
+    const polyCompared = document.getElementById('polyCompared');
+    const separatorGroup = document.getElementById('separatorGroup');
+    const homotheticLinesGroup = document.getElementById('homotheticLinesGroup');
+    const rayAB = document.getElementById('rayAB');
+    const rayAC = document.getElementById('rayAC');
+    const rayBC = document.getElementById('rayBC');
+
+    // Alças do Original
+    const handleA = document.getElementById('handleA');
+    const handleB = document.getElementById('handleB');
+    const handleC = document.getElementById('handleC');
+    const circleA = document.getElementById('circleA');
+    const circleB = document.getElementById('circleB');
+    const circleC = document.getElementById('circleC');
+    const haloA = document.getElementById('haloA');
+    const haloB = document.getElementById('haloB');
+    const haloC = document.getElementById('haloC');
+    const textA = document.getElementById('textA');
+    const textB = document.getElementById('textB');
+    const textC = document.getElementById('textC');
+
+    // Nós do Comparado
+    const circleA_comp = document.getElementById('circleA_comp');
+    const circleB_comp = document.getElementById('circleB_comp');
+    const circleC_comp = document.getElementById('circleC_comp');
+    const textA_comp = document.getElementById('textA_comp');
+    const textB_comp = document.getElementById('textB_comp');
+    const textC_comp = document.getElementById('textC_comp');
+
+    // Arcos e Rótulos de Ângulos
+    const arcA_orig = document.getElementById('arcA_orig');
+    const arcB_orig = document.getElementById('arcB_orig');
+    const arcC_orig = document.getElementById('arcC_orig');
+    const angleLabelA_orig = document.getElementById('angleLabelA_orig');
+    const angleLabelB_orig = document.getElementById('angleLabelB_orig');
+    const angleLabelC_orig = document.getElementById('angleLabelC_orig');
+
+    const arcA_comp = document.getElementById('arcA_comp');
+    const arcB_comp = document.getElementById('arcB_comp');
+    const arcC_comp = document.getElementById('arcC_comp');
+    const angleLabelA_comp = document.getElementById('angleLabelA_comp');
+    const angleLabelB_comp = document.getElementById('angleLabelB_comp');
+    const angleLabelC_comp = document.getElementById('angleLabelC_comp');
+
+    // Lados do Original
+    const sideLabelA_orig = document.getElementById('sideLabelA_orig');
+    const sideLabelB_orig = document.getElementById('sideLabelB_orig');
+    const sideLabelC_orig = document.getElementById('sideLabelC_orig');
+    const sideRectA_orig = document.getElementById('sideRectA_orig');
+    const sideRectB_orig = document.getElementById('sideRectB_orig');
+    const sideRectC_orig = document.getElementById('sideRectC_orig');
+
+    // Lados do Comparado
+    const sideLabelA_comp = document.getElementById('sideLabelA_comp');
+    const sideLabelB_comp = document.getElementById('sideLabelB_comp');
+    const sideLabelC_comp = document.getElementById('sideLabelC_comp');
+    const sideRectA_comp = document.getElementById('sideRectA_comp');
+    const sideRectB_comp = document.getElementById('sideRectB_comp');
+    const sideRectC_comp = document.getElementById('sideRectC_comp');
+
+    // Controles de Slider e Badges
+    const sliderK = document.getElementById('sliderK');
+    const badgeScaleK = document.getElementById('badgeScaleK');
+    const badgeLadosK = document.getElementById('badgeLadosK');
+
+    // Tabela e Métricas
+    const valSideA_comp = document.getElementById('valSideA_comp');
+    const valSideA_orig = document.getElementById('valSideA_orig');
+    const resRatioA = document.getElementById('resRatioA');
+
+    const valSideB_comp = document.getElementById('valSideB_comp');
+    const valSideB_orig = document.getElementById('valSideB_orig');
+    const resRatioB = document.getElementById('resRatioB');
+
+    const valSideC_comp = document.getElementById('valSideC_comp');
+    const valSideC_orig = document.getElementById('valSideC_orig');
+    const resRatioC = document.getElementById('resRatioC');
+
+    const metricAnglesValue = document.getElementById('metricAnglesValue');
+    const valPerimRatio = document.getElementById('valPerimRatio');
+    const valAreaRatio = document.getElementById('valAreaRatio');
+    const valFormulaK = document.getElementById('valFormulaK');
+    const valFormulaK2 = document.getElementById('valFormulaK2');
+    const valBadgeK2 = document.getElementById('valBadgeK2');
+
+    const boxRatioA = document.getElementById('boxRatioA');
+    const boxRatioB = document.getElementById('boxRatioB');
+    const boxRatioC = document.getElementById('boxRatioC');
+
+    // Botões de Modo e Critérios
+    const btnModeSideBySide = document.getElementById('btnModeSideBySide');
+    const btnModeOverlay = document.getElementById('btnModeOverlay');
+    const criteriaCallout = document.getElementById('criteriaCallout');
+    const criteriaCalloutText = document.getElementById('criteriaCalloutText');
+    const btnResetDefault = document.getElementById('btnResetDefault');
+    const btnPresetTrios = document.getElementById('btnPresetTrios');
+    const btnFullscreen = document.getElementById('btnFullscreen');
+
+    // Funções Geométricas Auxiliares
+    function dist(p1, p2) {
+      return Math.hypot(p2.x - p1.x, p2.y - p1.y);
+    }
+
+    function clamp(val, min, max) {
+      return Math.max(min, Math.min(max, val));
+    }
+
+    // Calcula os ângulos internos de um triângulo em graus dado os 3 vértices
+    function calcAngles(A, B, C) {
+      const a = dist(B, C);
+      const b = dist(A, C);
+      const c = dist(A, B);
+
+      // Lei dos Cossenos
+      let cosA = (b * b + c * c - a * a) / (2 * b * c);
+      let cosB = (a * a + c * c - b * b) / (2 * a * c);
+      cosA = clamp(cosA, -1, 1);
+      cosB = clamp(cosB, -1, 1);
+
+      const degA = (Math.acos(cosA) * 180) / Math.PI;
+      const degB = (Math.acos(cosB) * 180) / Math.PI;
+      const degC = 180 - degA - degB;
+
+      return { degA, degB, degC, a, b, c };
+    }
+
+    // Área via produto vetorial
+    function calcArea(A, B, C) {
+      return Math.abs((B.x - A.x) * (C.y - A.y) - (C.x - A.x) * (B.y - A.y)) / 2;
+    }
+
+    // Gera o arco SVG para o ângulo no vértice V entre as semirretas VP1 e VP2
+    function createAngleArc(V, P1, P2, radius) {
+      const angle1 = Math.atan2(P1.y - V.y, P1.x - V.x);
+      const angle2 = Math.atan2(P2.y - V.y, P2.x - V.x);
+
+      // Normaliza a diferença de ângulo
+      let diff = angle2 - angle1;
+      while (diff < -Math.PI) diff += 2 * Math.PI;
+      while (diff > Math.PI) diff -= 2 * Math.PI;
+
+      const sweepFlag = diff > 0 ? 1 : 0;
+      const startX = V.x + radius * Math.cos(angle1);
+      const startY = V.y + radius * Math.sin(angle1);
+      const endX = V.x + radius * Math.cos(angle2);
+      const endY = V.y + radius * Math.sin(angle2);
+
+      const pathData = `M ${V.x} ${V.y} L ${startX} ${startY} A ${radius} ${radius} 0 0 ${sweepFlag} ${endX} ${endY} Z`;
+
+      // Posição para o texto do rótulo
+      const midAngle = angle1 + diff / 2;
+      const labelDist = radius + 15;
+      const labelX = V.x + labelDist * Math.cos(midAngle);
+      const labelY = V.y + labelDist * Math.sin(midAngle);
+
+      return { pathData, labelX, labelY };
+    }
+
+    // Calcula os vértices de A'B'C'
+    function computeComparedVertices(A, B, C, k, viewMode) {
+      if (viewMode === 'overlay') {
+        // Modo sobrepor: A' coincide com A; lados A'B' e A'C' se expandem ou contraem a partir de A
+        const A_comp = { x: A.x, y: A.y };
+        const B_comp = { x: A.x + k * (B.x - A.x), y: A.y + k * (B.y - A.y) };
+        const C_comp = { x: A.x + k * (C.x - A.x), y: A.y + k * (C.y - A.y) };
+        return { A_comp, B_comp, C_comp };
+      } else {
+        // Modo Lado a Lado:
+        // Centraliza ABC no lado esquerdo (x: 50..370, centro ~ 205)
+        // e A'B'C' no lado direito (x: 430..790, centro ~ 615, centro y ~ 240)
+        const centerOrigX = (A.x + B.x + C.x) / 3;
+        const centerOrigY = (A.y + B.y + C.y) / 3;
+
+        const targetCenterX = 615;
+        const targetCenterY = 240;
+
+        const A_comp = {
+          x: targetCenterX + k * (A.x - centerOrigX),
+          y: targetCenterY + k * (A.y - centerOrigY)
+        };
+        const B_comp = {
+          x: targetCenterX + k * (B.x - centerOrigX),
+          y: targetCenterY + k * (B.y - centerOrigY)
+        };
+        const C_comp = {
+          x: targetCenterX + k * (C.x - centerOrigX),
+          y: targetCenterY + k * (C.y - centerOrigY)
+        };
+
+        return { A_comp, B_comp, C_comp };
+      }
+    }
+
+    // Posiciona rótulo de lado com caixa protetora de fundo
+    function updateSideLabel(rectEl, textEl, P1, P2, textContent, isHighlighted) {
+      const midX = (P1.x + P2.x) / 2;
+      const midY = (P1.y + P2.y) / 2;
+
+      // Vetor normal perpendicular ao lado para afastar o rótulo
+      const dx = P2.x - P1.x;
+      const dy = P2.y - P1.y;
+      const len = Math.hypot(dx, dy) || 1;
+      const nx = -dy / len;
+      const ny = dx / len;
+
+      const offsetDist = 14;
+      const posX = midX + nx * offsetDist;
+      const posY = midY + ny * offsetDist;
+
+      textEl.textContent = textContent;
+      textEl.setAttribute('x', posX);
+      textEl.setAttribute('y', posY);
+
+      const bbox = textEl.getBBox ? textEl.getBBox() : { width: 34, height: 16 };
+      const padX = 6;
+      const padY = 3;
+      rectEl.setAttribute('x', posX - bbox.width / 2 - padX);
+      rectEl.setAttribute('y', posY - bbox.height / 2 - padY);
+      rectEl.setAttribute('width', bbox.width + padX * 2);
+      rectEl.setAttribute('height', bbox.height + padY * 2);
+
+      if (isHighlighted) {
+        rectEl.classList.add('highlighted');
+        textEl.style.fontWeight = '900';
+      } else {
+        rectEl.classList.remove('highlighted');
+        textEl.style.fontWeight = '700';
+      }
+    }
+
+    // Atualiza a cena e todas as métricas matemáticas
+    function updateScene() {
+      const { A, B, C, k, viewMode, criteria } = state;
+
+      // 1. Cálculos do triângulo original
+      const origGeom = calcAngles(A, B, C);
+      const areaOrig = calcArea(A, B, C);
+      const perimOrig = origGeom.a + origGeom.b + origGeom.c;
+
+      // 2. Vértices do comparado
+      const { A_comp, B_comp, C_comp } = computeComparedVertices(A, B, C, k, viewMode);
+      const compGeom = calcAngles(A_comp, B_comp, C_comp);
+      const areaComp = calcArea(A_comp, B_comp, C_comp);
+      const perimComp = compGeom.a + compGeom.b + compGeom.c;
+
+      // 3. Atualizar polígonos no SVG
+      polyOriginal.setAttribute('points', `${A.x},${A.y} ${B.x},${B.y} ${C.x},${C.y}`);
+      polyCompared.setAttribute('points', `${A_comp.x},${A_comp.y} ${B_comp.x},${B_comp.y} ${C_comp.x},${C_comp.y}`);
+
+      // 4. Atualizar alças arrastáveis do original
+      haloA.setAttribute('cx', A.x); haloA.setAttribute('cy', A.y);
+      circleA.setAttribute('cx', A.x); circleA.setAttribute('cy', A.y);
+      textA.setAttribute('x', A.x); textA.setAttribute('y', A.y);
+
+      haloB.setAttribute('cx', B.x); haloB.setAttribute('cy', B.y);
+      circleB.setAttribute('cx', B.x); circleB.setAttribute('cy', B.y);
+      textB.setAttribute('x', B.x); textB.setAttribute('y', B.y);
+
+      haloC.setAttribute('cx', C.x); haloC.setAttribute('cy', C.y);
+      circleC.setAttribute('cx', C.x); circleC.setAttribute('cy', C.y);
+      textC.setAttribute('x', C.x); textC.setAttribute('y', C.y);
+
+      // 5. Atualizar nós do comparado
+      circleA_comp.setAttribute('cx', A_comp.x); circleA_comp.setAttribute('cy', A_comp.y);
+      textA_comp.setAttribute('x', A_comp.x); textA_comp.setAttribute('y', A_comp.y);
+
+      circleB_comp.setAttribute('cx', B_comp.x); circleB_comp.setAttribute('cy', B_comp.y);
+      textB_comp.setAttribute('x', B_comp.x); textB_comp.setAttribute('y', B_comp.y);
+
+      circleC_comp.setAttribute('cx', C_comp.x); circleC_comp.setAttribute('cy', C_comp.y);
+      textC_comp.setAttribute('x', C_comp.x); textC_comp.setAttribute('y', C_comp.y);
+
+      // 6. Arcos de ângulos
+      const arcRadiusOrig = Math.min(30, origGeom.c / 3, origGeom.b / 3, origGeom.a / 3);
+      const arcRadiusComp = Math.min(34, compGeom.c / 3, compGeom.b / 3, compGeom.a / 3);
+
+      const arcAData_orig = createAngleArc(A, B, C, arcRadiusOrig);
+      arcA_orig.setAttribute('d', arcAData_orig.pathData);
+      angleLabelA_orig.setAttribute('x', arcAData_orig.labelX);
+      angleLabelA_orig.setAttribute('y', arcAData_orig.labelY);
+      angleLabelA_orig.textContent = `${Math.round(origGeom.degA)}°`;
+
+      const arcBData_orig = createAngleArc(B, C, A, arcRadiusOrig);
+      arcB_orig.setAttribute('d', arcBData_orig.pathData);
+      angleLabelB_orig.setAttribute('x', arcBData_orig.labelX);
+      angleLabelB_orig.setAttribute('y', arcBData_orig.labelY);
+      angleLabelB_orig.textContent = `${Math.round(origGeom.degB)}°`;
+
+      const arcCData_orig = createAngleArc(C, A, B, arcRadiusOrig);
+      arcC_orig.setAttribute('d', arcCData_orig.pathData);
+      angleLabelC_orig.setAttribute('x', arcCData_orig.labelX);
+      angleLabelC_orig.setAttribute('y', arcCData_orig.labelY);
+      angleLabelC_orig.textContent = `${Math.round(origGeom.degC)}°`;
+
+      const arcAData_comp = createAngleArc(A_comp, B_comp, C_comp, arcRadiusComp);
+      arcA_comp.setAttribute('d', arcAData_comp.pathData);
+      angleLabelA_comp.setAttribute('x', arcAData_comp.labelX);
+      angleLabelA_comp.setAttribute('y', arcAData_comp.labelY);
+      angleLabelA_comp.textContent = `${Math.round(compGeom.degA)}°`;
+
+      const arcBData_comp = createAngleArc(B_comp, C_comp, A_comp, arcRadiusComp);
+      arcB_comp.setAttribute('d', arcBData_comp.pathData);
+      angleLabelB_comp.setAttribute('x', arcBData_comp.labelX);
+      angleLabelB_comp.setAttribute('y', arcBData_comp.labelY);
+      angleLabelB_comp.textContent = `${Math.round(compGeom.degB)}°`;
+
+      const arcCData_comp = createAngleArc(C_comp, A_comp, B_comp, arcRadiusComp);
+      arcC_comp.setAttribute('d', arcCData_comp.pathData);
+      angleLabelC_comp.setAttribute('x', arcCData_comp.labelX);
+      angleLabelC_comp.setAttribute('y', arcCData_comp.labelY);
+      angleLabelC_comp.textContent = `${Math.round(compGeom.degC)}°`;
+
+      // 7. Rótulos dos lados (escala visual proporcional em cm fictícios: px / 20)
+      const scaleFactor = 20;
+      const lenA_orig = (origGeom.a / scaleFactor).toFixed(1);
+      const lenB_orig = (origGeom.b / scaleFactor).toFixed(1);
+      const lenC_orig = (origGeom.c / scaleFactor).toFixed(1);
+
+      const lenA_comp = (compGeom.a / scaleFactor).toFixed(1);
+      const lenB_comp = (compGeom.b / scaleFactor).toFixed(1);
+      const lenC_comp = (compGeom.c / scaleFactor).toFixed(1);
+
+      // Critérios: quais lados/ângulos destacar
+      const highlightA = criteria === 'lll' || criteria === 'all';
+      const highlightB = criteria === 'lll' || criteria === 'lal' || criteria === 'all';
+      const highlightC = criteria === 'lll' || criteria === 'lal' || criteria === 'all';
+
+      const highlightAngleA = criteria === 'aa' || criteria === 'lal' || criteria === 'all';
+      const highlightAngleB = criteria === 'aa' || criteria === 'all';
+      const highlightAngleC = criteria === 'all';
+
+      // Estilo dos arcos conforme critério
+      arcA_orig.classList.toggle('highlighted', highlightAngleA);
+      arcA_comp.classList.toggle('highlighted', highlightAngleA);
+      arcB_orig.classList.toggle('highlighted', highlightAngleB);
+      arcB_comp.classList.toggle('highlighted', highlightAngleB);
+      arcC_orig.classList.toggle('highlighted', highlightAngleC);
+      arcC_comp.classList.toggle('highlighted', highlightAngleC);
+
+      // Lados do original
+      updateSideLabel(sideRectA_orig, sideLabelA_orig, B, C, `a = ${lenA_orig}`, highlightA);
+      updateSideLabel(sideRectB_orig, sideLabelB_orig, A, C, `b = ${lenB_orig}`, highlightB);
+      updateSideLabel(sideRectC_orig, sideLabelC_orig, A, B, `c = ${lenC_orig}`, highlightC);
+
+      // Lados do comparado
+      updateSideLabel(sideRectA_comp, sideLabelA_comp, B_comp, C_comp, `a' = ${lenA_comp}`, highlightA);
+      updateSideLabel(sideRectB_comp, sideLabelB_comp, A_comp, C_comp, `b' = ${lenB_comp}`, highlightB);
+      updateSideLabel(sideRectC_comp, sideLabelC_comp, A_comp, B_comp, `c' = ${lenC_comp}`, highlightC);
+
+      // 8. Modo Sobrepor vs Lado a Lado
+      if (viewMode === 'overlay') {
+        separatorGroup.style.display = 'none';
+        homotheticLinesGroup.style.display = 'block';
+
+        // Raios homotéticos partindo de A até os pontos mais afastados
+        const maxExtend = 1.3;
+        rayAB.setAttribute('x1', A.x); rayAB.setAttribute('y1', A.y);
+        rayAB.setAttribute('x2', A.x + Math.max(k, 1) * maxExtend * (B.x - A.x));
+        rayAB.setAttribute('y2', A.y + Math.max(k, 1) * maxExtend * (B.y - A.y));
+
+        rayAC.setAttribute('x1', A.x); rayAC.setAttribute('y1', A.y);
+        rayAC.setAttribute('x2', A.x + Math.max(k, 1) * maxExtend * (C.x - A.x));
+        rayAC.setAttribute('y2', A.y + Math.max(k, 1) * maxExtend * (C.y - A.y));
+
+        rayBC.setAttribute('x1', B.x); rayBC.setAttribute('y1', B.y);
+        rayBC.setAttribute('x2', B_comp.x); rayBC.setAttribute('y2', B_comp.y);
+      } else {
+        separatorGroup.style.display = 'block';
+        homotheticLinesGroup.style.display = 'none';
+      }
+
+      // 9. Atualizar métricas textuais e tabelas
+      badgeScaleK.textContent = `k = ${k.toFixed(2)}`;
+      badgeLadosK.textContent = `a'/a = b'/b = c'/c = ${k.toFixed(2)}`;
+
+      valSideA_comp.textContent = lenA_comp;
+      valSideA_orig.textContent = lenA_orig;
+      resRatioA.textContent = k.toFixed(2);
+
+      valSideB_comp.textContent = lenB_comp;
+      valSideB_orig.textContent = lenB_orig;
+      resRatioB.textContent = k.toFixed(2);
+
+      valSideC_comp.textContent = lenC_comp;
+      valSideC_orig.textContent = lenC_orig;
+      resRatioC.textContent = k.toFixed(2);
+
+      // Destaques dos blocos de razão
+      boxRatioA.classList.toggle('highlight', highlightA);
+      boxRatioB.classList.toggle('highlight', highlightB);
+      boxRatioC.classList.toggle('highlight', highlightC);
+
+      metricAnglesValue.textContent = `${Math.round(origGeom.degA)}° · ${Math.round(origGeom.degB)}° · ${Math.round(origGeom.degC)}°`;
+
+      valPerimRatio.textContent = k.toFixed(2);
+
+      const k2 = (k * k).toFixed(2);
+      valAreaRatio.textContent = k2;
+      valFormulaK.textContent = k.toFixed(2);
+      valFormulaK2.textContent = k2;
+      valBadgeK2.textContent = `${k2}×`;
+    }
+
+    // Gerenciamento de Arraste de Vértices com Pointer Events (Touch + Mouse unificados)
+    let activeVertex = null;
+    let dragOffset = { x: 0, y: 0 };
+
+    function getSvgCoordinates(evt) {
+      const pt = stageSvg.createSVGPoint();
+      pt.x = evt.clientX;
+      pt.y = evt.clientY;
+      const ctm = stageSvg.getScreenCTM();
+      if (!ctm) return { x: 0, y: 0 };
+      const svgPt = pt.matrixTransform(ctm.inverse());
+      return { x: svgPt.x, y: svgPt.y };
+    }
+
+    function onPointerDown(evt, vertexKey) {
+      evt.preventDefault();
+      activeVertex = vertexKey;
+      const coords = getSvgCoordinates(evt);
+      dragOffset.x = coords.x - state[vertexKey].x;
+      dragOffset.y = coords.y - state[vertexKey].y;
+
+      const handle = document.getElementById(`handle${vertexKey}`);
+      if (handle) handle.classList.add('dragging');
+      window.addEventListener('pointermove', onPointerMove);
+      window.addEventListener('pointerup', onPointerUp);
+      window.addEventListener('pointercancel', onPointerUp);
+    }
+
+    function onPointerMove(evt) {
+      if (!activeVertex) return;
+      evt.preventDefault();
+      const coords = getSvgCoordinates(evt);
+
+      // Limites seguros para manter o triângulo válido e na metade esquerda
+      const maxX = state.viewMode === 'overlay' ? 480 : 380;
+      const minX = 40;
+      const minY = 50;
+      const maxY = 380;
+
+      const newX = clamp(coords.x - dragOffset.x, minX, maxX);
+      const newY = clamp(coords.y - dragOffset.y, minY, maxY);
+
+      state[activeVertex].x = Math.round(newX);
+      state[activeVertex].y = Math.round(newY);
+
+      updateScene();
+    }
+
+    function onPointerUp() {
+      if (activeVertex) {
+        const handle = document.getElementById(`handle${activeVertex}`);
+        if (handle) handle.classList.remove('dragging');
+      }
+      activeVertex = null;
+      window.removeEventListener('pointermove', onPointerMove);
+      window.removeEventListener('pointerup', onPointerUp);
+      window.removeEventListener('pointercancel', onPointerUp);
+    }
+
+    // Conectar eventos de ponteiro nos três vértices
+    handleA.addEventListener('pointerdown', (e) => onPointerDown(e, 'A'));
+    handleB.addEventListener('pointerdown', (e) => onPointerDown(e, 'B'));
+    handleC.addEventListener('pointerdown', (e) => onPointerDown(e, 'C'));
+
+    // Acessibilidade via teclado para os nós (Setas para mover)
+    [handleA, handleB, handleC].forEach((handle, idx) => {
+      const key = ['A', 'B', 'C'][idx];
+      handle.addEventListener('keydown', (evt) => {
+        const step = evt.shiftKey ? 10 : 3;
+        let moved = false;
+        if (evt.key === 'ArrowLeft') { state[key].x -= step; moved = true; }
+        if (evt.key === 'ArrowRight') { state[key].x += step; moved = true; }
+        if (evt.key === 'ArrowUp') { state[key].y -= step; moved = true; }
+        if (evt.key === 'ArrowDown') { state[key].y += step; moved = true; }
+
+        if (moved) {
+          evt.preventDefault();
+          updateScene();
+        }
+      });
+    });
+
+    // Controle do Slider de Escala k
+    sliderK.addEventListener('input', (e) => {
+      state.k = parseFloat(e.target.value);
+      updateShortcutButtons(state.k);
+      updateScene();
+    });
+
+    // Botões de atalho de escala k
+    const shortcutBtns = document.querySelectorAll('.btn-chip[data-k]');
+    function updateShortcutButtons(currentK) {
+      shortcutBtns.forEach(btn => {
+        const btnK = parseFloat(btn.dataset.k);
+        btn.classList.toggle('active', Math.abs(btnK - currentK) < 0.05);
+      });
+    }
+
+    shortcutBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        const val = parseFloat(btn.dataset.k);
+        state.k = val;
+        sliderK.value = val;
+        updateShortcutButtons(val);
+        updateScene();
+      });
+    });
+
+    // Alternar Modos: Lado a Lado vs Sobrepor
+    btnModeSideBySide.addEventListener('click', () => {
+      state.viewMode = 'sideBySide';
+      btnModeSideBySide.classList.add('active');
+      btnModeOverlay.classList.remove('active');
+      updateScene();
+    });
+
+    btnModeOverlay.addEventListener('click', () => {
+      state.viewMode = 'overlay';
+      btnModeOverlay.classList.add('active');
+      btnModeSideBySide.classList.remove('active');
+      updateScene();
+    });
+
+    // Filtros de Critérios de Semelhança (AA, LLL, LAL, Todos)
+    const criteriaButtons = document.querySelectorAll('.criteria-btn[data-criteria]');
+    const criteriaDescriptions = {
+      all: "<strong>Visão Geral Completa:</strong> Dois triângulos são semelhantes se e somente se possuem todos os <strong>três ângulos correspondentes congruentes</strong> e todos os <strong>três lados homólogos proporcionais</strong> (razão k).",
+      aa: "<strong>Caso AA~ (Ângulo-Ângulo):</strong> Se dois pares de ângulos correspondentes são congruentes (Â = Â' e B̂ = B̂'), então os dois triângulos são necessariamente semelhantes. O terceiro ângulo é obrigatoriamente idêntico pois a soma dos três é sempre 180°!",
+      lll: "<strong>Caso LLL~ (Lado-Lado-Lado):</strong> Se as razões entre os três pares de lados homólogos forem todas iguais (a'/a = b'/b = c'/c = k), os triângulos são comprovadamente semelhantes e seus ângulos internos correspondentes serão rigorosamente iguais.",
+      lal: "<strong>Caso LAL~ (Lado-Ângulo-Lado):</strong> Se dois pares de lados homólogos forem proporcionais (ex.: b'/b = c'/c = k) e o ângulo formado entre eles for congruente (Â = Â'), a semelhança entre os triângulos está plenamente garantida."
+    };
+
+    criteriaButtons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        criteriaButtons.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        state.criteria = btn.dataset.criteria;
+        criteriaCalloutText.innerHTML = criteriaDescriptions[state.criteria] || criteriaDescriptions.all;
+        updateScene();
+      });
+    });
+
+    // Botão Restaurar Padrão
+    btnResetDefault.addEventListener('click', () => {
+      state.A = { ...defaultCoords.A };
+      state.B = { ...defaultCoords.B };
+      state.C = { ...defaultCoords.C };
+      state.k = defaultCoords.k;
+      state.viewMode = defaultCoords.viewMode;
+      state.criteria = defaultCoords.criteria;
+
+      sliderK.value = defaultCoords.k;
+      updateShortcutButtons(defaultCoords.k);
+
+      btnModeSideBySide.classList.add('active');
+      btnModeOverlay.classList.remove('active');
+
+      criteriaButtons.forEach(b => b.classList.toggle('active', b.dataset.criteria === 'all'));
+      criteriaCalloutText.innerHTML = criteriaDescriptions.all;
+
+      updateScene();
+    });
+
+    // Botão Experimentar Outros Formatos
+    btnPresetTrios.addEventListener('click', () => {
+      state.presetIndex = (state.presetIndex + 1) % trianglePresets.length;
+      const preset = trianglePresets[state.presetIndex];
+      state.A = { ...preset.A };
+      state.B = { ...preset.B };
+      state.C = { ...preset.C };
+      updateScene();
+    });
+
+    // Modo Projeção em Sala de Aula (Fullscreen)
+    btnFullscreen.addEventListener('click', () => {
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().catch(() => {});
+      } else {
+        document.exitFullscreen().catch(() => {});
+      }
+    });
+
+    // Renderização inicial
+    updateScene();
+  </script>
+</body>
+</html>

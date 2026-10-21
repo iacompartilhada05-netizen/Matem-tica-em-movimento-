@@ -1,0 +1,618 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Teorema de Pitágoras · Matemática em Movimento</title>
+  <meta name="description" content="Laboratório interativo do Teorema de Pitágoras. Manipule os catetos e veja os quadrados sobre os lados comprovando que a² + b² = c² em tempo real." />
+  <link rel="stylesheet" href="../css/estilo.css" />
+  <style>
+    .square-cat-a {
+      fill: #2c7a78;
+      fill-opacity: 0.22;
+      stroke: #2c7a78;
+      stroke-width: 2.5;
+    }
+    .square-cat-b {
+      fill: #356b8c;
+      fill-opacity: 0.22;
+      stroke: #356b8c;
+      stroke-width: 2.5;
+    }
+    .square-hyp {
+      fill: #d5a64a;
+      fill-opacity: 0.28;
+      stroke: #d5a64a;
+      stroke-width: 3;
+    }
+    .triangle-fill {
+      fill: #18324b;
+      fill-opacity: 0.12;
+      stroke: #18324b;
+      stroke-width: 3;
+    }
+    .right-angle-mark {
+      stroke: #18324b;
+      stroke-width: 2;
+      fill: none;
+    }
+    .area-label {
+      font-size: 13.5px;
+      font-weight: 800;
+      text-anchor: middle;
+      dominant-baseline: central;
+      user-select: none;
+    }
+    .side-label {
+      font-size: 13px;
+      font-weight: 700;
+      text-anchor: middle;
+      dominant-baseline: central;
+      user-select: none;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header Institucional -->
+  <header class="site-header">
+    <div class="header-container">
+      <a href="../index.html" class="brand-wrapper" title="Voltar para a página inicial">
+        <div class="brand-logo" aria-hidden="true">
+          <svg viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 19L12 5l8 14H4z" />
+          </svg>
+        </div>
+        <div class="brand-texts">
+          <span class="brand-title">Matemática em Movimento</span>
+          <span class="brand-slogan">Explore. Manipule. Compreenda.</span>
+        </div>
+      </a>
+      <div class="header-actions">
+        <a href="../index.html" class="btn-header">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+          Início
+        </a>
+        <button id="btnFullscreen" class="btn-header" title="Alternar modo tela cheia para projeção em sala de aula">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>
+          Projeção
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Breadcrumbs -->
+  <nav class="breadcrumb-bar" aria-label="Navegação estrutural">
+    <div class="breadcrumb-container">
+      <a href="../index.html">Início</a>
+      <span class="breadcrumb-sep">/</span>
+      <span>Geometria</span>
+      <span class="breadcrumb-sep">/</span>
+      <span class="breadcrumb-current">Teorema de Pitágoras</span>
+    </div>
+  </nav>
+
+  <!-- Conteúdo Principal -->
+  <main class="main-content">
+    <div class="demo-grid">
+
+      <!-- Coluna 1: Laboratório Interativo -->
+      <section class="card" aria-labelledby="lab-heading">
+        <div class="card-eyebrow">
+          <span class="badge-tag badge-fundamental">Ensino Fundamental</span>
+          <span>· LABORATÓRIO INTERATIVO DE GEOMETRIA</span>
+        </div>
+        <h2 id="lab-heading" class="card-title">Teorema de Pitágoras: a² + b² = c²</h2>
+        <p class="card-subtitle">
+          Altere os catetos <em>a</em> e <em>b</em> arrastando os vértices ou usando os controles. Veja os três quadrados construídos externamente aos lados comprovando a igualdade geométrica de áreas.
+        </p>
+
+        <!-- Painel de Sliders Táteis -->
+        <div class="sliders-panel">
+          <div class="slider-group">
+            <div class="slider-label-row">
+              <label for="sliderCatA">Cateto Horizontal (a):</label>
+              <span id="badgeCatA" class="slider-val-badge">4.0</span>
+            </div>
+            <input type="range" id="sliderCatA" min="2" max="6" step="0.5" value="4" aria-label="Comprimento do cateto horizontal a" />
+          </div>
+
+          <div class="slider-group">
+            <div class="slider-label-row">
+              <label for="sliderCatB">Cateto Vertical (b):</label>
+              <span id="badgeCatB" class="slider-val-badge">3.0</span>
+            </div>
+            <input type="range" id="sliderCatB" min="2" max="6" step="0.5" value="3" aria-label="Comprimento do cateto vertical b" />
+          </div>
+        </div>
+
+        <!-- Palco SVG -->
+        <div class="svg-stage-wrapper">
+          <svg id="pythagorasSvg" class="svg-stage" viewBox="0 0 680 500" aria-label="Diagrama do Teorema de Pitágoras com quadrados externos construídos sobre os lados">
+            <!-- Padrão quadriculado sutil -->
+            <defs>
+              <pattern id="gridPatternPyth" width="25" height="25" patternUnits="userSpaceOnUse">
+                <path d="M 25 0 L 0 0 0 25" fill="none" stroke="#ebf1f5" stroke-width="1" />
+              </pattern>
+            </defs>
+            <rect width="680" height="500" fill="url(#gridPatternPyth)" />
+
+            <!-- 1. Quadrados externos sobre os lados (renderizados primeiro para ficarem abaixo do triângulo) -->
+            <!-- Quadrado sobre Cateto a (construído externamente para baixo) -->
+            <polygon id="polySqA" class="square-cat-a" />
+            <!-- Quadrado sobre Cateto b (construído externamente para a esquerda) -->
+            <polygon id="polySqB" class="square-cat-b" />
+            <!-- Quadrado sobre Hipotenusa c (construído externamente para CIMA / fora do triângulo) -->
+            <polygon id="polySqC" class="square-hyp" />
+
+            <!-- 2. Triângulo Retângulo Principal (visível por cima dos quadrados) -->
+            <polygon id="triangleMain" class="triangle-fill" />
+
+            <!-- 3. Símbolo do Ângulo Reto de 90° no vértice O -->
+            <path id="rightAngleMark" class="right-angle-mark" />
+            <circle id="rightAngleDot" r="2.5" fill="#18324b" />
+
+            <!-- 4. Rótulos de medida nos lados do triângulo -->
+            <text id="sideLabelA" class="side-label" fill="#1e5a58">a = 4.0</text>
+            <text id="sideLabelB" class="side-label" fill="#21445b">b = 3.0</text>
+            <text id="sideLabelC" class="side-label" fill="#8c6412">c = 5.0</text>
+
+            <!-- 5. Rótulos de área no centro exato de cada quadrado com fundo protetor (halo) -->
+            <g id="badgeGroupA">
+              <rect id="haloLabelA" rx="5" ry="5" fill="#ffffff" fill-opacity="0.9" stroke="#2c7a78" stroke-width="1.2" />
+              <text id="labelSqA" class="area-label" fill="#1e5a58">a² = 16</text>
+            </g>
+
+            <g id="badgeGroupB">
+              <rect id="haloLabelB" rx="5" ry="5" fill="#ffffff" fill-opacity="0.9" stroke="#356b8c" stroke-width="1.2" />
+              <text id="labelSqB" class="area-label" fill="#21445b">b² = 9</text>
+            </g>
+
+            <g id="badgeGroupC">
+              <rect id="haloLabelC" rx="5" ry="5" fill="#ffffff" fill-opacity="0.92" stroke="#d5a64a" stroke-width="1.5" />
+              <text id="labelSqC" class="area-label" fill="#8c6412">c² = 25</text>
+            </g>
+
+            <!-- 6. Alças interativas móveis nos vértices A e B -->
+            <g id="handleA" class="drag-handle" role="button" tabindex="0" aria-label="Alça do Cateto A. Arraste horizontalmente.">
+              <circle id="haloA" cx="330" cy="320" r="22" fill="#2c7a78" fill-opacity="0.25" />
+              <circle id="pointA" cx="330" cy="320" r="12" fill="#2c7a78" stroke="#ffffff" stroke-width="3" />
+              <text id="textA" x="330" y="320" fill="#ffffff" font-size="11" font-weight="800" text-anchor="middle" dominant-baseline="central" pointer-events="none">A</text>
+            </g>
+
+            <g id="handleB" class="drag-handle" role="button" tabindex="0" aria-label="Alça do Cateto B. Arraste verticalmente.">
+              <circle id="haloB" cx="230" cy="245" r="22" fill="#356b8c" fill-opacity="0.25" />
+              <circle id="pointB" cx="230" cy="245" r="12" fill="#356b8c" stroke="#ffffff" stroke-width="3" />
+              <text id="textB" x="230" y="245" fill="#ffffff" font-size="11" font-weight="800" text-anchor="middle" dominant-baseline="central" pointer-events="none">B</text>
+            </g>
+          </svg>
+        </div>
+
+        <!-- Dica de manipulação -->
+        <div class="manipulation-hint">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/>
+          </svg>
+          <span>Arraste os nós <strong>A</strong> ou <strong>B</strong> pelo palco, ou ajuste os sliders para comparar as áreas exatas dos três quadrados externos.</span>
+        </div>
+
+        <!-- Resultado dinâmico em destaque -->
+        <div class="dynamic-result-box" aria-live="polite">
+          <div class="result-title">Relação Fundamental das Áreas</div>
+          <div id="dynamicPythOutput" class="result-formula">
+            <span class="highlight-teal">a² = 16.00</span> + 
+            <span class="highlight-azul">b² = 9.00</span> = 
+            <span class="highlight-dourado">c² = 25.00</span>
+          </div>
+        </div>
+
+        <!-- Barra de Botões -->
+        <div class="controls-toolbar">
+          <button id="btnReset" class="btn btn-secondary">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+            Restaurar (3-4-5)
+          </button>
+          <button id="btnPresetTrios" class="btn btn-primary">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 14 14"/></svg>
+            Experimentar outros ternos
+          </button>
+        </div>
+      </section>
+
+      <!-- Coluna 2: Card "Entenda a Ideia" -->
+      <aside class="card idea-card" aria-labelledby="idea-heading">
+        <div class="card-eyebrow">
+          <span>FUNDAMENTAÇÃO CONCEITUAL</span>
+        </div>
+        <h2 id="idea-heading" class="card-title">Entenda a ideia</h2>
+        <p class="card-subtitle">
+          O Teorema de Pitágoras não é apenas uma fórmula algébrica; é uma equivalência geométrica direta de áreas no plano.
+        </p>
+
+        <!-- Fórmula em Destaque -->
+        <div class="formula-highlight-card">
+          <div class="formula-highlight-label">Teorema de Pitágoras</div>
+          <div class="formula-highlight-math">a² + b² = c²</div>
+        </div>
+
+        <!-- Passos Numerados -->
+        <div class="explanation-steps">
+          <div class="step-item">
+            <span class="step-number" aria-hidden="true">1</span>
+            <div class="step-text">
+              <strong>Catetos e Hipotenusa:</strong> No triângulo retângulo, os dois lados perpendiculares que formam o ângulo reto de 90° são chamados de <em>catetos</em> (a e b). O lado oposto mais longo é a <em>hipotenusa</em> (c).
+            </div>
+          </div>
+          <div class="step-item">
+            <span class="step-number" aria-hidden="true">2</span>
+            <div class="step-text">
+              <strong>Soma das Áreas Externas:</strong> Construindo um quadrado exterior sobre cada lado, a área do quadrado da hipotenusa (dourado, apontando para cima) é rigorosamente igual à soma das áreas dos dois quadrados dos catetos (teal e azul).
+            </div>
+          </div>
+          <div class="step-item">
+            <span class="step-number" aria-hidden="true">3</span>
+            <div class="step-text">
+              <strong>Distância no plano:</strong> Conhecendo qualquer deslocamento horizontal e vertical no plano ou no espaço, a distância em linha reta é sempre calculada através da raiz de a² + b².
+            </div>
+          </div>
+        </div>
+
+        <!-- Pergunta para investigar -->
+        <div class="investigation-box">
+          <div class="investigation-header">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+              <path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5"/>
+              <path d="M9 18h6"/><path d="M10 22h4"/>
+            </svg>
+            <span>Pergunta para investigar</span>
+          </div>
+          <p class="investigation-text">
+            Se você dobrar simultaneamente os dois catetos (por exemplo, de a=3 e b=4 para a=6 e b=8), a área do quadrado da hipotenusa dobra ou quadruplica? Por que isso acontece?
+          </p>
+        </div>
+      </aside>
+
+    </div>
+  </main>
+
+  <!-- Rodapé Institucional -->
+  <footer class="site-footer">
+    <div class="site-footer-inner">
+      <p><strong>Matemática em Movimento</strong> · Recurso educacional aberto e gratuito para professores e estudantes.</p>
+      <div class="footer-links">
+        <a href="../index.html">Todas as Demonstrações</a>
+        <span>•</span>
+        <a href="../geometria/soma-angulos.html">Soma dos Ângulos</a>
+        <span>•</span>
+        <a href="../geometria/relacao_de_euler.html">Relação de Euler</a>
+        <span>•</span>
+        <a href="../geometria/semelhanca_de_triangulos.html">Semelhança de Triângulos</a>
+        <span>•</span>
+        <a href="../funcoes/afim.html">Função Afim</a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Lógica Matemática e Interatividade -->
+  <script>
+    /**
+     * Matemática em Movimento — Demonstração 2: Teorema de Pitágoras
+     * Construção estrita dos três quadrados externos via produto vetorial 2D.
+     * O quadrado é sempre erguido para o lado OPOSTO ao terceiro vértice do triângulo.
+     */
+
+    // Ponto fixo da origem do ângulo reto (O)
+    const ORIGIN = { x: 230, y: 320 };
+    // Escala em pixels por unidade matemática
+    const SCALE = 25;
+
+    // Estado do triângulo (em unidades matemáticas)
+    const state = {
+      a: 4.0, // cateto horizontal (para a direita)
+      b: 3.0, // cateto vertical (para cima)
+      activeHandle: null,
+      presetIndex: 0
+    };
+
+    // Ternos pitagóricos e configurações didáticas
+    const presets = [
+      { a: 4.0, b: 3.0, name: "3-4-5 (Clássico)" },
+      { a: 5.0, b: 4.0, name: "4-5" },
+      { a: 3.5, b: 3.5, name: "Isósceles Retângulo" },
+      { a: 5.5, b: 2.5, name: "Cateto Longo" },
+      { a: 2.5, b: 5.0, name: "Vertical Elevado" }
+    ];
+
+    // Elementos do DOM
+    const svg = document.getElementById('pythagorasSvg');
+    const polySqA = document.getElementById('polySqA');
+    const polySqB = document.getElementById('polySqB');
+    const polySqC = document.getElementById('polySqC');
+    const triangleMain = document.getElementById('triangleMain');
+    const rightAngleMark = document.getElementById('rightAngleMark');
+    const rightAngleDot = document.getElementById('rightAngleDot');
+
+    const labelSqA = document.getElementById('labelSqA');
+    const labelSqB = document.getElementById('labelSqB');
+    const labelSqC = document.getElementById('labelSqC');
+    const haloLabelA = document.getElementById('haloLabelA');
+    const haloLabelB = document.getElementById('haloLabelB');
+    const haloLabelC = document.getElementById('haloLabelC');
+
+    const sideLabelA = document.getElementById('sideLabelA');
+    const sideLabelB = document.getElementById('sideLabelB');
+    const sideLabelC = document.getElementById('sideLabelC');
+
+    const sliderCatA = document.getElementById('sliderCatA');
+    const sliderCatB = document.getElementById('sliderCatB');
+    const badgeCatA = document.getElementById('badgeCatA');
+    const badgeCatB = document.getElementById('badgeCatB');
+    const dynamicOutput = document.getElementById('dynamicPythOutput');
+
+    const handles = {
+      A: { g: document.getElementById('handleA'), halo: document.getElementById('haloA'), point: document.getElementById('pointA'), text: document.getElementById('textA') },
+      B: { g: document.getElementById('handleB'), halo: document.getElementById('haloB'), point: document.getElementById('pointB'), text: document.getElementById('textB') }
+    };
+
+    /**
+     * Constrói geometricamente o quadrado externo sobre o segmento PQ do triângulo PQR.
+     * Fórmula geométrica:
+     * 1) Vetor do lado: (dx, dy) = (Q.x - P.x, Q.y - P.y)
+     * 2) Produto vetorial 2D com o vértice oposto R:
+     *    s = (Q.x - P.x) * (R.y - P.y) - (Q.y - P.y) * (R.x - P.x)
+     * 3) Para que o quadrado fique do lado EXTERNO (oposto a R), escolhemos o vetor normal
+     *    perpendicular com sinal contrário ao de R:
+     *    dir = (s > 0) ? 1 : -1;
+     *    dispX = dir * dy;
+     *    dispY = -dir * dx;
+     * 4) Vértices do quadrado: P, Q, Q' = Q + disp, P' = P + disp
+     * 5) Centro geométrico = ponto médio dos 4 vértices
+     */
+    function buildExternalSquare(P, Q, R) {
+      const dx = Q.x - P.x;
+      const dy = Q.y - P.y;
+
+      // Produto vetorial 2D (determinante) entre o vetor do lado e o vetor até o terceiro vértice
+      const s = dx * (R.y - P.y) - dy * (R.x - P.x);
+
+      // Sentido do lado exterior: oposto ao vértice R
+      const dir = s > 0 ? 1 : -1;
+      const dispX = dir * dy;
+      const dispY = -dir * dx;
+
+      const P_prime = { x: P.x + dispX, y: P.y + dispY };
+      const Q_prime = { x: Q.x + dispX, y: Q.y + dispY };
+
+      // Centro geométrico do quadrado (ponto médio dos 4 vértices)
+      const centerX = (P.x + Q.x + Q_prime.x + P_prime.x) / 4;
+      const centerY = (P.y + Q.y + Q_prime.y + P_prime.y) / 4;
+
+      const pointsStr = `${P.x.toFixed(1)},${P.y.toFixed(1)} ${Q.x.toFixed(1)},${Q.y.toFixed(1)} ${Q_prime.x.toFixed(1)},${Q_prime.y.toFixed(1)} ${P_prime.x.toFixed(1)},${P_prime.y.toFixed(1)}`;
+
+      return {
+        pointsStr,
+        centerX,
+        centerY
+      };
+    }
+
+    /**
+     * Posiciona o rótulo de área no centro do quadrado com um halo protetor arredondado
+     */
+    function setBadgeLabel(haloEl, textEl, cx, cy, textStr) {
+      textEl.textContent = textStr;
+      textEl.setAttribute('x', cx.toFixed(1));
+      textEl.setAttribute('y', cy.toFixed(1));
+
+      const w = 84;
+      const h = 26;
+      haloEl.setAttribute('x', (cx - w / 2).toFixed(1));
+      haloEl.setAttribute('y', (cy - h / 2).toFixed(1));
+      haloEl.setAttribute('width', w);
+      haloEl.setAttribute('height', h);
+    }
+
+    /**
+     * Atualiza a geometria e todos os elementos SVG da demonstração
+     */
+    function updateScene() {
+      const a = state.a;
+      const b = state.b;
+
+      // Cálculo matemático da hipotenusa: c = sqrt(a² + b²)
+      const aSquared = a * a;
+      const bSquared = b * b;
+      const cSquared = aSquared + bSquared;
+      const c = Math.sqrt(cSquared);
+
+      // Coordenadas dos três vértices do triângulo retângulo em pixels:
+      // O = vértice do ângulo reto (90°)
+      // A = extremidade do cateto a (horizontal à direita)
+      // B = extremidade do cateto b (vertical para cima)
+      const Ox = ORIGIN.x;
+      const Oy = ORIGIN.y;
+      const Ax = Ox + a * SCALE;
+      const Ay = Oy;
+      const Bx = Ox;
+      const By = Oy - b * SCALE;
+
+      const vertexO = { x: Ox, y: Oy };
+      const vertexA = { x: Ax, y: Ay };
+      const vertexB = { x: Bx, y: By };
+
+      // 1. Constrói os 3 quadrados usando EXATAMENTE a mesma regra geométrica externa
+      // Quadrado sobre Cateto a: lado OA, vértice oposto B (ergue-se externamente para baixo)
+      const sqA = buildExternalSquare(vertexO, vertexA, vertexB);
+      polySqA.setAttribute('points', sqA.pointsStr);
+      setBadgeLabel(haloLabelA, labelSqA, sqA.centerX, sqA.centerY, `a² = ${aSquared.toFixed(1).replace('.0', '')}`);
+
+      // Quadrado sobre Cateto b: lado OB, vértice oposto A (ergue-se externamente para a esquerda)
+      const sqB = buildExternalSquare(vertexO, vertexB, vertexA);
+      polySqB.setAttribute('points', sqB.pointsStr);
+      setBadgeLabel(haloLabelB, labelSqB, sqB.centerX, sqB.centerY, `b² = ${bSquared.toFixed(1).replace('.0', '')}`);
+
+      // Quadrado sobre Hipotenusa c: lado AB, vértice oposto O (ergue-se externamente para CIMA)
+      const sqC = buildExternalSquare(vertexA, vertexB, vertexO);
+      polySqC.setAttribute('points', sqC.pointsStr);
+      setBadgeLabel(haloLabelC, labelSqC, sqC.centerX, sqC.centerY, `c² = ${cSquared.toFixed(1).replace('.0', '')}`);
+
+      // 2. Atualiza Triângulo Retângulo Principal (renderizado acima dos quadrados)
+      triangleMain.setAttribute('points', `${Ox},${Oy} ${Ax},${Ay} ${Bx},${By}`);
+
+      // 3. Marcação do ângulo reto (quadradinho de 14px no vértice O)
+      const markSize = 14;
+      rightAngleMark.setAttribute('d', `M ${Ox + markSize} ${Oy} L ${Ox + markSize} ${Oy - markSize} L ${Ox} ${Oy - markSize}`);
+      rightAngleDot.setAttribute('cx', Ox + markSize / 2);
+      rightAngleDot.setAttribute('cy', Oy - markSize / 2);
+
+      // 4. Rótulos de medida nos lados
+      sideLabelA.setAttribute('x', Ox + (a * SCALE) / 2);
+      sideLabelA.setAttribute('y', Oy - 14);
+      sideLabelA.textContent = `a = ${a.toFixed(1)}`;
+
+      sideLabelB.setAttribute('x', Ox + 14);
+      sideLabelB.setAttribute('y', Oy - (b * SCALE) / 2);
+      sideLabelB.textContent = `b = ${b.toFixed(1)}`;
+
+      sideLabelC.setAttribute('x', (Ax + Bx) / 2 - 14);
+      sideLabelC.setAttribute('y', (Ay + By) / 2 - 14);
+      sideLabelC.textContent = `c = ${c.toFixed(2)}`;
+
+      // 5. Alças de arraste nos vértices livres A e B
+      handles.A.halo.setAttribute('cx', Ax);
+      handles.A.halo.setAttribute('cy', Ay);
+      handles.A.point.setAttribute('cx', Ax);
+      handles.A.point.setAttribute('cy', Ay);
+      handles.A.text.setAttribute('x', Ax);
+      handles.A.text.setAttribute('y', Ay);
+
+      handles.B.halo.setAttribute('cx', Bx);
+      handles.B.halo.setAttribute('cy', By);
+      handles.B.point.setAttribute('cx', Bx);
+      handles.B.point.setAttribute('cy', By);
+      handles.B.text.setAttribute('x', Bx);
+      handles.B.text.setAttribute('y', By);
+
+      // 6. Sliders e Badges
+      sliderCatA.value = a;
+      sliderCatB.value = b;
+      badgeCatA.textContent = a.toFixed(1);
+      badgeCatB.textContent = b.toFixed(1);
+
+      // 7. Honestidade Numérica: Exibição rigorosamente exata da soma
+      const strA2 = aSquared.toFixed(2);
+      const strB2 = bSquared.toFixed(2);
+      const strC2 = cSquared.toFixed(2);
+      const strC = c.toFixed(2);
+
+      dynamicOutput.innerHTML = `
+        <span class="highlight-teal">a² = ${strA2}</span> + 
+        <span class="highlight-azul">b² = ${strB2}</span> = 
+        <span class="highlight-dourado">c² = ${strC2}</span>
+        <span style="font-size:0.92rem; font-weight:600; color:var(--muted); margin-left:8px;">(c ≈ ${strC})</span>
+      `;
+    }
+
+    /**
+     * Converte coordenadas de evento para o sistema SVG
+     */
+    function getSvgCoordinates(evt) {
+      const pt = svg.createSVGPoint();
+      pt.x = evt.clientX;
+      pt.y = evt.clientY;
+      const screenCTM = svg.getScreenCTM();
+      if (!screenCTM) return { x: 0, y: 0 };
+      return pt.matrixTransform(screenCTM.inverse());
+    }
+
+    // ===================================================================
+    // Interatividade com Ponteiro nos Vértices A e B
+    // ===================================================================
+    handles.A.g.addEventListener('pointerdown', (e) => {
+      e.preventDefault();
+      state.activeHandle = 'A';
+      handles.A.g.setPointerCapture(e.pointerId);
+      handles.A.halo.setAttribute('r', '28');
+    });
+
+    handles.B.g.addEventListener('pointerdown', (e) => {
+      e.preventDefault();
+      state.activeHandle = 'B';
+      handles.B.g.setPointerCapture(e.pointerId);
+      handles.B.halo.setAttribute('r', '28');
+    });
+
+    svg.addEventListener('pointermove', (e) => {
+      if (!state.activeHandle) return;
+      e.preventDefault();
+      const coords = getSvgCoordinates(e);
+
+      if (state.activeHandle === 'A') {
+        const deltaX = coords.x - ORIGIN.x;
+        const newA = Math.max(2, Math.min(6, Math.round((deltaX / SCALE) * 2) / 2));
+        state.a = newA;
+        updateScene();
+      } else if (state.activeHandle === 'B') {
+        const deltaY = ORIGIN.y - coords.y;
+        const newB = Math.max(2, Math.min(6, Math.round((deltaY / SCALE) * 2) / 2));
+        state.b = newB;
+        updateScene();
+      }
+    });
+
+    const endDrag = (e) => {
+      if (state.activeHandle) {
+        try {
+          if (state.activeHandle === 'A') handles.A.g.releasePointerCapture(e.pointerId);
+          if (state.activeHandle === 'B') handles.B.g.releasePointerCapture(e.pointerId);
+        } catch (err) {}
+        state.activeHandle = null;
+        handles.A.halo.setAttribute('r', '22');
+        handles.B.halo.setAttribute('r', '22');
+      }
+    };
+
+    svg.addEventListener('pointerup', endDrag);
+    svg.addEventListener('pointercancel', endDrag);
+
+    // Eventos dos Sliders
+    sliderCatA.addEventListener('input', (e) => {
+      state.a = parseFloat(e.target.value);
+      updateScene();
+    });
+
+    sliderCatB.addEventListener('input', (e) => {
+      state.b = parseFloat(e.target.value);
+      updateScene();
+    });
+
+    // Botão Restaurar
+    document.getElementById('btnReset').addEventListener('click', () => {
+      state.a = 4.0;
+      state.b = 3.0;
+      updateScene();
+    });
+
+    // Botão Alternar Ternos
+    document.getElementById('btnPresetTrios').addEventListener('click', () => {
+      state.presetIndex = (state.presetIndex + 1) % presets.length;
+      const target = presets[state.presetIndex];
+      state.a = target.a;
+      state.b = target.b;
+      updateScene();
+    });
+
+    // Modo Projeção
+    document.getElementById('btnFullscreen').addEventListener('click', () => {
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().catch(() => {});
+      } else {
+        document.exitFullscreen().catch(() => {});
+      }
+    });
+
+    // Inicialização da cena
+    updateScene();
+  </script>
+</body>
+</html>

@@ -1,0 +1,1629 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Balança de Equações: Equação do 1º Grau · Matemática em Movimento</title>
+  <meta name="description" content="Laboratório interativo da Balança de Equações. Compreenda a equação do 1º grau como um equilíbrio físico dinâmico, monte equações, arraste pacotes x e pesos, e resolva passo a passo com operações inversas." />
+  <link rel="stylesheet" href="../css/estilo.css" />
+  <style>
+    /* Estilos específicos da Balança de Equações */
+    :root {
+      --cor-x: #2c7a78;        /* Teal para a caixa incógnita x */
+      --cor-x-dark: #1b5352;
+      --cor-x-light: #e6f4f1;
+      --cor-peso: #d5a64a;     /* Dourado para os pesos unitários 1 */
+      --cor-peso-dark: #a17826;
+      --cor-peso-light: #fef7e6;
+      --cor-debt: #dc2626;     /* Vermelho para dívidas/negativos */
+      --cor-debt-light: #fef2f2;
+      --cor-beam: #475569;     /* Metal da trave da balança */
+      --cor-stand: #18324b;    /* Navy do suporte e fiel */
+    }
+
+    /* Container do Palco da Balança */
+    .balance-stage-wrapper {
+      position: relative;
+      background: radial-gradient(circle at 50% 30%, #ffffff 0%, #f1f5f9 100%);
+      border: 1px solid var(--linha);
+      border-radius: var(--radius-md);
+      overflow: hidden;
+      box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.03);
+      margin-bottom: 16px;
+    }
+
+    .balance-svg {
+      width: 100%;
+      height: 420px;
+      display: block;
+      user-select: none;
+    }
+
+    /* Trave e animações */
+    .balance-beam {
+      transform-origin: 380px 150px;
+      transition: transform 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    .pan-left-group, .pan-right-group {
+      transition: transform 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    /* Indicador do Fiel (dial) */
+    .fiel-needle {
+      transform-origin: 380px 150px;
+      transition: transform 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    /* Objetos clicáveis nos pratos */
+    .plate-item {
+      cursor: pointer;
+      transition: transform 0.15s ease, filter 0.15s ease, opacity 0.25s ease;
+    }
+
+    .plate-item:hover {
+      filter: brightness(1.1) drop-shadow(0 2px 4px rgba(0,0,0,0.2));
+      transform: translateY(-2px);
+    }
+
+    /* Painel da Equação Montada em Tempo Real */
+    .equation-live-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #ffffff;
+      border: 2px solid var(--azul);
+      border-radius: var(--radius-md);
+      padding: 14px 20px;
+      margin-bottom: 16px;
+      box-shadow: var(--shadow-card);
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .equation-formula-box {
+      display: flex;
+      align-items: baseline;
+      gap: 12px;
+      font-family: var(--font-mono);
+      font-size: 1.6rem;
+      font-weight: 900;
+      color: var(--navy);
+      letter-spacing: -0.02em;
+    }
+
+    .equation-side-left {
+      color: var(--azul);
+    }
+
+    .equation-equal-sign {
+      color: var(--tinta);
+      font-size: 1.8rem;
+    }
+
+    .equation-side-right {
+      color: var(--teal);
+    }
+
+    .balance-status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.85rem;
+      font-weight: 800;
+      padding: 6px 14px;
+      border-radius: 9999px;
+      letter-spacing: 0.02em;
+      transition: all 0.25s ease;
+    }
+
+    .balance-status-badge.equilibrada {
+      background: #f0fdf4;
+      color: #166534;
+      border: 1.5px solid #86efac;
+    }
+
+    .balance-status-badge.desequilibrada {
+      background: #fef2f2;
+      color: #991b1b;
+      border: 1.5px solid #fca5a5;
+    }
+
+    /* Controles dos Pratos (Esquerdo e Direito) */
+    .plates-controls-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-bottom: 18px;
+    }
+
+    @media (max-width: 640px) {
+      .plates-controls-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .plate-card {
+      background: #ffffff;
+      border: 1.5px solid var(--linha);
+      border-radius: var(--radius-sm);
+      padding: 12px 14px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+    }
+
+    .plate-card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+
+    .plate-card-title {
+      font-size: 0.86rem;
+      font-weight: 800;
+      color: var(--navy);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .plate-weight-tag {
+      font-family: var(--font-mono);
+      font-size: 0.78rem;
+      font-weight: 800;
+      background: #f1f5f9;
+      color: var(--navy);
+      padding: 2px 8px;
+      border-radius: 4px;
+      border: 1px solid var(--linha);
+    }
+
+    .plate-buttons-row {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    .btn-item-action {
+      background: #ffffff;
+      border: 1.5px solid var(--linha);
+      border-radius: var(--radius-sm);
+      padding: 6px 10px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: var(--tinta);
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      transition: all 0.15s ease;
+    }
+
+    .btn-item-action:hover {
+      border-color: var(--azul);
+      background: #f0f7fb;
+      transform: translateY(-1px);
+    }
+
+    .btn-item-action.btn-add-x {
+      border-color: #2c7a78;
+      color: #2c7a78;
+      background: #f4fbfb;
+    }
+    .btn-item-action.btn-add-x:hover {
+      background: #2c7a78;
+      color: #ffffff;
+    }
+
+    .btn-item-action.btn-add-1 {
+      border-color: #d5a64a;
+      color: #92400e;
+      background: #fefcf6;
+    }
+    .btn-item-action.btn-add-1:hover {
+      background: #d5a64a;
+      color: #ffffff;
+    }
+
+    .btn-item-action.btn-clear {
+      color: var(--muted);
+      border-color: #e2e8f0;
+      margin-left: auto;
+    }
+    .btn-item-action.btn-clear:hover {
+      color: #dc2626;
+      border-color: #fca5a5;
+      background: #fef2f2;
+    }
+
+    /* Painel do Passo a Passo Guiado */
+    .solve-workflow-card {
+      background: #ffffff;
+      border: 1.5px solid #b9d2e1;
+      border-radius: var(--radius-md);
+      padding: 16px 20px;
+      margin-bottom: 18px;
+      box-shadow: var(--shadow-card);
+    }
+
+    .workflow-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .workflow-title {
+      font-size: 0.96rem;
+      font-weight: 800;
+      color: var(--navy);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .step-indicator-badge {
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      font-weight: 800;
+      background: #e6f4f1;
+      color: #2c7a78;
+      border: 1px solid #a7d7d3;
+      padding: 3px 10px;
+      border-radius: 4px;
+    }
+
+    .step-explanation-box {
+      background: #f8fafc;
+      border: 1px solid var(--linha);
+      border-left: 5px solid var(--azul);
+      border-radius: var(--radius-sm);
+      padding: 12px 14px;
+      font-size: 0.88rem;
+      line-height: 1.5;
+      color: var(--tinta);
+      margin-bottom: 14px;
+      min-height: 54px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      transition: all 0.2s ease;
+    }
+
+    .step-actions-row {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    /* Modal / Painel de Verificação & Teste */
+    .test-mode-panel {
+      display: none;
+      background: #ffffff;
+      border: 2px dashed #d5a64a;
+      border-radius: var(--radius-md);
+      padding: 16px 20px;
+      margin-bottom: 18px;
+      animation: fadeIn 0.25s ease-in-out;
+    }
+
+    .test-choices-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin: 12px 0;
+    }
+
+    @media (max-width: 500px) {
+      .test-choices-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .btn-test-option {
+      background: #ffffff;
+      border: 2px solid var(--linha);
+      border-radius: var(--radius-sm);
+      padding: 10px;
+      font-size: 1.05rem;
+      font-weight: 800;
+      color: var(--navy);
+      cursor: pointer;
+      transition: all 0.15s ease;
+      text-align: center;
+    }
+
+    .btn-test-option:hover {
+      border-color: var(--azul);
+      background: #f0f7fb;
+      transform: translateY(-2px);
+    }
+
+    .btn-test-option.test-correct {
+      background: #16a34a !important;
+      border-color: #15803d !important;
+      color: #ffffff !important;
+      box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.35);
+    }
+
+    .btn-test-option.test-wrong {
+      background: #dc2626 !important;
+      border-color: #b91c1c !important;
+      color: #ffffff !important;
+      box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.35);
+      animation: shake 0.35s ease-in-out;
+    }
+
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      20%, 60% { transform: translateX(-5px); }
+      40%, 80% { transform: translateX(5px); }
+    }
+
+    /* Galeria de Níveis e Exemplos Prontos */
+    .presets-levels-bar {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 16px;
+      align-items: center;
+    }
+
+    .level-chip {
+      background: #ffffff;
+      border: 1.5px solid var(--linha);
+      border-radius: var(--radius-sm);
+      padding: 6px 12px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: var(--tinta);
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .level-chip:hover {
+      border-color: var(--azul);
+      background: #f0f7fb;
+    }
+
+    .level-chip.active {
+      background: var(--navy);
+      border-color: var(--navy);
+      color: #ffffff;
+    }
+
+    .equations-preset-list {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 16px;
+    }
+
+    .btn-preset-equation {
+      background: #ffffff;
+      border: 1px solid var(--linha);
+      border-radius: 4px;
+      padding: 5px 11px;
+      font-family: var(--font-mono);
+      font-size: 0.82rem;
+      font-weight: 700;
+      color: var(--navy);
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .btn-preset-equation:hover {
+      border-color: var(--azul);
+      background: #eef5f8;
+      transform: translateY(-1px);
+    }
+
+    .btn-preset-equation.active {
+      background: var(--azul);
+      border-color: var(--azul);
+      color: #ffffff;
+    }
+
+    /* Notificação pedagógica flutuante */
+    .balance-toast {
+      position: absolute;
+      top: 14px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(24, 50, 75, 0.95);
+      color: #ffffff;
+      padding: 6px 16px;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.3s ease, transform 0.3s ease;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      z-index: 10;
+    }
+
+    .balance-toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(4px);
+    }
+
+    /* Caixa misteriosa revelada */
+    @keyframes pulseGlow {
+      0%, 100% { filter: drop-shadow(0 0 2px rgba(44, 122, 120, 0.4)); }
+      50% { filter: drop-shadow(0 0 8px rgba(44, 122, 120, 0.85)); }
+    }
+
+    .box-revealed {
+      animation: pulseGlow 1.5s infinite ease-in-out;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header Institucional -->
+  <header class="site-header">
+    <div class="header-container">
+      <a href="../index.html" class="brand-wrapper" title="Voltar para a página inicial">
+        <div class="brand-logo" aria-hidden="true">
+          <svg viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 19L12 5l8 14H4z" />
+          </svg>
+        </div>
+        <div class="brand-texts">
+          <span class="brand-title">Matemática em Movimento</span>
+          <span class="brand-slogan">Explore. Manipule. Compreenda.</span>
+        </div>
+      </a>
+      <div class="header-actions">
+        <a href="../index.html" class="btn-header">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+          Início
+        </a>
+        <button id="btnFullscreen" class="btn-header" title="Alternar modo tela cheia para projeção em sala de aula">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>
+          Projeção
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Breadcrumbs -->
+  <nav class="breadcrumb-bar" aria-label="Navegação estrutural">
+    <div class="breadcrumb-container">
+      <a href="../index.html">Início</a>
+      <span class="breadcrumb-sep">/</span>
+      <a href="../index.html#catalogo">Funções</a>
+      <span class="breadcrumb-sep">/</span>
+      <span class="breadcrumb-current">Balança de Equações (1º Grau)</span>
+    </div>
+  </nav>
+
+  <!-- Conteúdo Principal -->
+  <main class="main-content">
+    <div class="demo-grid">
+
+      <!-- Coluna 1: Laboratório da Balança -->
+      <section class="card" aria-labelledby="lab-heading">
+        <div class="card-eyebrow">
+          <span class="badge-tag badge-fundamental">7º e 8º Anos · Ensino Fundamental</span>
+          <span>· LABORATÓRIO DE EQUAÇÕES</span>
+        </div>
+        <h2 id="lab-heading" class="card-title">Balança de Equações: O Equilíbrio da Álgebra</h2>
+        <p class="card-subtitle">
+          Uma equação do 1º grau é uma balança de pratos que se mantém perfeitamente nivelada. Descubra o peso do pacote misterioso <em>x</em> fazendo rigorosamente a mesma operação dos dois lados!
+        </p>
+
+        <!-- Seletor de Níveis e Exemplos Prontos -->
+        <div class="presets-levels-bar" role="toolbar" aria-label="Níveis de dificuldade da equação">
+          <span style="font-size:0.82rem; font-weight:800; color:var(--navy);">Níveis:</span>
+          <button class="level-chip active" data-level="1">Nível 1 (Só Adição)</button>
+          <button class="level-chip" data-level="2">Nível 2 (Multiplicação)</button>
+          <button class="level-chip" data-level="3">Nível 3 (Combinações)</button>
+          <button class="level-chip" data-level="4">Nível 4 (Desafios)</button>
+          <button id="btnRandomEquation" class="btn-item-action" style="margin-left:auto; border-color:var(--azul); color:var(--azul); font-weight:800;">
+            Sortear Equação 🎲
+          </button>
+        </div>
+
+        <!-- Lista de Botões de Exemplos do Nível Ativo -->
+        <div class="equations-preset-list" id="presetsContainer" role="group" aria-label="Equações prontas do nível selecionado">
+          <!-- Gerados dinamicamente via JS -->
+        </div>
+
+        <!-- Barra de Equação ao Vivo e Status do Fiel -->
+        <div class="equation-live-bar" role="region" aria-label="Equação montada e estado do fiel">
+          <div class="equation-formula-box">
+            <span class="equation-side-left" id="eqTextLeft">3x + 2</span>
+            <span class="equation-equal-sign" id="eqEqualSymbol">=</span>
+            <span class="equation-side-right" id="eqTextRight">x + 6</span>
+          </div>
+          <div id="balanceBadge" class="balance-status-badge equilibrada">
+            <span>⚖️</span>
+            <span id="balanceBadgeText">Balança Equilibrada (14 = 14)</span>
+          </div>
+        </div>
+
+        <!-- Palco Visual da Balança em SVG -->
+        <div class="balance-stage-wrapper" role="region" aria-label="Balança física interativa desenhada em SVG">
+          <div id="balanceToast" class="balance-toast">Operação realizada com sucesso!</div>
+
+          <svg id="balanceSvg" class="balance-svg" viewBox="0 0 760 420" aria-label="Balança de dois pratos com pacotes x e blocos de peso 1">
+            <defs>
+              <!-- Gradiente metálico da base e pedestal -->
+              <linearGradient id="metalPillar" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stop-color="#18324b" />
+                <stop offset="50%" stop-color="#334e68" />
+                <stop offset="100%" stop-color="#18324b" />
+              </linearGradient>
+
+              <!-- Gradiente da trave horizontal -->
+              <linearGradient id="beamGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stop-color="#64748b" />
+                <stop offset="50%" stop-color="#334155" />
+                <stop offset="100%" stop-color="#1e293b" />
+              </linearGradient>
+
+              <!-- Gradiente dos pratos -->
+              <linearGradient id="panGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stop-color="#94a3b8" />
+                <stop offset="50%" stop-color="#f8fafc" />
+                <stop offset="100%" stop-color="#64748b" />
+              </linearGradient>
+
+              <!-- Gradiente da Caixa X -->
+              <linearGradient id="boxXGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#319795" />
+                <stop offset="100%" stop-color="#1b5352" />
+              </linearGradient>
+
+              <!-- Gradiente do Peso 1 -->
+              <linearGradient id="weightGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#f6ad55" />
+                <stop offset="100%" stop-color="#b45309" />
+              </linearGradient>
+
+              <!-- Sombra suave para objetos -->
+              <filter id="itemShadow" x="-20%" y="-20%" width="140%" height="140%">
+                <feDropShadow dx="0" dy="2" stdDeviation="2" flood-opacity="0.25" />
+              </filter>
+            </defs>
+
+            <!-- Base da Balança no Chão -->
+            <rect x="290" y="375" width="180" height="22" rx="6" fill="url(#metalPillar)" stroke="#0f172a" stroke-width="1.5" />
+            <rect x="330" y="365" width="100" height="12" rx="3" fill="#334e68" />
+
+            <!-- Coluna Central / Pedestal -->
+            <path d="M 370 365 L 374 150 L 386 150 L 390 365 Z" fill="url(#metalPillar)" />
+
+            <!-- Mostrador / Dial do Fiel Graduado -->
+            <g id="dialGroup" transform="translate(380, 150)">
+              <!-- Arco de fundo -->
+              <path d="M -50 -35 A 60 60 0 0 1 50 -35" fill="none" stroke="#e2e8f0" stroke-width="14" stroke-linecap="round" />
+              <!-- Zona de equilíbrio central em verde -->
+              <path d="M -8 -58 A 60 60 0 0 1 8 -58" fill="none" stroke="#22c55e" stroke-width="14" />
+              <!-- Traços de escala -->
+              <line x1="-36" y1="-44" x2="-32" y2="-39" stroke="#94a3b8" stroke-width="2" />
+              <line x1="36" y1="-44" x2="32" y2="-39" stroke="#94a3b8" stroke-width="2" />
+              <line x1="0" y1="-50" x2="0" y2="-62" stroke="#15803d" stroke-width="2.5" />
+              <text x="0" y="-68" font-size="9" font-weight="900" fill="#15803d" text-anchor="middle">EQUILÍBRIO (0)</text>
+            </g>
+
+            <!-- GRUPO MÓVEL: Trave Principal que Gira em torno de (380, 150) -->
+            <g id="balanceBeam" class="balance-beam">
+              <!-- Trave horizontal elegante -->
+              <rect x="150" y="145" width="460" height="10" rx="5" fill="url(#beamGrad)" stroke="#0f172a" stroke-width="1" />
+              
+              <!-- Reforço central triangular da trave -->
+              <polygon points="380,135 365,152 395,152" fill="#1e293b" />
+
+              <!-- Gancho e anel esquerdo (x=160, y=150) -->
+              <circle cx="160" cy="150" r="6" fill="#334155" stroke="#0f172a" stroke-width="1.5" />
+              <circle cx="160" cy="150" r="2.5" fill="#f8fafc" />
+
+              <!-- Gancho e anel direito (x=600, y=150) -->
+              <circle cx="600" cy="150" r="6" fill="#334155" stroke="#0f172a" stroke-width="1.5" />
+              <circle cx="600" cy="150" r="2.5" fill="#f8fafc" />
+
+              <!-- Agulha do Fiel apontando para cima -->
+              <polygon points="378,150 380,85 382,150" fill="#dc2626" stroke="#991b1b" stroke-width="1" />
+              <circle cx="380" cy="150" r="8" fill="#d5a64a" stroke="#18324b" stroke-width="2" />
+            </g>
+
+            <!-- PIVÔ CENTRAL FIXO -->
+            <circle cx="380" cy="150" r="4" fill="#ffffff" />
+
+            <!-- PRATO ESQUERDO (Hanging Pan Left) -->
+            <g id="panLeftGroup" class="pan-left-group">
+              <!-- Correntes de sustentação da bandeja -->
+              <line id="chainLeft1" x1="160" y1="150" x2="80" y2="280" stroke="#64748b" stroke-width="1.5" stroke-dasharray="3 2" />
+              <line id="chainLeft2" x1="160" y1="150" x2="240" y2="280" stroke="#64748b" stroke-width="1.5" stroke-dasharray="3 2" />
+              
+              <!-- Prato metálico horizontal (centro x=160, y=280) -->
+              <ellipse cx="160" cy="285" rx="88" ry="14" fill="url(#panGrad)" stroke="#475569" stroke-width="2" />
+              <ellipse cx="160" cy="282" rx="84" ry="10" fill="#e2e8f0" fill-opacity="0.6" />
+              <text x="160" y="315" font-size="11" font-weight="800" fill="#475569" text-anchor="middle">PRATO ESQUERDO</text>
+
+              <!-- Container de itens SVG no prato esquerdo -->
+              <g id="itemsLeftContainer" transform="translate(160, 280)"></g>
+            </g>
+
+            <!-- PRATO DIREITO (Hanging Pan Right) -->
+            <g id="panRightGroup" class="pan-right-group">
+              <!-- Correntes de sustentação da bandeja -->
+              <line id="chainRight1" x1="600" y1="150" x2="520" y2="280" stroke="#64748b" stroke-width="1.5" stroke-dasharray="3 2" />
+              <line id="chainRight2" x1="600" y1="150" x2="680" y2="280" stroke="#64748b" stroke-width="1.5" stroke-dasharray="3 2" />
+
+              <!-- Prato metálico horizontal (centro x=600, y=280) -->
+              <ellipse cx="600" cy="285" rx="88" ry="14" fill="url(#panGrad)" stroke="#475569" stroke-width="2" />
+              <ellipse cx="600" cy="282" rx="84" ry="10" fill="#e2e8f0" fill-opacity="0.6" />
+              <text x="600" y="315" font-size="11" font-weight="800" fill="#475569" text-anchor="middle">PRATO DIREITO</text>
+
+              <!-- Container de itens SVG no prato direito -->
+              <g id="itemsRightContainer" transform="translate(600, 280)"></g>
+            </g>
+          </svg>
+        </div>
+
+        <!-- Painel de Controles Diretos dos Pratos -->
+        <div class="plates-controls-grid">
+          <!-- Controles do Prato Esquerdo -->
+          <div class="plate-card">
+            <div class="plate-card-header">
+              <span class="plate-card-title">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 3h12l4 6-10 12L2 9l4-6z"/></svg>
+                <span>Prato Esquerdo</span>
+              </span>
+              <span class="plate-weight-tag" id="plateWeightLeft">Peso Total: 14</span>
+            </div>
+            <div class="plate-buttons-row">
+              <button class="btn-item-action btn-add-x" id="btnAddXLeft" title="Adicionar uma caixa incógnita x">
+                + Caixa (x)
+              </button>
+              <button class="btn-item-action btn-add-1" id="btnAdd1Left" title="Adicionar um bloco de peso 1">
+                + Peso (1)
+              </button>
+              <button class="btn-item-action" id="btnSubXLeft" title="Remover uma caixa x">
+                − Caixa (x)
+              </button>
+              <button class="btn-item-action" id="btnSub1Left" title="Remover um peso 1">
+                − Peso (1)
+              </button>
+              <button class="btn-item-action btn-clear" id="btnClearLeft" title="Limpar prato esquerdo">
+                Limpar
+              </button>
+            </div>
+            <div style="font-size:0.75rem; color:var(--muted); margin-top:6px;">
+              💡 Clique em qualquer objeto desenhado na balança para removê-lo!
+            </div>
+          </div>
+
+          <!-- Controles do Prato Direito -->
+          <div class="plate-card">
+            <div class="plate-card-header">
+              <span class="plate-card-title">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 3h12l4 6-10 12L2 9l4-6z"/></svg>
+                <span>Prato Direito</span>
+              </span>
+              <span class="plate-weight-tag" id="plateWeightRight">Peso Total: 14</span>
+            </div>
+            <div class="plate-buttons-row">
+              <button class="btn-item-action btn-add-x" id="btnAddXRight" title="Adicionar uma caixa incógnita x">
+                + Caixa (x)
+              </button>
+              <button class="btn-item-action btn-add-1" id="btnAdd1Right" title="Adicionar um bloco de peso 1">
+                + Peso (1)
+              </button>
+              <button class="btn-item-action" id="btnSubXRight" title="Remover uma caixa x">
+                − Caixa (x)
+              </button>
+              <button class="btn-item-action" id="btnSub1Right" title="Remover um peso 1">
+                − Peso (1)
+              </button>
+              <button class="btn-item-action btn-clear" id="btnClearRight" title="Limpar prato direito">
+                Limpar
+              </button>
+            </div>
+            <div style="font-size:0.75rem; color:var(--muted); margin-top:6px;">
+              💡 Dica: arraste ou adicione para ver a inclinação imediata da balança!
+            </div>
+          </div>
+        </div>
+
+        <!-- O MODO GUIADO: RESOLVER PASSO A PASSO -->
+        <div class="solve-workflow-card" role="region" aria-label="Resolução passo a passo da equação">
+          <div class="workflow-header">
+            <div class="workflow-title">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+              <span>Resolução Guiada Passo a Passo</span>
+            </div>
+            <span class="step-indicator-badge" id="stepBadge">Modo Livre</span>
+          </div>
+
+          <!-- Caixa explicativa da etapa -->
+          <div class="step-explanation-box" id="stepExplanation">
+            Clique em <strong>"Resolver Passo a Passo"</strong> para ver como a álgebra opera: a balança só se mantém nivelada quando aplicamos <strong>a mesma operação inversa nos dois lados</strong> até isolar o x.
+          </div>
+
+          <!-- Botões de Ação do Passo a Passo -->
+          <div class="step-actions-row">
+            <button id="btnStartSolve" class="btn btn-primary" style="padding:8px 18px;">
+              Resolver Passo a Passo 🚀
+            </button>
+            <button id="btnNextStep" class="btn btn-secondary" style="padding:8px 16px; display:none;">
+              Próximo Passo →
+            </button>
+            <button id="btnVerifySolution" class="btn-header" style="color:var(--navy); border-color:var(--linha); background:#ffffff;">
+              Verificação: Confere? (x = ?)
+            </button>
+            <button id="btnToggleTestMode" class="btn-header" style="border-color:#d5a64a; color:#b45309; background:#fffbeb;">
+              🎯 Modo Teste
+            </button>
+            <button id="btnResetBalance" class="btn-header" style="margin-left:auto; border-color:#e2e8f0; color:var(--muted);">
+              Reiniciar
+            </button>
+          </div>
+        </div>
+
+        <!-- MODO TESTE / DESAFIO INTERATIVO -->
+        <div class="test-mode-panel" id="testModePanel" role="region" aria-label="Desafio de adivinhação do x">
+          <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
+            <div style="font-weight:800; font-size:1rem; color:var(--navy); display:flex; align-items:center; gap:6px;">
+              <span>🎯 Desafio: Qual é o valor do pacote misterioso (x)?</span>
+            </div>
+            <div id="testScoreBadge" style="font-family:var(--font-mono); font-size:0.82rem; font-weight:800; background:#f1f5f9; padding:3px 8px; border-radius:4px;">
+              Acertos: 0 · Tentativas: 0
+            </div>
+          </div>
+          <p style="font-size:0.85rem; color:var(--muted); margin:8px 0;">
+            Observe a equação montada nos pratos da balança e calcule mentalmente o peso de cada pacote <em>x</em>.
+          </p>
+
+          <div class="test-choices-grid" id="testChoicesContainer">
+            <!-- Botões gerados dinamicamente com 3 alternativas -->
+          </div>
+
+          <div id="testFeedbackMsg" style="display:none; font-size:0.88rem; font-weight:700; padding:8px 12px; border-radius:var(--radius-sm); margin-top:8px;"></div>
+        </div>
+
+      </section>
+
+      <!-- Coluna 2: Card "Entenda a Ideia" -->
+      <aside class="card" aria-labelledby="entenda-heading">
+        <div class="card-eyebrow">
+          <span>FUNDAMENTAÇÃO ÁLGEBRICA</span>
+        </div>
+        <h2 id="entenda-heading" class="card-title">Entenda a Ideia</h2>
+        <p class="card-subtitle">
+          Uma equação não é uma conta para “fazer”; é uma <strong>declaração de igualdade</strong>, assim como dois pratos de uma balança em equilíbrio perfeito.
+        </p>
+
+        <!-- Card de Fórmula Central em Destaque -->
+        <div class="formula-card">
+          <div class="formula-main">
+            A = B &nbsp;⟺&nbsp; A ± c = B ± c
+          </div>
+          <div style="margin-top:6px; font-family:var(--font-mono); font-size:0.95rem; color:#2c7a78; font-weight:700;">
+            A · c = B · c &nbsp;|&nbsp; A ÷ c = B ÷ c &nbsp;(c ≠ 0)
+          </div>
+          <div class="formula-caption">
+            Princípio Fundamental da Equivalência: "O que você faz de um lado da balança, deve OBRIGATORIAMENTE fazer do outro lado para não quebrar o equilíbrio."
+          </div>
+        </div>
+
+        <!-- 4 Passos Pedagógicos Estruturados -->
+        <div class="steps-list">
+          <div class="step-item">
+            <div class="step-num">1</div>
+            <div class="step-body">
+              <strong>A Balança e o Fiel</strong>
+              O sinal de igualdade ($=$) é o ponto de equilíbrio no centro. Se um prato tiver mais peso, o fiel inclina imediatamente para o lado mais pesado.
+            </div>
+          </div>
+
+          <div class="step-item">
+            <div class="step-num">2</div>
+            <div class="step-body">
+              <strong>O Pacote Misterioso $x$</strong>
+              Todas as caixas com etiqueta <em>x</em> guardam exatamente a mesma quantidade de unidades. Nosso objetivo ao resolver a equação é deixar <strong>uma única caixa $x$ sozinha</strong> em um prato e todos os pesos no outro.
+            </div>
+          </div>
+
+          <div class="step-item">
+            <div class="step-num">3</div>
+            <div class="step-body">
+              <strong>Operações Inversas Simétricas</strong>
+              Quando alguém diz na sala de aula que "o termo passa para o outro lado trocando de sinal", o que realmente está acontecendo é a retirada ou soma do mesmo valor <strong>nos dois pratos ao mesmo tempo</strong>!
+            </div>
+          </div>
+
+          <div class="step-item">
+            <div class="step-num">4</div>
+            <div class="step-body">
+              <strong>A Divisão Final</strong>
+              Se no final sobram $3$ caixas iguais a $12$ pesos ($3x = 12$), dividimos os dois pratos por $3$. Cada caixa $x$ conterá exatamente $4$ pesos ($x = 4$).
+            </div>
+          </div>
+        </div>
+
+        <!-- Pergunta para Investigar com Contexto e Desafio -->
+        <div class="investigation-card">
+          <div class="investigation-title">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+            <span>Pergunta para Investigar</span>
+          </div>
+          <p class="investigation-text">
+            Monte a equação <strong>x + 7 = 12</strong>. Retire 1 peso unitário do prato esquerdo. O que aconteceu com o fiel? Agora retire 1 peso do prato direito também. O fiel voltou ao centro?<br/><br/>
+            Se você retirar os 6 pesos restantes de cada lado, qual é o valor que sobra para o pacote <strong>x</strong>? E se tivéssemos retirado pesos de um lado só, o resultado continuaria verdadeiro?
+          </p>
+        </div>
+
+        <!-- Dica de Manipulação Tátil -->
+        <div class="manipulation-tip">
+          <strong>Dica para o Professor:</strong>
+          Use o botão <em>"Resolver Passo a Passo"</em> para desacelerar a resolução mecânica. Peça aos alunos que antecipem o que acontecerá com a balança antes de cada clique, reforçando a intuição física da igualdade.
+        </div>
+      </aside>
+
+    </div>
+  </main>
+
+  <!-- Rodapé Institucional -->
+  <footer class="site-footer">
+    <div class="footer-container">
+      <div class="footer-links">
+        <a href="../index.html">Página Inicial</a>
+        <span>•</span>
+        <a href="../funcoes/afim.html">Função Afim</a>
+        <span>•</span>
+        <a href="../funcoes/quadratica.html">Função Quadrática</a>
+        <span>•</span>
+        <a href="../funcoes/juros_simples_compostos.html">Juros Simples × Compostos</a>
+        <span>•</span>
+        <a href="../geometria/soma-angulos.html">Soma dos Ângulos</a>
+        <span>•</span>
+        <a href="../numeros/conjuntos_numericos.html">Conjuntos Numéricos</a>
+      </div>
+      <p class="footer-copy">
+        Matemática em Movimento · Plataforma pedagógica aberta para exploração visual e conceitual de matemática.
+      </p>
+    </div>
+  </footer>
+
+  <!-- LÓGICA INTERATIVA EM JAVASCRIPT PURO -->
+  <script>
+    /**
+     * Balança de Equações: Equação do 1º Grau
+     * Física visual de balança em SVG com ângulo realista,
+     * montagem livre de equações, arrasto/remoção de objetos,
+     * resolução guiada com operações inversas e modo desafio.
+     */
+
+    // Estado da Balança
+    let currentX = 4;           // Valor real da incógnita x na equação atual
+    let xLeft = 3;              // Quantidade de caixas x no prato esquerdo
+    let onesLeft = 2;           // Quantidade de pesos 1 no prato esquerdo
+    let debtsLeft = 0;          // Quantidade de pesos negativos/dívidas (−1)
+    let halfXLeft = 0;          // Meia caixa (x/2)
+
+    let xRight = 1;             // Quantidade de caixas x no prato direito
+    let onesRight = 6;          // Quantidade de pesos 1 no prato direito
+    let debtsRight = 0;         // Quantidade de pesos negativos
+    let halfXRight = 0;
+
+    // Resolução Passo a Passo
+    let solveSteps = [];
+    let currentSolveStep = 0;
+    let isSolving = false;
+
+    // Modo Teste
+    let testScoreHits = 0;
+    let testScoreAttempts = 0;
+
+    // Elementos DOM principais
+    const balanceBeam = document.getElementById('balanceBeam');
+    const panLeftGroup = document.getElementById('panLeftGroup');
+    const panRightGroup = document.getElementById('panRightGroup');
+    const chainLeft1 = document.getElementById('chainLeft1');
+    const chainLeft2 = document.getElementById('chainLeft2');
+    const chainRight1 = document.getElementById('chainRight1');
+    const chainRight2 = document.getElementById('chainRight2');
+
+    const itemsLeftContainer = document.getElementById('itemsLeftContainer');
+    const itemsRightContainer = document.getElementById('itemsRightContainer');
+
+    const eqTextLeft = document.getElementById('eqTextLeft');
+    const eqTextRight = document.getElementById('eqTextRight');
+    const eqEqualSymbol = document.getElementById('eqEqualSymbol');
+    const balanceBadge = document.getElementById('balanceBadge');
+    const balanceBadgeText = document.getElementById('balanceBadgeText');
+
+    const plateWeightLeft = document.getElementById('plateWeightLeft');
+    const plateWeightRight = document.getElementById('plateWeightRight');
+
+    const stepBadge = document.getElementById('stepBadge');
+    const stepExplanation = document.getElementById('stepExplanation');
+    const btnStartSolve = document.getElementById('btnStartSolve');
+    const btnNextStep = document.getElementById('btnNextStep');
+    const btnVerifySolution = document.getElementById('btnVerifySolution');
+    const btnToggleTestMode = document.getElementById('btnToggleTestMode');
+    const btnResetBalance = document.getElementById('btnResetBalance');
+    const balanceToast = document.getElementById('balanceToast');
+
+    const testModePanel = document.getElementById('testModePanel');
+    const testChoicesContainer = document.getElementById('testChoicesContainer');
+    const testFeedbackMsg = document.getElementById('testFeedbackMsg');
+    const testScoreBadge = document.getElementById('testScoreBadge');
+
+    // Catálogo de Níveis e Exemplos Prontos do Professor
+    const presetLevels = {
+      1: [
+        { label: "x + 3 = 8", xVal: 5, xL: 1, cL: 3, xR: 0, cR: 8, dL: 0, dR: 0, hL: 0, hR: 0, title: "x + 3 = 8 (x = 5)" },
+        { label: "x + 5 = 12", xVal: 7, xL: 1, cL: 5, xR: 0, cR: 12, dL: 0, dR: 0, hL: 0, hR: 0, title: "x + 5 = 12 (x = 7)" },
+        { label: "2 + x = 9", xVal: 7, xL: 1, cL: 2, xR: 0, cR: 9, dL: 0, dR: 0, hL: 0, hR: 0, title: "2 + x = 9 (x = 7)" }
+      ],
+      2: [
+        { label: "3x = 18", xVal: 6, xL: 3, cL: 0, xR: 0, cR: 18, dL: 0, dR: 0, hL: 0, hR: 0, title: "3x = 18 (x = 6)" },
+        { label: "4x = 28", xVal: 7, xL: 4, cL: 0, xR: 0, cR: 28, dL: 0, dR: 0, hL: 0, hR: 0, title: "4x = 28 (x = 7)" },
+        { label: "x/2 = 8", xVal: 16, xL: 0, cL: 0, xR: 0, cR: 8, dL: 0, dR: 0, hL: 1, hR: 0, title: "x/2 = 8 (x = 16)" }
+      ],
+      3: [
+        { label: "2x + 3 = 11", xVal: 4, xL: 2, cL: 3, xR: 0, cR: 11, dL: 0, dR: 0, hL: 0, hR: 0, title: "2x + 3 = 11 (x = 4)" },
+        { label: "3x + 2 = x + 6", xVal: 2, xL: 3, cL: 2, xR: 1, cR: 6, dL: 0, dR: 0, hL: 0, hR: 0, title: "3x + 2 = x + 6 (x = 2)" },
+        { label: "5x − 3 = 2x + 9", xVal: 4, xL: 5, cL: 0, dL: 3, xR: 2, cR: 9, dR: 0, hL: 0, hR: 0, title: "5x − 3 = 2x + 9 (x = 4)" }
+      ],
+      4: [
+        { label: "2(x + 3) = 14", xVal: 4, xL: 2, cL: 6, xR: 0, cR: 14, dL: 0, dR: 0, hL: 0, hR: 0, title: "2(x + 3) = 14 → 2x + 6 = 14 (x = 4)" },
+        { label: "4x − 5 = 2x + 7", xVal: 6, xL: 4, cL: 0, dL: 5, xR: 2, cR: 7, dR: 0, hL: 0, hR: 0, title: "4x − 5 = 2x + 7 (x = 6)" },
+        { label: "3x + 4 = 19", xVal: 5, xL: 3, cL: 4, xR: 0, cR: 19, dL: 0, dR: 0, hL: 0, hR: 0, title: "3x + 4 = 19 (x = 5)" }
+      ]
+    };
+
+    let activeLevel = 3;
+
+    // Toast informativo rápido
+    function showToast(msg) {
+      balanceToast.textContent = msg;
+      balanceToast.classList.add('show');
+      setTimeout(() => {
+        balanceToast.classList.remove('show');
+      }, 2500);
+    }
+
+    // Calcula o peso real de cada prato
+    function computeWeights() {
+      const weightL = (xLeft * currentX) + (halfXLeft * (currentX / 2)) + onesLeft - debtsLeft;
+      const weightR = (xRight * currentX) + (halfXRight * (currentX / 2)) + onesRight - debtsRight;
+      return { weightL, weightR };
+    }
+
+    // Atualiza a física da Balança (inclinação e fiel)
+    function updatePhysics() {
+      const { weightL, weightR } = computeWeights();
+      const diff = weightR - weightL; // Se diff > 0, prato direito mais pesado (inclina no sentido horário)
+
+      // Calcula o ângulo em graus (máximo de 14 graus para visual natural sem deformação)
+      let angle = 0;
+      if (diff !== 0) {
+        // Logarítmico/suave para diferenças grandes
+        const sign = Math.sign(diff);
+        const magnitude = Math.min(Math.abs(diff) * 2, 14);
+        angle = sign * magnitude;
+      }
+
+      // Aplica rotação na trave principal (pivô central em 380, 150)
+      balanceBeam.style.transform = `rotate(${angle}deg)`;
+
+      // Geometria dos pontos de ancoragem da trave (comprimento do braço = 220px)
+      const rad = (angle * Math.PI) / 180;
+      const armLength = 220;
+      const pivotX = 380;
+      const pivotY = 150;
+
+      // Posição do ponto de apoio esquerdo
+      const anchorLX = pivotX - armLength * Math.cos(rad);
+      const anchorLY = pivotY - armLength * Math.sin(rad);
+
+      // Posição do ponto de apoio direito
+      const anchorRX = pivotX + armLength * Math.cos(rad);
+      const anchorRY = pivotY + armLength * Math.sin(rad);
+
+      // As bandejas penduradas permanecem horizontais (deslocamento vertical puro)
+      const deltaPanLY = anchorLY - pivotY;
+      const deltaPanRY = anchorRY - pivotY;
+
+      panLeftGroup.style.transform = `translate(${anchorLX - 160}px, ${deltaPanLY}px)`;
+      panRightGroup.style.transform = `translate(${anchorRX - 600}px, ${deltaPanRY}px)`;
+
+      // Atualiza o texto da equação montada
+      let strL = formatSideExpression(xLeft, halfXLeft, onesLeft, debtsLeft);
+      let strR = formatSideExpression(xRight, halfXRight, onesRight, debtsRight);
+
+      eqTextLeft.textContent = strL || "0";
+      eqTextRight.textContent = strR || "0";
+
+      plateWeightLeft.textContent = `Massa: ${weightL.toFixed(1).replace('.0', '')}`;
+      plateWeightRight.textContent = `Massa: ${weightR.toFixed(1).replace('.0', '')}`;
+
+      // Atualiza o selo do Fiel e sinal de igualdade
+      if (Math.abs(weightL - weightR) < 0.001) {
+        eqEqualSymbol.textContent = "=";
+        eqEqualSymbol.style.color = "#15803d";
+        balanceBadge.className = "balance-status-badge equilibrada";
+        balanceBadge.innerHTML = `<span>⚖️</span><span>Equilíbrio Perfeito (${weightL.toFixed(0)} = ${weightR.toFixed(0)})</span>`;
+      } else if (weightL > weightR) {
+        eqEqualSymbol.textContent = "≠";
+        eqEqualSymbol.style.color = "#dc2626";
+        balanceBadge.className = "balance-status-badge desequilibrada";
+        balanceBadge.innerHTML = `<span>⚠️</span><span>Desequilíbrio: Esquerda mais pesada (+${(weightL - weightR).toFixed(1).replace('.0', '')})</span>`;
+      } else {
+        eqEqualSymbol.textContent = "≠";
+        eqEqualSymbol.style.color = "#dc2626";
+        balanceBadge.className = "balance-status-badge desequilibrada";
+        balanceBadge.innerHTML = `<span>⚠️</span><span>Desequilíbrio: Direita mais pesada (+${(weightR - weightL).toFixed(1).replace('.0', '')})</span>`;
+      }
+
+      // Renderiza os objetos gráficos dentro dos pratos
+      renderPanItems();
+    }
+
+    // Formata a expressão algébrica de um lado da balança
+    function formatSideExpression(xCount, halfCount, onesCount, debtsCount) {
+      const parts = [];
+      if (xCount > 0) {
+        parts.push(xCount === 1 ? "x" : `${xCount}x`);
+      }
+      if (halfCount > 0) {
+        parts.push("x/2");
+      }
+      if (onesCount > 0) {
+        parts.push(parts.length > 0 ? `+ ${onesCount}` : `${onesCount}`);
+      }
+      if (debtsCount > 0) {
+        parts.push(`− ${debtsCount}`);
+      }
+      return parts.join(" ");
+    }
+
+    // Renderiza graficamente as caixas e pesos em SVG nos pratos
+    function renderPanItems() {
+      renderItemsInContainer(itemsLeftContainer, xLeft, halfXLeft, onesLeft, debtsLeft, 'left');
+      renderItemsInContainer(itemsRightContainer, xRight, halfXRight, onesRight, debtsRight, 'right');
+    }
+
+    function renderItemsInContainer(container, xCount, halfCount, onesCount, debtsCount, side) {
+      container.innerHTML = '';
+
+      // Lista de itens a desenhar ordenados para pilha organizada
+      const items = [];
+
+      for (let i = 0; i < xCount; i++) items.push({ type: 'x', label: 'x' });
+      for (let i = 0; i < halfCount; i++) items.push({ type: 'halfX', label: 'x/2' });
+      for (let i = 0; i < onesCount; i++) items.push({ type: 'one', label: '1' });
+      for (let i = 0; i < debtsCount; i++) items.push({ type: 'debt', label: '−1' });
+
+      // Organização em pirâmide/grade sobre o prato (raio da base ~70px)
+      const cols = Math.min(items.length, 5);
+      const rowHeight = 28;
+      const colWidth = 28;
+
+      items.forEach((item, idx) => {
+        const row = Math.floor(idx / 5);
+        const col = idx % 5;
+        const totalInRow = Math.min(items.length - row * 5, 5);
+        
+        // Centraliza os itens na bandeja
+        const xOffset = (col - (totalInRow - 1) / 2) * colWidth;
+        const yOffset = -14 - (row * rowHeight);
+
+        const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+        g.setAttribute('class', 'plate-item');
+        g.setAttribute('transform', `translate(${xOffset}, ${yOffset})`);
+        g.setAttribute('tabindex', '0');
+        g.setAttribute('role', 'button');
+        g.setAttribute('aria-label', `Objeto ${item.label} no prato ${side === 'left' ? 'esquerdo' : 'direito'}. Clique para remover.`);
+
+        // Evento de clique para remover item
+        g.addEventListener('click', (e) => {
+          e.stopPropagation();
+          removeItem(side, item.type);
+        });
+
+        g.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            removeItem(side, item.type);
+          }
+        });
+
+        if (item.type === 'x') {
+          // Caixa de mistério estilizada 3D
+          const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+          rect.setAttribute('x', '-13');
+          rect.setAttribute('y', '-24');
+          rect.setAttribute('width', '26');
+          rect.setAttribute('height', '24');
+          rect.setAttribute('rx', '4');
+          rect.setAttribute('fill', 'url(#boxXGrad)');
+          rect.setAttribute('stroke', '#1b5352');
+          rect.setAttribute('stroke-width', '1.5');
+          rect.setAttribute('filter', 'url(#itemShadow)');
+          g.appendChild(rect);
+
+          // Fita dourada decorativa de embrulho
+          const ribbon = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+          ribbon.setAttribute('x1', '0');
+          ribbon.setAttribute('y1', '-24');
+          ribbon.setAttribute('x2', '0');
+          ribbon.setAttribute('y2', '0');
+          ribbon.setAttribute('stroke', '#d5a64a');
+          ribbon.setAttribute('stroke-width', '2');
+          g.appendChild(ribbon);
+
+          // Rótulo x
+          const txt = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+          txt.setAttribute('x', '0');
+          txt.setAttribute('y', '-8');
+          txt.setAttribute('font-size', '13');
+          txt.setAttribute('font-weight', '900');
+          txt.setAttribute('font-family', 'var(--font-mono)');
+          txt.setAttribute('fill', '#ffffff');
+          txt.setAttribute('text-anchor', 'middle');
+          txt.textContent = 'x';
+          g.appendChild(txt);
+
+        } else if (item.type === 'halfX') {
+          // Meia caixa x/2 (caixa recortada)
+          const poly = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
+          poly.setAttribute('points', '-13,0 13,0 13,-24 -13,-12');
+          poly.setAttribute('fill', '#2c7a78');
+          poly.setAttribute('stroke', '#1b5352');
+          poly.setAttribute('stroke-width', '1.5');
+          g.appendChild(poly);
+
+          const txt = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+          txt.setAttribute('x', '0');
+          txt.setAttribute('y', '-6');
+          txt.setAttribute('font-size', '9');
+          txt.setAttribute('font-weight', '900');
+          txt.setAttribute('font-family', 'var(--font-mono)');
+          txt.setAttribute('fill', '#ffffff');
+          txt.setAttribute('text-anchor', 'middle');
+          txt.textContent = 'x/2';
+          g.appendChild(txt);
+
+        } else if (item.type === 'one') {
+          // Peso cilíndrico metálico dourado
+          const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+          rect.setAttribute('x', '-10');
+          rect.setAttribute('y', '-20');
+          rect.setAttribute('width', '20');
+          rect.setAttribute('height', '20');
+          rect.setAttribute('rx', '4');
+          rect.setAttribute('fill', 'url(#weightGrad)');
+          rect.setAttribute('stroke', '#a17826');
+          rect.setAttribute('stroke-width', '1.5');
+          rect.setAttribute('filter', 'url(#itemShadow)');
+          g.appendChild(rect);
+
+          // Anel de pegada superior
+          const loop = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+          loop.setAttribute('cx', '0');
+          loop.setAttribute('cy', '-22');
+          loop.setAttribute('r', '3');
+          loop.setAttribute('fill', 'none');
+          loop.setAttribute('stroke', '#b45309');
+          loop.setAttribute('stroke-width', '1.5');
+          g.appendChild(loop);
+
+          const txt = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+          txt.setAttribute('x', '0');
+          txt.setAttribute('y', '-6');
+          txt.setAttribute('font-size', '11');
+          txt.setAttribute('font-weight', '900');
+          txt.setAttribute('fill', '#ffffff');
+          txt.setAttribute('text-anchor', 'middle');
+          txt.textContent = '1';
+          g.appendChild(txt);
+
+        } else if (item.type === 'debt') {
+          // Peso negativo/dívida: bloco pontilhado avermelhado com badge de débito
+          const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+          rect.setAttribute('x', '-11');
+          rect.setAttribute('y', '-21');
+          rect.setAttribute('width', '22');
+          rect.setAttribute('height', '21');
+          rect.setAttribute('rx', '4');
+          rect.setAttribute('fill', '#fef2f2');
+          rect.setAttribute('stroke', '#dc2626');
+          rect.setAttribute('stroke-width', '1.8');
+          rect.setAttribute('stroke-dasharray', '3 2');
+          g.appendChild(rect);
+
+          const txt = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+          txt.setAttribute('x', '0');
+          txt.setAttribute('y', '-7');
+          txt.setAttribute('font-size', '11');
+          txt.setAttribute('font-weight', '900');
+          txt.setAttribute('fill', '#dc2626');
+          txt.setAttribute('text-anchor', 'middle');
+          txt.textContent = '−1';
+          g.appendChild(txt);
+        }
+
+        container.appendChild(g);
+      });
+    }
+
+    // Remove um item de um dos pratos
+    function removeItem(side, type) {
+      if (side === 'left') {
+        if (type === 'x' && xLeft > 0) xLeft--;
+        else if (type === 'halfX' && halfXLeft > 0) halfXLeft--;
+        else if (type === 'one' && onesLeft > 0) onesLeft--;
+        else if (type === 'debt' && debtsLeft > 0) debtsLeft--;
+      } else {
+        if (type === 'x' && xRight > 0) xRight--;
+        else if (type === 'halfX' && halfXRight > 0) halfXRight--;
+        else if (type === 'one' && onesRight > 0) onesRight--;
+        else if (type === 'debt' && debtsRight > 0) debtsRight--;
+      }
+      showToast(`Item removido do prato ${side === 'left' ? 'esquerdo' : 'direito'}`);
+      updatePhysics();
+    }
+
+    // Carrega uma equação pré-definida
+    function loadPreset(preset) {
+      currentX = preset.xVal;
+      xLeft = preset.xL;
+      onesLeft = preset.cL;
+      debtsLeft = preset.dL || 0;
+      halfXLeft = preset.hL || 0;
+
+      xRight = preset.xR;
+      onesRight = preset.cR;
+      debtsRight = preset.dR || 0;
+      halfXRight = preset.hR || 0;
+
+      isSolving = false;
+      currentSolveStep = 0;
+      stepBadge.textContent = "Modo Livre";
+      stepBadge.style.background = "#e6f4f1";
+      stepBadge.style.color = "#2c7a78";
+      btnNextStep.style.display = "none";
+      btnStartSolve.style.display = "inline-flex";
+
+      stepExplanation.innerHTML = `Equação carregada: <strong>${preset.title}</strong>. Observe o equilíbrio no fiel da balança. Clique em <em>"Resolver Passo a Passo"</em> para isolar o x.`;
+
+      updatePhysics();
+    }
+
+    // Constrói a lista de botões de equações para o nível selecionado
+    function renderPresetsBar(level) {
+      activeLevel = level;
+      const list = presetLevels[level];
+      const container = document.getElementById('presetsContainer');
+      container.innerHTML = '';
+
+      list.forEach((preset, idx) => {
+        const btn = document.createElement('button');
+        btn.className = `btn-preset-equation ${idx === 0 ? 'active' : ''}`;
+        btn.textContent = preset.label;
+        btn.title = `Carregar equação: ${preset.title}`;
+        btn.addEventListener('click', () => {
+          document.querySelectorAll('.btn-preset-equation').forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          loadPreset(preset);
+        });
+        container.appendChild(btn);
+      });
+
+      // Carrega a primeira equação da lista
+      loadPreset(list[0]);
+    }
+
+    // Botões dos níveis
+    document.querySelectorAll('.level-chip').forEach(chip => {
+      chip.addEventListener('click', () => {
+        document.querySelectorAll('.level-chip').forEach(c => c.classList.remove('active'));
+        chip.classList.add('active');
+        renderPresetsBar(parseInt(chip.dataset.level, 10));
+      });
+    });
+
+    // Sortear Equação Aleatória
+    document.getElementById('btnRandomEquation').addEventListener('click', () => {
+      const list = presetLevels[activeLevel];
+      const randIdx = Math.floor(Math.random() * list.length);
+      const chosen = list[randIdx];
+      const buttons = document.querySelectorAll('.btn-preset-equation');
+      buttons.forEach((b, i) => b.classList.toggle('active', i === randIdx));
+      loadPreset(chosen);
+      showToast(`Equação sorteada: ${chosen.label}`);
+    });
+
+    // Controles manuais nos pratos: Botões de Adicionar e Remover
+    document.getElementById('btnAddXLeft').addEventListener('click', () => { xLeft++; updatePhysics(); });
+    document.getElementById('btnAdd1Left').addEventListener('click', () => { onesLeft++; updatePhysics(); });
+    document.getElementById('btnSubXLeft').addEventListener('click', () => { if (xLeft > 0) xLeft--; updatePhysics(); });
+    document.getElementById('btnSub1Left').addEventListener('click', () => { if (onesLeft > 0) onesLeft--; updatePhysics(); });
+    document.getElementById('btnClearLeft').addEventListener('click', () => { xLeft = 0; onesLeft = 0; debtsLeft = 0; halfXLeft = 0; updatePhysics(); });
+
+    document.getElementById('btnAddXRight').addEventListener('click', () => { xRight++; updatePhysics(); });
+    document.getElementById('btnAdd1Right').addEventListener('click', () => { onesRight++; updatePhysics(); });
+    document.getElementById('btnSubXRight').addEventListener('click', () => { if (xRight > 0) xRight--; updatePhysics(); });
+    document.getElementById('btnSub1Right').addEventListener('click', () => { if (onesRight > 0) onesRight--; updatePhysics(); });
+    document.getElementById('btnClearRight').addEventListener('click', () => { xRight = 0; onesRight = 0; debtsRight = 0; halfXRight = 0; updatePhysics(); });
+
+    // =========================================================================
+    // MODO RESOLVER PASSO A PASSO
+    // =========================================================================
+    function planSolveSteps() {
+      solveSteps = [];
+
+      // Caso com débito: ex. 5x - 3 = 2x + 9
+      if (debtsLeft > 0) {
+        solveSteps.push({
+          desc: `Eliminar o débito de <strong>${debtsLeft}</strong> do prato esquerdo: adicionamos <strong>${debtsLeft} pesos</strong> nos DOIS pratos (+${debtsLeft} dos dois lados).`,
+          action: () => {
+            const add = debtsLeft;
+            debtsLeft = 0;
+            onesRight += add;
+          }
+        });
+      }
+
+      // Caso com fração: ex. x/2 = 8
+      if (halfXLeft > 0 && xLeft === 0) {
+        solveSteps.push({
+          desc: `Temos meia caixa (<strong>x ÷ 2</strong>) de um lado. Multiplicamos os DOIS lados por 2 (dobramos os dois pratos)!`,
+          action: () => {
+            halfXLeft = 0;
+            xLeft = 1;
+            onesRight *= 2;
+          }
+        });
+      }
+
+      // Eliminar x do lado direito se houver x dos dois lados
+      if (xRight > 0 && xLeft > 0) {
+        const eliminateX = Math.min(xLeft, xRight);
+        solveSteps.push({
+          desc: `Subtrair <strong>${eliminateX === 1 ? '1 caixa x' : `${eliminateX} caixas x`}</strong> dos DOIS pratos para deixar caixas x em apenas um lado da balança.`,
+          action: () => {
+            xLeft -= eliminateX;
+            xRight -= eliminateX;
+          }
+        });
+      }
+
+      // Eliminar constantes do lado onde sobrou o x
+      if (xLeft > 0 && onesLeft > 0) {
+        const eliminateConst = onesLeft;
+        solveSteps.push({
+          desc: `Retirar <strong>${eliminateConst} pesos</strong> dos DOIS pratos (−${eliminateConst} de cada lado) para deixar as caixas x sozinhas!`,
+          action: () => {
+            onesRight -= eliminateConst;
+            onesLeft = 0;
+          }
+        });
+      } else if (xRight > 0 && onesRight > 0) {
+        const eliminateConst = onesRight;
+        solveSteps.push({
+          desc: `Retirar <strong>${eliminateConst} pesos</strong> dos DOIS pratos (−${eliminateConst} de cada lado) para deixar as caixas x sozinhas!`,
+          action: () => {
+            onesLeft -= eliminateConst;
+            onesRight = 0;
+          }
+        });
+      }
+
+      // Se sobraram múltiplos x de um lado (ex: 2x = 8): dividir os dois lados
+      const remainingX = Math.max(xLeft, xRight);
+      const remainingOnes = xLeft > 0 ? onesRight : onesLeft;
+      if (remainingX > 1 && remainingOnes > 0) {
+        solveSteps.push({
+          desc: `Dividir os dois pratos por <strong>${remainingX}</strong>: se ${remainingX} caixas x equivalem a ${remainingOnes} pesos, 1 caixa x equivale a <strong>${remainingOnes / remainingX}</strong> pesos!`,
+          action: () => {
+            if (xLeft > 0) {
+              xLeft = 1;
+              onesRight = Math.round(onesRight / remainingX);
+            } else {
+              xRight = 1;
+              onesLeft = Math.round(onesLeft / remainingX);
+            }
+          }
+        });
+      }
+
+      // Passo final de vitória: abrir o pacote e conferir
+      solveSteps.push({
+        desc: `🎉 <strong>SOLUÇÃO ENCONTRADA! O valor do pacote misterioso é x = ${currentX}!</strong> A balança está perfeitamente equilibrada e a substituição prova que a igualdade é verdadeira.`,
+        action: () => {
+          // Efeito de celebração
+          showToast(`✓ Comprovado: x = ${currentX}!`);
+        }
+      });
+    }
+
+    btnStartSolve.addEventListener('click', () => {
+      planSolveSteps();
+      if (solveSteps.length === 0) {
+        stepExplanation.textContent = "A equação já está resolvida ou em formato final!";
+        return;
+      }
+      isSolving = true;
+      currentSolveStep = 0;
+      btnStartSolve.style.display = "none";
+      btnNextStep.style.display = "inline-flex";
+
+      executeCurrentStep();
+    });
+
+    btnNextStep.addEventListener('click', () => {
+      currentSolveStep++;
+      if (currentSolveStep < solveSteps.length) {
+        executeCurrentStep();
+      } else {
+        // Concluiu todos os passos
+        btnNextStep.style.display = "none";
+        btnStartSolve.style.display = "inline-flex";
+        btnStartSolve.textContent = "Resolver Novamente ↺";
+        stepBadge.textContent = "Concluído ✓";
+        stepBadge.style.background = "#dcfce7";
+        stepBadge.style.color = "#15803d";
+      }
+    });
+
+    function executeCurrentStep() {
+      const step = solveSteps[currentSolveStep];
+      stepBadge.textContent = `Passo ${currentSolveStep + 1} de ${solveSteps.length}`;
+      stepBadge.style.background = "#fef3c7";
+      stepBadge.style.color = "#b45309";
+
+      step.action();
+      updatePhysics();
+
+      stepExplanation.innerHTML = `
+        <div style="font-weight:800; color:var(--navy); margin-bottom:4px;">
+          Passo ${currentSolveStep + 1}:
+        </div>
+        <div>${step.desc}</div>
+        <div style="margin-top:6px; font-size:0.82rem; color:#166534; font-weight:700;">
+          A balança continua equilibrada? SIM! Porque a mesmíssima operação foi feita nos dois pratos simultaneamente.
+        </div>
+      `;
+    }
+
+    // Botão "Verificação: Confere? (x = ?)"
+    btnVerifySolution.addEventListener('click', () => {
+      const userGuess = prompt("Digite um valor para testar na incógnita x:", currentX.toString());
+      if (userGuess === null) return;
+      const testVal = parseFloat(userGuess.replace(',', '.'));
+      if (isNaN(testVal)) {
+        alert("Por favor, digite um número válido!");
+        return;
+      }
+
+      const leftVal = (xLeft * testVal) + (halfXLeft * (testVal / 2)) + onesLeft - debtsLeft;
+      const rightVal = (xRight * testVal) + (halfXRight * (testVal / 2)) + onesRight - debtsRight;
+      const isEq = Math.abs(leftVal - rightVal) < 0.001;
+
+      stepExplanation.innerHTML = `
+        <div style="font-weight:800; font-size:0.95rem; margin-bottom:4px; color:${isEq ? '#166534' : '#991b1b'};">
+          ${isEq ? '✓ VERIFICAÇÃO VERDADEIRA! O valor confere perfeitamente!' : '✕ NÃO CONFERE! A balança ficaria desequilibrada:'}
+        </div>
+        <div>
+          Substituindo <strong>x = ${testVal}</strong>:<br/>
+          • Prato Esquerdo: ${leftVal.toFixed(2).replace('.00', '')}<br/>
+          • Prato Direito: ${rightVal.toFixed(2).replace('.00', '')}<br/>
+          <strong>Resultado: ${leftVal.toFixed(2).replace('.00', '')} ${isEq ? '=' : '≠'} ${rightVal.toFixed(2).replace('.00', '')}</strong>
+        </div>
+      `;
+    });
+
+    // =========================================================================
+    // MODO TESTE / DESAFIO
+    // =========================================================================
+    let isTestModeActive = false;
+
+    btnToggleTestMode.addEventListener('click', () => {
+      isTestModeActive = !isTestModeActive;
+      testModePanel.style.display = isTestModeActive ? 'block' : 'none';
+      btnToggleTestMode.textContent = isTestModeActive ? "Sair do Teste ✕" : "🎯 Modo Teste";
+
+      if (isTestModeActive) {
+        setupTestChallenge();
+      }
+    });
+
+    function setupTestChallenge() {
+      testFeedbackMsg.style.display = 'none';
+      testChoicesContainer.innerHTML = '';
+
+      // Gera 3 opções sendo uma correta e duas falsas próximas
+      const correct = currentX;
+      const options = new Set([correct]);
+      while (options.size < 3) {
+        const offset = (Math.random() < 0.5 ? -1 : 1) * (Math.floor(Math.random() * 3) + 1);
+        const candidate = correct + offset;
+        if (candidate > 0) options.add(candidate);
+      }
+
+      const shuffled = Array.from(options).sort(() => Math.random() - 0.5);
+
+      shuffled.forEach(opt => {
+        const btn = document.createElement('button');
+        btn.className = 'btn-test-option';
+        btn.textContent = `x = ${opt}`;
+        btn.addEventListener('click', () => {
+          checkTestAnswer(opt, correct, btn);
+        });
+        testChoicesContainer.appendChild(btn);
+      });
+    }
+
+    function checkTestAnswer(chosen, correct, btn) {
+      testScoreAttempts++;
+      const isCorrect = (chosen === correct);
+      if (isCorrect) testScoreHits++;
+
+      testScoreBadge.textContent = `Acertos: ${testScoreHits} · Tentativas: ${testScoreAttempts} (${Math.round((testScoreHits / testScoreAttempts) * 100)}%)`;
+
+      document.querySelectorAll('.btn-test-option').forEach(b => {
+        b.disabled = true;
+        if (b.textContent === `x = ${correct}`) {
+          b.classList.add('test-correct');
+        }
+      });
+
+      if (!isCorrect) {
+        btn.classList.add('test-wrong');
+      }
+
+      testFeedbackMsg.style.display = 'block';
+      if (isCorrect) {
+        testFeedbackMsg.style.background = '#f0fdf4';
+        testFeedbackMsg.style.color = '#166534';
+        testFeedbackMsg.style.border = '1px solid #86efac';
+        testFeedbackMsg.innerHTML = `🎉 <strong>Excelente raciocínio!</strong> Cada caixa misteriosa tem peso exatamente <strong>x = ${correct}</strong>.`;
+      } else {
+        testFeedbackMsg.style.background = '#fef2f2';
+        testFeedbackMsg.style.color = '#991b1b';
+        testFeedbackMsg.style.border = '1px solid #fca5a5';
+        testFeedbackMsg.innerHTML = `⚠️ <strong>Não é x = ${chosen}.</strong> A resposta correta é <strong>x = ${correct}</strong>. Observe os pesos nos dois pratos!`;
+      }
+
+      // Prepara próximo desafio após 2.5s
+      setTimeout(() => {
+        if (isTestModeActive) {
+          // Sorteia nova equação e novo desafio
+          document.getElementById('btnRandomEquation').click();
+          setupTestChallenge();
+        }
+      }, 2600);
+    }
+
+    // Reiniciar Balança
+    btnResetBalance.addEventListener('click', () => {
+      renderPresetsBar(activeLevel);
+      showToast("Balança reiniciada com sucesso!");
+    });
+
+    // Projeção em tela cheia
+    document.getElementById('btnFullscreen').addEventListener('click', () => {
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().catch(() => {});
+      } else {
+        document.exitFullscreen().catch(() => {});
+      }
+    });
+
+    // Inicialização da demonstração
+    renderPresetsBar(3);
+  </script>
+</body>
+</html>

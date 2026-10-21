@@ -1,0 +1,7 @@
+{
+  "name": "Matemática em Movimento",
+  "description": "Plataforma gratuita de projeções visuais interativas de Matemática para professores e estudantes.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
+

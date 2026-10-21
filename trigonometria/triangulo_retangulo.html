@@ -1,0 +1,1244 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Trigonometria no Triângulo Retângulo · Matemática em Movimento</title>
+  <meta name="description" content="Laboratório visual e interativo de trigonometria no triângulo retângulo. Manipule catetos e hipotenusa, calcule seno, cosseno e tangente ao vivo e domine os ângulos notáveis 30°, 45° e 60°." />
+  <link rel="stylesheet" href="../css/estilo.css" />
+  <style>
+    /* Estilos específicos da Trigonometria no Triângulo Retângulo */
+    .controls-panel-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+      background: #f8fafc;
+      border: 1px solid var(--linha);
+      border-radius: var(--radius-md);
+      padding: 14px 16px;
+      margin-bottom: 14px;
+    }
+    @media (max-width: 640px) {
+      .controls-panel-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .trig-ratios-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+    @media (max-width: 600px) {
+      .trig-ratios-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .ratio-card {
+      background: #ffffff;
+      border: 1px solid var(--linha);
+      border-radius: var(--radius-sm);
+      padding: 12px 14px;
+      box-shadow: var(--shadow-subtle);
+      transition: transform 0.15s ease, box-shadow 0.15s ease;
+      position: relative;
+    }
+    .ratio-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(24, 50, 75, 0.08);
+    }
+    .ratio-card-name {
+      font-size: 0.72rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 2px;
+    }
+    .ratio-formula-formula {
+      font-size: 0.78rem;
+      font-family: var(--font-mono);
+      font-weight: 700;
+      color: var(--muted);
+      margin-bottom: 6px;
+    }
+    .ratio-big-value {
+      font-size: 1.65rem;
+      font-weight: 900;
+      font-family: var(--font-mono);
+      line-height: 1.1;
+      margin-bottom: 4px;
+    }
+    .ratio-sub-calc {
+      font-size: 0.76rem;
+      font-family: var(--font-mono);
+      color: var(--muted);
+      line-height: 1.3;
+    }
+    .ratio-exact-badge {
+      display: inline-block;
+      margin-top: 5px;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 0.75rem;
+      font-weight: 800;
+      font-family: var(--font-mono);
+      background: #fef8eb;
+      color: #9c731e;
+      border: 1px solid #f3d898;
+    }
+
+    /* Identidades Fundamentais Expansíveis */
+    .identities-box {
+      background: #fdfefe;
+      border: 1px solid var(--linha);
+      border-left: 4px solid var(--teal);
+      border-radius: var(--radius-sm);
+      padding: 12px 16px;
+      margin-bottom: 14px;
+      display: none;
+      animation: fadeIn 0.2s ease-in-out;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-4px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .identities-title {
+      font-size: 0.8rem;
+      font-weight: 800;
+      color: var(--navy);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .identities-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      font-family: var(--font-mono);
+      font-size: 0.88rem;
+    }
+    @media (max-width: 600px) {
+      .identities-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+    .identity-item {
+      background: #ffffff;
+      padding: 8px 12px;
+      border-radius: 6px;
+      border: 1px solid var(--linha);
+    }
+
+    /* Palco SVG Interativo do Triângulo */
+    .triangle-stage-wrapper {
+      position: relative;
+      background: #ffffff;
+      border: 1px solid var(--linha);
+      border-radius: var(--radius-md);
+      box-shadow: var(--shadow-subtle);
+      overflow: hidden;
+      margin-bottom: 14px;
+      touch-action: none;
+    }
+    .triangle-svg-canvas {
+      width: 100%;
+      height: 350px;
+      display: block;
+      user-select: none;
+    }
+
+    .vertex-handle {
+      cursor: grab;
+      transition: r 0.15s ease, filter 0.15s ease;
+    }
+    .vertex-handle:hover {
+      r: 10px;
+      filter: drop-shadow(0 0 6px rgba(44, 122, 120, 0.7));
+    }
+    .vertex-handle:active {
+      cursor: grabbing;
+      r: 11px;
+    }
+
+    /* Legenda Fixa dos Lados */
+    .sides-legend-row {
+      display: flex;
+      gap: 16px;
+      align-items: center;
+      justify-content: center;
+      flex-wrap: wrap;
+      background: #fbfcfd;
+      border-top: 1px solid var(--linha);
+      padding: 8px 14px;
+      font-size: 0.78rem;
+      font-weight: 700;
+    }
+    .legend-side-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .legend-color-box {
+      width: 14px;
+      height: 14px;
+      border-radius: 3px;
+    }
+
+    /* Painel Dedicado aos Ângulos Notáveis */
+    .notables-section {
+      background: #f8fafc;
+      border: 1px solid var(--linha);
+      border-radius: var(--radius-md);
+      padding: 16px;
+      margin-bottom: 16px;
+      box-shadow: var(--shadow-subtle);
+    }
+    .notables-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .notables-title {
+      font-size: 0.88rem;
+      font-weight: 800;
+      color: var(--navy);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    /* Mnemônica Musical/Visual */
+    .mnemonic-box {
+      background: #fef8eb;
+      border: 1px dashed var(--dourado);
+      border-radius: var(--radius-sm);
+      padding: 10px 14px;
+      margin-bottom: 14px;
+      font-size: 0.82rem;
+      color: #785412;
+      line-height: 1.45;
+    }
+
+    /* Tabela de Ângulos Notáveis */
+    .table-responsive {
+      overflow-x: auto;
+      margin-bottom: 14px;
+    }
+    .notables-table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: center;
+      background: #ffffff;
+      border-radius: 8px;
+      overflow: hidden;
+      border: 1px solid var(--linha);
+      font-family: var(--font-mono);
+      font-size: 0.92rem;
+    }
+    .notables-table th, .notables-table td {
+      padding: 10px 14px;
+      border: 1px solid var(--linha);
+    }
+    .notables-table th {
+      background: #f1f5f9;
+      color: var(--navy);
+      font-size: 0.85rem;
+      font-weight: 800;
+      letter-spacing: 0.03em;
+    }
+    .notables-table tr.highlighted-angle td {
+      background: #f4fbf7;
+      border-color: #a7f3d0;
+    }
+    .notables-table th.col-ratio {
+      font-family: var(--font-sans);
+      text-align: left;
+      width: 25%;
+    }
+    .notables-table td.col-ratio {
+      font-family: var(--font-sans);
+      font-weight: 800;
+      text-align: left;
+      color: var(--navy);
+      background: #f8fafc;
+    }
+    .val-exact {
+      font-size: 1.15rem;
+      font-weight: 800;
+      color: var(--navy);
+      display: block;
+    }
+    .val-approx {
+      font-size: 0.72rem;
+      color: var(--muted);
+      display: block;
+      margin-top: 2px;
+    }
+
+    .notable-btn-apply {
+      margin-top: 6px;
+      padding: 4px 8px;
+      font-size: 0.72rem;
+      font-weight: 700;
+      border: 1px solid var(--linha);
+      background: #ffffff;
+      color: var(--navy);
+      border-radius: 4px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    .notable-btn-apply:hover {
+      background: var(--navy);
+      color: #ffffff;
+      border-color: var(--navy);
+    }
+
+    /* Barra visual dos valores */
+    .fraction-bar-preview {
+      width: 100%;
+      height: 6px;
+      background: #e2e8f0;
+      border-radius: 3px;
+      margin-top: 6px;
+      overflow: hidden;
+    }
+    .fraction-bar-fill {
+      height: 100%;
+      border-radius: 3px;
+      transition: width 0.2s ease;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header Institucional -->
+  <header class="site-header">
+    <div class="header-container">
+      <a href="../index.html" class="brand-wrapper" title="Voltar para a página inicial">
+        <div class="brand-logo" aria-hidden="true">
+          <svg viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 19L12 5l8 14H4z" />
+          </svg>
+        </div>
+        <div class="brand-texts">
+          <span class="brand-title">Matemática em Movimento</span>
+          <span class="brand-slogan">Explore. Manipule. Compreenda.</span>
+        </div>
+      </a>
+      <div class="header-actions">
+        <a href="../index.html" class="btn-header">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+          Início
+        </a>
+        <button id="btnFullscreen" class="btn-header" title="Alternar modo tela cheia para projeção em sala de aula">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>
+          Projeção
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Breadcrumbs -->
+  <nav class="breadcrumb-bar" aria-label="Navegação estrutural">
+    <div class="breadcrumb-container">
+      <a href="../index.html">Início</a>
+      <span class="breadcrumb-sep">/</span>
+      <a href="../index.html#catalogo">Trigonometria</a>
+      <span class="breadcrumb-sep">/</span>
+      <span class="breadcrumb-current">Trigonometria no Triângulo Retângulo</span>
+    </div>
+  </nav>
+
+  <!-- Conteúdo Principal -->
+  <main class="main-content">
+    <div class="demo-grid">
+
+      <!-- Coluna 1: Laboratório Interativo -->
+      <section class="card" aria-labelledby="lab-heading">
+        <div class="card-eyebrow">
+          <span class="badge-tag badge-fundamental">9º Ano &amp; Ensino Médio</span>
+          <span>· LABORATÓRIO DE TRIGONOMETRIA</span>
+        </div>
+        <h2 id="lab-heading" class="card-title">Trigonometria no Triângulo Retângulo</h2>
+        <p class="card-subtitle">
+          Manipule o triângulo arrastando os vértices ou pelos sliders. Acompanhe o cálculo ao vivo do seno, cosseno e tangente e explore a exatidão dos ângulos notáveis 30°, 45° e 60°.
+        </p>
+
+        <!-- Presets Rápidos Didáticos -->
+        <div class="presets-bar" style="margin-bottom: 12px;">
+          <span class="presets-label">Exemplos Rápidos:</span>
+          <button class="preset-pill active" id="btnPreset345">3-4-5 (Padrão)</button>
+          <button class="preset-pill" id="btnPreset51213">5-12-13</button>
+          <button class="preset-pill" id="btnPreset6810">6-8-10</button>
+          <button class="preset-pill" id="btnPreset30">Notável 30°</button>
+          <button class="preset-pill" id="btnPreset45">Notável 45°</button>
+          <button class="preset-pill" id="btnPreset60">Notável 60°</button>
+        </div>
+
+        <!-- Palco do Triângulo Retângulo em SVG -->
+        <div class="triangle-stage-wrapper">
+          <svg id="triangleSvg" class="triangle-svg-canvas" viewBox="0 0 600 350" aria-label="Triângulo retângulo interativo com catetos e hipotenusa"></svg>
+
+          <!-- Legenda Fixa dos Lados e Ângulo -->
+          <div class="sides-legend-row">
+            <span class="legend-side-pill">
+              <span class="legend-color-box" style="background:#d5a64a;"></span>
+              <span>Cateto Oposto (a = BC)</span>
+            </span>
+            <span class="legend-side-pill">
+              <span class="legend-color-box" style="background:var(--azul);"></span>
+              <span>Cateto Adjacente (b = AC)</span>
+            </span>
+            <span class="legend-side-pill">
+              <span class="legend-color-box" style="background:var(--teal);"></span>
+              <span>Hipotenusa (c = AB)</span>
+            </span>
+            <span class="legend-side-pill">
+              <span class="legend-color-box" style="background:#fef8eb; border:1px solid #d5a64a;"></span>
+              <span>Ângulo Agudo &theta;</span>
+            </span>
+          </div>
+        </div>
+
+        <!-- Dica de Manipulação -->
+        <div class="manipulation-tip" style="margin-top: -4px; margin-bottom: 14px;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/>
+          </svg>
+          <span><strong>Dica de manipulação:</strong> Arraste o vértice B ou C no desenho, ou use os sliders abaixo. Veja como as razões mudam e como se comportam perto de 30°, 45° e 60°.</span>
+        </div>
+
+        <!-- Controles por Sliders -->
+        <div class="controls-panel-grid">
+          <div class="slider-group">
+            <div class="slider-label-row">
+              <label for="sliderAdj" style="color:var(--azul); font-weight:800;">Cateto Adjacente (b = AC):</label>
+              <span id="badgeAdj" class="slider-val-badge" style="background:#eaf2f7; color:var(--azul);">4,0</span>
+            </div>
+            <input type="range" id="sliderAdj" min="2" max="14" step="0.1" value="4.0" aria-label="Comprimento do cateto adjacente" />
+          </div>
+
+          <div class="slider-group">
+            <div class="slider-label-row">
+              <label for="sliderOpp" style="color:#d5a64a; font-weight:800;">Cateto Oposto (a = BC):</label>
+              <span id="badgeOpp" class="slider-val-badge" style="background:#fef8eb; color:#9c731e;">3,0</span>
+            </div>
+            <input type="range" id="sliderOpp" min="2" max="14" step="0.1" value="3.0" aria-label="Comprimento do cateto oposto" />
+          </div>
+        </div>
+
+        <!-- PAINEL DE DESTAQUE: SENO, COSSENO E TANGENTE AO VIVO -->
+        <div class="trig-ratios-grid">
+          <!-- SENO -->
+          <div class="ratio-card" style="border-top: 4px solid #d5a64a;">
+            <div class="ratio-card-name" style="color:#9c731e;">Seno (&theta;)</div>
+            <div class="ratio-formula-formula">sen &theta; = Cateto Oposto &divide; Hipotenusa</div>
+            <div id="dispSinVal" class="ratio-big-value" style="color:#9c731e;">0,60</div>
+            <div id="dispSinCalc" class="ratio-sub-calc">3,0 &divide; 5,0 = 3/5</div>
+            <div id="badgeSinExact" class="ratio-exact-badge" style="display:none;">Exato: 1/2</div>
+          </div>
+
+          <!-- COSSENO -->
+          <div class="ratio-card" style="border-top: 4px solid var(--azul);">
+            <div class="ratio-card-name" style="color:var(--azul);">Cosseno (&theta;)</div>
+            <div class="ratio-formula-formula">cos &theta; = Cateto Adjacente &divide; Hipotenusa</div>
+            <div id="dispCosVal" class="ratio-big-value" style="color:var(--azul);">0,80</div>
+            <div id="dispCosCalc" class="ratio-sub-calc">4,0 &divide; 5,0 = 4/5</div>
+            <div id="badgeCosExact" class="ratio-exact-badge" style="display:none;">Exato: &radic;3/2</div>
+          </div>
+
+          <!-- TANGENTE -->
+          <div class="ratio-card" style="border-top: 4px solid var(--teal);">
+            <div class="ratio-card-name" style="color:var(--teal);">Tangente (&theta;)</div>
+            <div class="ratio-formula-formula">tan &theta; = Cateto Oposto &divide; Cateto Adjacente</div>
+            <div id="dispTanVal" class="ratio-big-value" style="color:var(--teal);">0,75</div>
+            <div id="dispTanCalc" class="ratio-sub-calc">3,0 &divide; 4,0 = 3/4</div>
+            <div id="badgeTanExact" class="ratio-exact-badge" style="display:none;">Exato: &radic;3/3</div>
+          </div>
+        </div>
+
+        <!-- Botão Toggle de Relações Importantes -->
+        <div style="margin-bottom: 14px;">
+          <button type="button" id="btnToggleIdentities" class="btn-action btn-action-secondary" style="width:100%; justify-content:center;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
+            <span id="txtBtnIdentities">Mostrar Relações Importantes (sen²&theta; + cos²&theta; = 1 e tan &theta; = sen &divide; cos)</span>
+          </button>
+        </div>
+
+        <!-- Painel Expansível de Identidades Fundamentais -->
+        <div id="identitiesBox" class="identities-box">
+          <div class="identities-title">
+            <span>Identidades Trigonométricas Fundamentais Verificadas ao Vivo</span>
+          </div>
+          <div class="identities-grid">
+            <div class="identity-item">
+              <div style="font-weight:800; color:var(--teal); margin-bottom:4px;">1. Relação Fundamental:</div>
+              <div>sen²&theta; + cos²&theta; = 1</div>
+              <div id="calcFundIdentity" style="font-size:0.8rem; color:var(--muted); margin-top:2px;">
+                0,60² + 0,80² = 0,36 + 0,64 = <strong>1,00</strong>
+              </div>
+            </div>
+            <div class="identity-item">
+              <div style="font-weight:800; color:var(--azul); margin-bottom:4px;">2. Tangente pelo Quociente:</div>
+              <div>tan &theta; = sen &theta; &divide; cos &theta;</div>
+              <div id="calcQuotIdentity" style="font-size:0.8rem; color:var(--muted); margin-top:2px;">
+                0,60 &divide; 0,80 = <strong>0,75</strong>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- SEÇÃO DEDICADA AOS ÂNGULOS NOTÁVEIS (30°, 45° E 60°) -->
+        <div class="notables-section">
+          <div class="notables-header">
+            <div class="notables-title">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+              <span>Tabela Interativa dos Ângulos Notáveis</span>
+            </div>
+            <span style="font-size:0.75rem; color:var(--muted); font-weight:700;">Valores Exatos com Radicais</span>
+          </div>
+
+          <!-- Dica Mnemônica Musical/Visual -->
+          <div class="mnemonic-box">
+            <strong>Dica de Memória (Canção dos Radicais):</strong><br />
+            Para o <strong>Seno</strong>: coloque <em>1, 2, 3</em>, tudo sobre 2, com raiz no 2 e no 3 (&radic;1/2, &radic;2/2, &radic;3/2).<br />
+            Para o <strong>Cosseno</strong>: inverta a ordem: <em>3, 2, 1</em>, tudo sobre 2, com raiz no 3 e no 2 (&radic;3/2, &radic;2/2, &radic;1/2).<br />
+            Para a <strong>Tangente</strong>: divida um pelo outro: <em>&radic;3/3, 1, &radic;3</em>!
+          </div>
+
+          <!-- Tabela Comparativa -->
+          <div class="table-responsive">
+            <table class="notables-table" id="notablesTable">
+              <thead>
+                <tr>
+                  <th class="col-ratio">Razão &bull; Ângulo</th>
+                  <th id="th30">
+                    <div>30° (&pi;/6)</div>
+                    <button type="button" class="notable-btn-apply" onclick="applyNotable(30)">Testar 30°</button>
+                  </th>
+                  <th id="th45">
+                    <div>45° (&pi;/4)</div>
+                    <button type="button" class="notable-btn-apply" onclick="applyNotable(45)">Testar 45°</button>
+                  </th>
+                  <th id="th60">
+                    <div>60° (&pi;/3)</div>
+                    <button type="button" class="notable-btn-apply" onclick="applyNotable(60)">Testar 60°</button>
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td class="col-ratio">
+                    <span style="color:#9c731e;">Seno (sen)</span>
+                  </td>
+                  <td id="cellSin30">
+                    <span class="val-exact">1/2</span>
+                    <span class="val-approx">= 0,50</span>
+                    <div class="fraction-bar-preview"><div class="fraction-bar-fill" style="width:50%; background:#d5a64a;"></div></div>
+                  </td>
+                  <td id="cellSin45">
+                    <span class="val-exact">&radic;2 / 2</span>
+                    <span class="val-approx">&approx; 0,71</span>
+                    <div class="fraction-bar-preview"><div class="fraction-bar-fill" style="width:71%; background:#d5a64a;"></div></div>
+                  </td>
+                  <td id="cellSin60">
+                    <span class="val-exact">&radic;3 / 2</span>
+                    <span class="val-approx">&approx; 0,87</span>
+                    <div class="fraction-bar-preview"><div class="fraction-bar-fill" style="width:87%; background:#d5a64a;"></div></div>
+                  </td>
+                </tr>
+                <tr>
+                  <td class="col-ratio">
+                    <span style="color:var(--azul);">Cosseno (cos)</span>
+                  </td>
+                  <td id="cellCos30">
+                    <span class="val-exact">&radic;3 / 2</span>
+                    <span class="val-approx">&approx; 0,87</span>
+                    <div class="fraction-bar-preview"><div class="fraction-bar-fill" style="width:87%; background:var(--azul);"></div></div>
+                  </td>
+                  <td id="cellCos45">
+                    <span class="val-exact">&radic;2 / 2</span>
+                    <span class="val-approx">&approx; 0,71</span>
+                    <div class="fraction-bar-preview"><div class="fraction-bar-fill" style="width:71%; background:var(--azul);"></div></div>
+                  </td>
+                  <td id="cellCos60">
+                    <span class="val-exact">1/2</span>
+                    <span class="val-approx">= 0,50</span>
+                    <div class="fraction-bar-preview"><div class="fraction-bar-fill" style="width:50%; background:var(--azul);"></div></div>
+                  </td>
+                </tr>
+                <tr>
+                  <td class="col-ratio">
+                    <span style="color:var(--teal);">Tangente (tan)</span>
+                  </td>
+                  <td id="cellTan30">
+                    <span class="val-exact">&radic;3 / 3</span>
+                    <span class="val-approx">&approx; 0,58</span>
+                    <div class="fraction-bar-preview"><div class="fraction-bar-fill" style="width:33%; background:var(--teal);"></div></div>
+                  </td>
+                  <td id="cellTan45">
+                    <span class="val-exact">1</span>
+                    <span class="val-approx">= 1,00</span>
+                    <div class="fraction-bar-preview"><div class="fraction-bar-fill" style="width:58%; background:var(--teal);"></div></div>
+                  </td>
+                  <td id="cellTan60">
+                    <span class="val-exact">&radic;3</span>
+                    <span class="val-approx">&approx; 1,73</span>
+                    <div class="fraction-bar-preview"><div class="fraction-bar-fill" style="width:100%; background:var(--teal);"></div></div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div style="font-size:0.78rem; color:var(--muted); text-align:center;">
+            Clique nos botões <strong>"Testar 30°"</strong>, <strong>"Testar 45°"</strong> ou <strong>"Testar 60°"</strong> para ajustar o triângulo do laboratório e conferir as razões na prática!
+          </div>
+        </div>
+
+        <!-- Botões de Ação do Laboratório -->
+        <div class="action-buttons-group">
+          <button id="btnResetDefault" class="btn-action btn-action-primary" title="Restaurar o triângulo clássico 3-4-5">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+            Restaurar (3-4-5)
+          </button>
+          <button id="btnNextSample" class="btn-action btn-action-secondary" title="Experimentar o próximo triângulo da lista de exemplos">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m21.5 2-5 5-4-4-9 9"/><path d="M15 2h6.5V8.5"/></svg>
+            Experimentar Outro Triângulo
+          </button>
+        </div>
+
+      </section>
+
+      <!-- Coluna 2: Entenda a Ideia Pedagógica -->
+      <aside class="card pedagogical-aside" aria-labelledby="theory-heading">
+        <div class="card-eyebrow">
+          <span>FUNDAMENTAÇÃO TEÓRICA</span>
+        </div>
+        <h2 id="theory-heading" class="card-title">As Três Razões Trigonométricas</h2>
+
+        <p class="aside-lead">
+          A trigonometria estuda a relação entre os <strong>ângulos</strong> e as <strong>proporções entre os lados</strong> de um triângulo. No triângulo retângulo, essas razões recebem nomes especiais:
+        </p>
+
+        <!-- Fórmula em Destaque -->
+        <div class="formula-box">
+          <div class="formula-label">Definições Fundamentais:</div>
+          <div style="display: flex; flex-direction: column; gap: 8px; margin-top: 4px; font-family: var(--font-mono); font-size: 0.95rem; font-weight: 800;">
+            <div>
+              <span style="color:#d5a64a;">sen &theta;</span> = 
+              <span>Cateto Oposto &divide; Hipotenusa</span>
+            </div>
+            <div>
+              <span style="color:var(--azul);">cos &theta;</span> = 
+              <span>Cateto Adjacente &divide; Hipotenusa</span>
+            </div>
+            <div>
+              <span style="color:var(--teal);">tan &theta;</span> = 
+              <span>Cateto Oposto &divide; Cateto Adjacente</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Três Passos Didáticos Numerados -->
+        <div class="steps-list">
+          <div class="step-item">
+            <div class="step-badge" aria-hidden="true">1</div>
+            <div class="step-content">
+              <h3 class="step-title">Como saber qual cateto é Oposto ou Adjacente?</h3>
+              <p class="step-text">
+                Olhe sempre a partir do <strong>ângulo agudo escolhido (&theta;)</strong>: o cateto que fica encostado nele é o <strong>Adjacente</strong>; o cateto que fica do outro lado, de frente para ele, é o <strong>Oposto</strong>. A <strong>Hipotenusa</strong> é sempre o lado maior, oposto ao ângulo reto de 90°.
+              </p>
+            </div>
+          </div>
+
+          <div class="step-item">
+            <div class="step-badge" aria-hidden="true">2</div>
+            <div class="step-content">
+              <h3 class="step-title">A proporção depende só do ângulo</h3>
+              <p class="step-text">
+                Não importa se o triângulo retângulo é minúsculo ou do tamanho de uma montanha: se o ângulo for de 30°, o cateto oposto sempre medirá rigorosamente a <strong>metade da hipotenusa</strong> (sen 30° = 1/2 = 0,5).
+              </p>
+            </div>
+          </div>
+
+          <div class="step-item">
+            <div class="step-badge" aria-hidden="true">3</div>
+            <div class="step-content">
+              <h3 class="step-title">A Tangente como inclinação</h3>
+              <p class="step-text">
+                A tangente mede o quanto o triângulo "sobe" em relação ao quanto ele "avança" (altura &divide; base). Quando o ângulo é de 45°, os dois catetos têm o mesmo tamanho, logo tan 45° = 1!
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Pergunta para Investigar -->
+        <div class="investigation-box">
+          <div class="investigation-title">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+              <path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5"/>
+              <path d="M9 18h6"/><path d="M10 22h4"/>
+            </svg>
+            <span>Pergunta para investigar</span>
+          </div>
+          <p class="investigation-text">
+            Em um triângulo retângulo com <strong>hipotenusa medindo 10</strong> e um ângulo de <strong>30°</strong>, quanto mede o cateto oposto? (Dica: sen 30° = 1/2.) Use o botão <strong>"Testar 30°"</strong> no laboratório para conferir e descubra também a medida do cateto adjacente!
+          </p>
+        </div>
+
+        <!-- Curiosidade sobre os Ângulos Complementares -->
+        <div style="background: #eef5f8; border: 1px solid #c7dbe6; border-radius: 8px; padding: 12px 14px; margin-top: 16px;">
+          <div style="font-weight: 800; font-size: 0.82rem; color: var(--navy); display: flex; align-items: center; gap: 6px; margin-bottom: 4px;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
+            Por que sen 30° = cos 60°?
+          </div>
+          <p style="font-size: 0.8rem; color: var(--tinta); line-height: 1.45;">
+            Os dois ângulos agudos de um triângulo retângulo somam 90° (são complementares). O cateto que é <strong>oposto</strong> a 30° é o mesmo cateto que é <strong>adjacente</strong> a 60°! Por isso, o seno de um é sempre o cosseno do outro.
+          </p>
+        </div>
+
+      </aside>
+
+    </div>
+  </main>
+
+  <!-- Rodapé Institucional -->
+  <footer class="site-footer">
+    <div class="site-footer-inner">
+      <p><strong>Matemática em Movimento</strong> · Recurso educacional aberto e gratuito para professores e estudantes.</p>
+      <div class="footer-links">
+        <a href="../index.html">Todas as Demonstrações</a>
+        <span>•</span>
+        <a href="../trigonometria/circulo.html">Círculo Trigonométrico</a>
+        <span>•</span>
+        <a href="../geometria/pitagoras.html">Teorema de Pitágoras</a>
+        <span>•</span>
+        <a href="../geometria/soma-angulos.html">Soma dos Ângulos</a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Lógica Matemática e Interatividade -->
+  <script>
+    /**
+     * Matemática em Movimento — Demonstração: Trigonometria no Triângulo Retângulo
+     * Cálculo em tempo real de seno, cosseno e tangente com arrasto do vértice B,
+     * suporte a ângulos notáveis 30°, 45° e 60° com valores exatos em radicais.
+     */
+
+    // Estado da Demonstração
+    const state = {
+      adj: 4.0,  // Cateto Adjacente b (horizontal AC)
+      opp: 3.0,  // Cateto Oposto a (vertical BC)
+      isNotable: false,
+      notableAngle: null,
+      identitiesVisible: false,
+      isDraggingVertex: false
+    };
+
+    // Coleção de Casos Pré-definidos
+    const samplePresets = [
+      { name: '3-4-5 (Padrão)', adj: 4.0, opp: 3.0, notable: null },
+      { name: '5-12-13', adj: 12.0, opp: 5.0, notable: null },
+      { name: '6-8-10', adj: 8.0, opp: 6.0, notable: null },
+      { name: 'Notável 30°', adj: 4 * Math.sqrt(3), opp: 4.0, notable: 30 },
+      { name: 'Notável 45°', adj: 6.0, opp: 6.0, notable: 45 },
+      { name: 'Notável 60°', adj: 4.0, opp: 4 * Math.sqrt(3), notable: 60 }
+    ];
+    let currentPresetIdx = 0;
+
+    // Elementos DOM
+    const triangleSvg = document.getElementById('triangleSvg');
+    const sliderAdj = document.getElementById('sliderAdj');
+    const sliderOpp = document.getElementById('sliderOpp');
+    const badgeAdj = document.getElementById('badgeAdj');
+    const badgeOpp = document.getElementById('badgeOpp');
+
+    const dispSinVal = document.getElementById('dispSinVal');
+    const dispSinCalc = document.getElementById('dispSinCalc');
+    const badgeSinExact = document.getElementById('badgeSinExact');
+
+    const dispCosVal = document.getElementById('dispCosVal');
+    const dispCosCalc = document.getElementById('dispCosCalc');
+    const badgeCosExact = document.getElementById('badgeCosExact');
+
+    const dispTanVal = document.getElementById('dispTanVal');
+    const dispTanCalc = document.getElementById('dispTanCalc');
+    const badgeTanExact = document.getElementById('badgeTanExact');
+
+    const btnToggleIdentities = document.getElementById('btnToggleIdentities');
+    const identitiesBox = document.getElementById('identitiesBox');
+    const calcFundIdentity = document.getElementById('calcFundIdentity');
+    const calcQuotIdentity = document.getElementById('calcQuotIdentity');
+
+    const btnResetDefault = document.getElementById('btnResetDefault');
+    const btnNextSample = document.getElementById('btnNextSample');
+
+    function formatPt(val, dec = 2) {
+      return val.toFixed(dec).replace('.', ',');
+    }
+
+    // Simplificação de Fração Inteira
+    function getFractionStr(num, den) {
+      function gcd(x, y) {
+        x = Math.round(Math.abs(x));
+        y = Math.round(Math.abs(y));
+        while (y) { const t = y; y = x % y; x = t; }
+        return x || 1;
+      }
+      if (Math.abs(num - Math.round(num)) < 0.05 && Math.abs(den - Math.round(den)) < 0.05) {
+        const nInt = Math.round(num);
+        const dInt = Math.round(den);
+        const g = gcd(nInt, dInt);
+        return `${nInt / g}/${dInt / g}`;
+      }
+      return `${formatPt(num, 1)}/${formatPt(den, 1)}`;
+    }
+
+    // Atualização Geral da Cena e dos Painéis
+    function updateScene() {
+      const a = state.opp;
+      const b = state.adj;
+      const c = Math.hypot(a, b);
+      const angleRad = Math.atan2(a, b);
+      const angleDeg = (angleRad * 180) / Math.PI;
+
+      // Atualiza badges dos sliders
+      badgeAdj.textContent = formatPt(b, 1);
+      badgeOpp.textContent = formatPt(a, 1);
+      sliderAdj.value = b.toFixed(1);
+      sliderOpp.value = a.toFixed(1);
+
+      // Checa se o ângulo atual é aproximadamente notável (tolerância de 0.8°)
+      let detectedNotable = null;
+      if (Math.abs(angleDeg - 30) < 0.8) detectedNotable = 30;
+      else if (Math.abs(angleDeg - 45) < 0.8) detectedNotable = 45;
+      else if (Math.abs(angleDeg - 60) < 0.8) detectedNotable = 60;
+      state.notableAngle = detectedNotable;
+
+      // 1. Seno
+      const sinVal = a / c;
+      dispSinVal.textContent = formatPt(sinVal, 2);
+      dispSinCalc.textContent = `${formatPt(a, 1)} ÷ ${formatPt(c, 1)} = ${getFractionStr(a, c)}`;
+
+      // 2. Cosseno
+      const cosVal = b / c;
+      dispCosVal.textContent = formatPt(cosVal, 2);
+      dispCosCalc.textContent = `${formatPt(b, 1)} ÷ ${formatPt(c, 1)} = ${getFractionStr(b, c)}`;
+
+      // 3. Tangente
+      const tanVal = a / b;
+      dispTanVal.textContent = formatPt(tanVal, 2);
+      dispTanCalc.textContent = `${formatPt(a, 1)} ÷ ${formatPt(b, 1)} = ${getFractionStr(a, b)}`;
+
+      // Destaques de Valores Exatos Notáveis
+      if (detectedNotable === 30) {
+        badgeSinExact.style.display = 'inline-block';
+        badgeSinExact.textContent = 'Exato: 1/2';
+        badgeCosExact.style.display = 'inline-block';
+        badgeCosExact.textContent = 'Exato: √3/2';
+        badgeTanExact.style.display = 'inline-block';
+        badgeTanExact.textContent = 'Exato: √3/3';
+      } else if (detectedNotable === 45) {
+        badgeSinExact.style.display = 'inline-block';
+        badgeSinExact.textContent = 'Exato: √2/2';
+        badgeCosExact.style.display = 'inline-block';
+        badgeCosExact.textContent = 'Exato: √2/2';
+        badgeTanExact.style.display = 'inline-block';
+        badgeTanExact.textContent = 'Exato: 1';
+      } else if (detectedNotable === 60) {
+        badgeSinExact.style.display = 'inline-block';
+        badgeSinExact.textContent = 'Exato: √3/2';
+        badgeCosExact.style.display = 'inline-block';
+        badgeCosExact.textContent = 'Exato: 1/2';
+        badgeTanExact.style.display = 'inline-block';
+        badgeTanExact.textContent = 'Exato: √3';
+      } else {
+        badgeSinExact.style.display = 'none';
+        badgeCosExact.style.display = 'none';
+        badgeTanExact.style.display = 'none';
+      }
+
+      // 4. Identidades Trigonométricas ao Vivo
+      const sin2 = sinVal * sinVal;
+      const cos2 = cosVal * cosVal;
+      const sum2 = sin2 + cos2;
+      calcFundIdentity.innerHTML = `${formatPt(sinVal, 2)}² + ${formatPt(cosVal, 2)}² = ${formatPt(sin2, 2)} + ${formatPt(cos2, 2)} = <strong style="color:#166534;">${sum2.toFixed(2).replace('.', ',')}</strong>`;
+      
+      const quotTan = sinVal / cosVal;
+      calcQuotIdentity.innerHTML = `${formatPt(sinVal, 2)} ÷ ${formatPt(cosVal, 2)} = <strong style="color:#166534;">${formatPt(quotTan, 2)}</strong> (igual a tan &theta;)`;
+
+      // Atualizar destaque na tabela de notáveis
+      highlightNotableTable(detectedNotable);
+
+      // Renderizar o Triângulo em SVG
+      renderTriangleSvg(a, b, c, angleDeg);
+    }
+
+    // Renderização Visual do Triângulo em SVG com Auto-escala e Rótulos Legíveis
+    function renderTriangleSvg(a, b, c, angleDeg) {
+      triangleSvg.innerHTML = '';
+
+      const svgW = 600;
+      const svgH = 350;
+      const originX = 100;
+      const originY = 285;
+
+      // Escala dinâmica para que o triângulo caiba perfeitamente no palco (max 380px horizontal e 220px vertical)
+      const maxDrawW = 380;
+      const maxDrawH = 210;
+      const scaleX = maxDrawW / b;
+      const scaleY = maxDrawH / a;
+      const k = Math.min(scaleX, scaleY, 28); // fator de escala pixels por unidade
+
+      // Vértices do Triângulo Retângulo
+      // A = Ângulo theta à esquerda
+      // C = Ângulo reto 90° à direita na base
+      // B = Vértice superior
+      const Ax = originX;
+      const Ay = originY;
+      const Cx = originX + b * k;
+      const Cy = originY;
+      const Bx = Cx;
+      const By = originY - a * k;
+
+      // 1. Preenchimento Suave do Triângulo
+      const poly = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
+      poly.setAttribute('points', `${Ax},${Ay} ${Cx},${Cy} ${Bx},${By}`);
+      poly.setAttribute('fill', '#f8fafc');
+      poly.setAttribute('stroke', '#cbd5e1');
+      poly.setAttribute('stroke-width', '1.5');
+      triangleSvg.appendChild(poly);
+
+      // 2. Símbolo do Ângulo Reto em C (quadradinho com ponto central)
+      const sqSize = 18;
+      const rightAnglePath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+      rightAnglePath.setAttribute('d', `M ${Cx - sqSize} ${Cy} L ${Cx - sqSize} ${Cy - sqSize} L ${Cx} ${Cy - sqSize}`);
+      rightAnglePath.setAttribute('fill', 'none');
+      rightAnglePath.setAttribute('stroke', '#18324b');
+      rightAnglePath.setAttribute('stroke-width', '2');
+      triangleSvg.appendChild(rightAnglePath);
+
+      const rightAngleDot = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+      rightAngleDot.setAttribute('cx', (Cx - sqSize / 2).toString());
+      rightAngleDot.setAttribute('cy', (Cy - sqSize / 2).toString());
+      rightAngleDot.setAttribute('r', '2.5');
+      rightAngleDot.setAttribute('fill', '#18324b');
+      triangleSvg.appendChild(rightAngleDot);
+
+      // 3. Arco e Setor do Ângulo Agudo theta em A
+      const arcR = Math.min(50, Math.max(30, b * k * 0.35));
+      const rad = (angleDeg * Math.PI) / 180;
+      const arcEndX = Ax + arcR * Math.cos(rad);
+      const arcEndY = Ay - arcR * Math.sin(rad);
+
+      const sectorArc = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+      sectorArc.setAttribute('d', `M ${Ax} ${Ay} L ${Ax + arcR} ${Ay} A ${arcR} ${arcR} 0 0 0 ${arcEndX} ${arcEndY} Z`);
+      sectorArc.setAttribute('fill', '#fef8eb');
+      sectorArc.setAttribute('stroke', '#d5a64a');
+      sectorArc.setAttribute('stroke-width', '2');
+      triangleSvg.appendChild(sectorArc);
+
+      // Texto do Ângulo theta
+      const textAngle = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+      const textAngleDist = arcR + 24;
+      const midAngleRad = rad / 2;
+      textAngle.setAttribute('x', (Ax + textAngleDist * Math.cos(midAngleRad)).toFixed(1));
+      textAngle.setAttribute('y', (Ay - textAngleDist * Math.sin(midAngleRad) + 5).toFixed(1));
+      textAngle.setAttribute('font-size', '14');
+      textAngle.setAttribute('font-weight', '900');
+      textAngle.setAttribute('font-family', 'ui-monospace, monospace');
+      textAngle.setAttribute('fill', '#9c731e');
+      textAngle.setAttribute('text-anchor', 'start');
+      textAngle.textContent = `θ = ${formatPt(angleDeg, 1)}°`;
+      triangleSvg.appendChild(textAngle);
+
+      // 4. LADOS DO TRIÂNGULO COM CORES DISTINTAS
+      // Cateto Adjacente (AC) - Azul
+      const lineAdj = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+      lineAdj.setAttribute('x1', Ax.toString());
+      lineAdj.setAttribute('y1', Ay.toString());
+      lineAdj.setAttribute('x2', Cx.toString());
+      lineAdj.setAttribute('y2', Cy.toString());
+      lineAdj.setAttribute('stroke', '#356b8c');
+      lineAdj.setAttribute('stroke-width', '4');
+      lineAdj.setAttribute('stroke-linecap', 'round');
+      triangleSvg.appendChild(lineAdj);
+
+      // Cateto Oposto (BC) - Dourado / Âmbar
+      const lineOpp = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+      lineOpp.setAttribute('x1', Cx.toString());
+      lineOpp.setAttribute('y1', Cy.toString());
+      lineOpp.setAttribute('x2', Bx.toString());
+      lineOpp.setAttribute('y2', By.toString());
+      lineOpp.setAttribute('stroke', '#d5a64a');
+      lineOpp.setAttribute('stroke-width', '4');
+      lineOpp.setAttribute('stroke-linecap', 'round');
+      triangleSvg.appendChild(lineOpp);
+
+      // Hipotenusa (AB) - Verde-Água / Teal
+      const lineHyp = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+      lineHyp.setAttribute('x1', Ax.toString());
+      lineHyp.setAttribute('y1', Ay.toString());
+      lineHyp.setAttribute('x2', Bx.toString());
+      lineHyp.setAttribute('y2', By.toString());
+      lineHyp.setAttribute('stroke', '#2c7a78');
+      lineHyp.setAttribute('stroke-width', '4');
+      lineHyp.setAttribute('stroke-linecap', 'round');
+      triangleSvg.appendChild(lineHyp);
+
+      // 5. RÓTULOS DOS LADOS (SEMPRE LEGÍVEIS E FORA DA ÁREA)
+      // Rótulo Cateto Adjacente (abaixo do lado horizontal AC)
+      const lblAdj = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+      lblAdj.setAttribute('x', ((Ax + Cx) / 2).toFixed(1));
+      lblAdj.setAttribute('y', (Cy + 26).toString());
+      lblAdj.setAttribute('font-size', '13');
+      lblAdj.setAttribute('font-weight', '800');
+      lblAdj.setAttribute('fill', '#356b8c');
+      lblAdj.setAttribute('text-anchor', 'middle');
+      lblAdj.textContent = `Cateto Adjacente: b = ${formatPt(b, 1)}`;
+      triangleSvg.appendChild(lblAdj);
+
+      // Rótulo Cateto Oposto (à direita do lado vertical BC)
+      const lblOpp = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+      lblOpp.setAttribute('x', (Cx + 18).toFixed(1));
+      lblOpp.setAttribute('y', ((Cy + By) / 2 + 5).toFixed(1));
+      lblOpp.setAttribute('font-size', '13');
+      lblOpp.setAttribute('font-weight', '800');
+      lblOpp.setAttribute('fill', '#9c731e');
+      lblOpp.setAttribute('text-anchor', 'start');
+      lblOpp.textContent = `Cateto Oposto: a = ${formatPt(a, 1)}`;
+      triangleSvg.appendChild(lblOpp);
+
+      // Rótulo Hipotenusa (perpendicularmente deslocado para fora da hipotenusa AB)
+      const midHypX = (Ax + Bx) / 2;
+      const midHypY = (Ay + By) / 2;
+      // Vetor normal apontando para cima e para a esquerda
+      const hypDx = Bx - Ax;
+      const hypDy = By - Ay;
+      const hypLen = Math.hypot(hypDx, hypDy) || 1;
+      const normX = -hypDy / hypLen; // normal apontando para o exterior
+      const normY = hypDx / hypLen;
+      const hypOffset = 24;
+
+      const lblHyp = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+      lblHyp.setAttribute('x', (midHypX - normX * hypOffset).toFixed(1));
+      lblHyp.setAttribute('y', (midHypY - normY * hypOffset).toFixed(1));
+      lblHyp.setAttribute('font-size', '13');
+      lblHyp.setAttribute('font-weight', '800');
+      lblHyp.setAttribute('fill', '#2c7a78');
+      lblHyp.setAttribute('text-anchor', 'middle');
+      lblHyp.textContent = `Hipotenusa: c = ${formatPt(c, 1)}`;
+      triangleSvg.appendChild(lblHyp);
+
+      // 6. IDENTIFICADORES DOS VÉRTICES (A, B, C)
+      function drawVertexBadge(x, y, label, color) {
+        const txt = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+        txt.setAttribute('x', x.toString());
+        txt.setAttribute('y', y.toString());
+        txt.setAttribute('font-size', '13');
+        txt.setAttribute('font-weight', '900');
+        txt.setAttribute('fill', color);
+        txt.setAttribute('text-anchor', 'middle');
+        txt.textContent = label;
+        triangleSvg.appendChild(txt);
+      }
+      drawVertexBadge(Ax - 18, Ay + 8, 'A (θ)', '#9c731e');
+      drawVertexBadge(Cx + 12, Cy + 22, 'C (90°)', '#18324b');
+      drawVertexBadge(Bx, By - 16, 'B', '#2c7a78');
+
+      // 7. VÉRTICES INTERATIVOS ARRASTÁVEIS (Pontos de Controle)
+      // Vértice B (Superior - altera a e b)
+      const handleB = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+      handleB.setAttribute('cx', Bx.toString());
+      handleB.setAttribute('cy', By.toString());
+      handleB.setAttribute('r', '8');
+      handleB.setAttribute('fill', '#2c7a78');
+      handleB.setAttribute('stroke', '#ffffff');
+      handleB.setAttribute('stroke-width', '3');
+      handleB.setAttribute('class', 'vertex-handle');
+      handleB.setAttribute('title', 'Arraste o vértice B para alterar as medidas do triângulo');
+      triangleSvg.appendChild(handleB);
+
+      // Vértice C (Canto da base - altera b)
+      const handleC = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+      handleC.setAttribute('cx', Cx.toString());
+      handleC.setAttribute('cy', Cy.toString());
+      handleC.setAttribute('r', '7');
+      handleC.setAttribute('fill', '#18324b');
+      handleC.setAttribute('stroke', '#ffffff');
+      handleC.setAttribute('stroke-width', '2.5');
+      handleC.setAttribute('class', 'vertex-handle');
+      handleC.setAttribute('title', 'Arraste o vértice C para alterar o cateto adjacente');
+      triangleSvg.appendChild(handleC);
+
+      // Eventos de arrasto para o vértice B
+      setupVertexDragging(handleB, (svgX, svgY) => {
+        const rawB = Math.max(2, Math.min(14, (svgX - originX) / k));
+        const rawA = Math.max(2, Math.min(14, (originY - svgY) / k));
+        state.adj = rawB;
+        state.opp = rawA;
+        updateScene();
+      });
+
+      // Eventos de arrasto para o vértice C
+      setupVertexDragging(handleC, (svgX) => {
+        const rawB = Math.max(2, Math.min(14, (svgX - originX) / k));
+        state.adj = rawB;
+        updateScene();
+      });
+    }
+
+    // Gerenciador de Arrasto de Vértice com Pointer Events
+    function setupVertexDragging(elem, onMove) {
+      let isDragging = false;
+
+      elem.addEventListener('pointerdown', (e) => {
+        isDragging = true;
+        elem.setPointerCapture(e.pointerId);
+        e.stopPropagation();
+      });
+
+      elem.addEventListener('pointermove', (e) => {
+        if (!isDragging) return;
+        const rect = triangleSvg.getBoundingClientRect();
+        const svgX = ((e.clientX - rect.left) / rect.width) * 600;
+        const svgY = ((e.clientY - rect.top) / rect.height) * 350;
+        onMove(svgX, svgY);
+      });
+
+      const finishDrag = (e) => {
+        if (isDragging) {
+          isDragging = false;
+          try { elem.releasePointerCapture(e.pointerId); } catch (_) {}
+        }
+      };
+
+      elem.addEventListener('pointerup', finishDrag);
+      elem.addEventListener('pointercancel', finishDrag);
+    }
+
+    // Destaque da Coluna na Tabela dos Ângulos Notáveis
+    function highlightNotableTable(angle) {
+      ['th30', 'th45', 'th60', 'cellSin30', 'cellSin45', 'cellSin60', 'cellCos30', 'cellCos45', 'cellCos60', 'cellTan30', 'cellTan45', 'cellTan60'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.style.background = '';
+      });
+
+      if (angle === 30) {
+        ['th30', 'cellSin30', 'cellCos30', 'cellTan30'].forEach(id => {
+          const el = document.getElementById(id);
+          if (el) el.style.background = '#fef8eb';
+        });
+      } else if (angle === 45) {
+        ['th45', 'cellSin45', 'cellCos45', 'cellTan45'].forEach(id => {
+          const el = document.getElementById(id);
+          if (el) el.style.background = '#e6f4f1';
+        });
+      } else if (angle === 60) {
+        ['th60', 'cellSin60', 'cellCos60', 'cellTan60'].forEach(id => {
+          const el = document.getElementById(id);
+          if (el) el.style.background = '#eaf2f7';
+        });
+      }
+    }
+
+    // Função de Testar com Ângulo Notável
+    window.applyNotable = function(angle) {
+      if (angle === 30) {
+        // tan(30) = 1/√3 -> a = 4, b = 4*√3 ≈ 6.928
+        state.opp = 4.0;
+        state.adj = 4.0 * Math.sqrt(3);
+      } else if (angle === 45) {
+        // tan(45) = 1 -> a = 6, b = 6
+        state.opp = 6.0;
+        state.adj = 6.0;
+      } else if (angle === 60) {
+        // tan(60) = √3 -> a = 4*√3 ≈ 6.928, b = 4
+        state.adj = 4.0;
+        state.opp = 4.0 * Math.sqrt(3);
+      }
+      updateScene();
+    };
+
+    // Ouvintes dos Sliders
+    sliderAdj.addEventListener('input', (e) => {
+      state.adj = parseFloat(e.target.value);
+      updateScene();
+    });
+
+    sliderOpp.addEventListener('input', (e) => {
+      state.opp = parseFloat(e.target.value);
+      updateScene();
+    });
+
+    // Toggle de Identidades Trigonométricas
+    btnToggleIdentities.addEventListener('click', () => {
+      state.identitiesVisible = !state.identitiesVisible;
+      identitiesBox.style.display = state.identitiesVisible ? 'block' : 'none';
+      document.getElementById('txtBtnIdentities').textContent = state.identitiesVisible
+        ? 'Ocultar Relações Importantes'
+        : 'Mostrar Relações Importantes (sen²θ + cos²θ = 1 e tan θ = sen ÷ cos)';
+    });
+
+    // Botões de Presets
+    document.getElementById('btnPreset345').addEventListener('click', () => {
+      state.adj = 4.0;
+      state.opp = 3.0;
+      updateScene();
+    });
+    document.getElementById('btnPreset51213').addEventListener('click', () => {
+      state.adj = 12.0;
+      state.opp = 5.0;
+      updateScene();
+    });
+    document.getElementById('btnPreset6810').addEventListener('click', () => {
+      state.adj = 8.0;
+      state.opp = 6.0;
+      updateScene();
+    });
+    document.getElementById('btnPreset30').addEventListener('click', () => applyNotable(30));
+    document.getElementById('btnPreset45').addEventListener('click', () => applyNotable(45));
+    document.getElementById('btnPreset60').addEventListener('click', () => applyNotable(60));
+
+    // Botão Restaurar (3-4-5)
+    btnResetDefault.addEventListener('click', () => {
+      state.adj = 4.0;
+      state.opp = 3.0;
+      updateScene();
+    });
+
+    // Botão Experimentar Outro Triângulo
+    btnNextSample.addEventListener('click', () => {
+      currentPresetIdx = (currentPresetIdx + 1) % samplePresets.length;
+      const p = samplePresets[currentPresetIdx];
+      state.adj = p.adj;
+      state.opp = p.opp;
+      updateScene();
+    });
+
+    // Modo Projeção em Tela Cheia
+    document.getElementById('btnFullscreen').addEventListener('click', () => {
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().catch(() => {});
+      } else {
+        document.exitFullscreen().catch(() => {});
+      }
+    });
+
+    // Inicialização
+    updateScene();
+  </script>
+</body>
+</html>

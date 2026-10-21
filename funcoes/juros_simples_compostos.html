@@ -1,0 +1,1208 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Juros Simples × Juros Compostos: Linear vs Exponencial · Matemática em Movimento</title>
+  <meta name="description" content="Laboratório de Educação Financeira. Compare o crescimento linear dos juros simples com a curva exponencial dos juros compostos, com gráfico dinâmico, tabela mês a mês e cenários reais." />
+  <link rel="stylesheet" href="../css/estilo.css" />
+  <style>
+    /* Estilos específicos da demonstração de Juros Simples vs Compostos */
+    :root {
+      --cor-simples: #2563eb;       /* Azul para Juros Simples (Linear) */
+      --cor-simples-light: #eff6ff;
+      --cor-simples-border: #93c5fd;
+      --cor-compostos: #059669;     /* Verde/Teal para Juros Compostos (Exponencial) */
+      --cor-compostos-light: #ecfdf5;
+      --cor-compostos-border: #6ee7b7;
+      --cor-dif: #d97706;           /* Âmbar para a diferença/vantagem */
+      --cor-dif-light: #fffbeb;
+    }
+
+    /* Sliders Financeiros */
+    .finance-sliders-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+
+    @media (max-width: 768px) {
+      .finance-sliders-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .finance-slider-card {
+      background: #ffffff;
+      border: 1.5px solid var(--linha);
+      border-radius: var(--radius-sm);
+      padding: 12px 16px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+    }
+
+    .finance-slider-card:focus-within {
+      border-color: var(--azul);
+    }
+
+    .slider-header-flex {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 6px;
+    }
+
+    .finance-slider-val {
+      font-family: var(--font-mono);
+      font-weight: 800;
+      font-size: 0.95rem;
+      padding: 2px 8px;
+      border-radius: 4px;
+      background: #f1f5f9;
+      color: var(--navy);
+    }
+
+    /* Botão Play/Pausa e Ações de Tempo */
+    .time-control-bar {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-top: 6px;
+    }
+
+    .btn-play-pause {
+      background: var(--navy);
+      color: #ffffff;
+      border: none;
+      border-radius: var(--radius-sm);
+      padding: 4px 10px;
+      font-size: 0.76rem;
+      font-weight: 700;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      transition: all 0.15s ease;
+    }
+
+    .btn-play-pause:hover {
+      background: var(--azul);
+    }
+
+    /* Painéis Lado a Lado: Simples vs Compostos */
+    .comparison-cards-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-bottom: 18px;
+    }
+
+    @media (max-width: 680px) {
+      .comparison-cards-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .regime-card {
+      background: #ffffff;
+      border-radius: var(--radius-md);
+      padding: 18px 20px;
+      box-shadow: var(--shadow-card);
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      transition: transform 0.2s ease;
+    }
+
+    .regime-card.card-simples {
+      border: 2px solid var(--cor-simples-border);
+      background: linear-gradient(180deg, #ffffff 0%, var(--cor-simples-light) 100%);
+    }
+
+    .regime-card.card-compostos {
+      border: 2px solid var(--cor-compostos-border);
+      background: linear-gradient(180deg, #ffffff 0%, var(--cor-compostos-light) 100%);
+    }
+
+    .regime-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 12px;
+    }
+
+    .regime-title {
+      font-size: 1.05rem;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .card-simples .regime-title { color: var(--cor-simples); }
+    .card-compostos .regime-title { color: var(--cor-compostos); }
+
+    .regime-badge {
+      font-size: 0.72rem;
+      font-weight: 800;
+      padding: 3px 8px;
+      border-radius: 9999px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    .card-simples .regime-badge {
+      background: #dbeafe;
+      color: #1e40af;
+    }
+
+    .card-compostos .regime-badge {
+      background: #d1fae5;
+      color: #065f46;
+    }
+
+    .regime-total-box {
+      margin-bottom: 14px;
+    }
+
+    .regime-total-label {
+      font-size: 0.78rem;
+      font-weight: 700;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      margin-bottom: 2px;
+    }
+
+    .regime-total-amount {
+      font-family: var(--font-mono);
+      font-size: 1.9rem;
+      font-weight: 900;
+      letter-spacing: -0.02em;
+    }
+
+    .card-simples .regime-total-amount { color: var(--cor-simples); }
+    .card-compostos .regime-total-amount { color: var(--cor-compostos); }
+
+    .regime-metrics-list {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      background: rgba(255, 255, 255, 0.75);
+      border: 1px solid rgba(0, 0, 0, 0.06);
+      border-radius: var(--radius-sm);
+      padding: 10px 12px;
+      margin-bottom: 12px;
+    }
+
+    .regime-metric-item {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .metric-sublabel {
+      font-size: 0.72rem;
+      font-weight: 700;
+      color: var(--muted);
+    }
+
+    .metric-subvalue {
+      font-family: var(--font-mono);
+      font-size: 0.96rem;
+      font-weight: 800;
+      color: var(--navy);
+    }
+
+    .regime-formula-tag {
+      font-family: var(--font-mono);
+      font-size: 0.78rem;
+      font-weight: 700;
+      padding: 4px 8px;
+      border-radius: 4px;
+      background: #ffffff;
+      border: 1px solid var(--linha);
+      display: inline-block;
+      align-self: flex-start;
+    }
+
+    /* Resumo em Destaque da Diferença */
+    .diff-highlight-banner {
+      background: linear-gradient(90deg, #fffbeb 0%, #fef3c7 100%);
+      border: 1.5px solid #fde68a;
+      border-radius: var(--radius-md);
+      padding: 14px 18px;
+      margin-bottom: 18px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .diff-text-group {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+
+    .diff-title {
+      font-size: 0.94rem;
+      font-weight: 800;
+      color: #92400e;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .diff-explanation {
+      font-size: 0.84rem;
+      color: #78350f;
+      line-height: 1.4;
+    }
+
+    .diff-amount-tag {
+      font-family: var(--font-mono);
+      font-size: 1.35rem;
+      font-weight: 900;
+      color: #b45309;
+      background: #ffffff;
+      border: 1.5px solid #f59e0b;
+      padding: 6px 14px;
+      border-radius: var(--radius-sm);
+      white-space: nowrap;
+    }
+
+    /* Palco Gráfico SVG */
+    .chart-container-card {
+      background: #ffffff;
+      border: 1px solid var(--linha);
+      border-radius: var(--radius-md);
+      padding: 16px 16px 10px 16px;
+      margin-bottom: 18px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.03);
+    }
+
+    .chart-header-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .chart-title {
+      font-size: 0.95rem;
+      font-weight: 800;
+      color: var(--navy);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .chart-legend {
+      display: flex;
+      gap: 14px;
+      align-items: center;
+      font-size: 0.8rem;
+      font-weight: 700;
+    }
+
+    .legend-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .legend-bullet {
+      width: 14px;
+      height: 3px;
+      border-radius: 2px;
+    }
+
+    .legend-bullet.simples { background: var(--cor-simples); }
+    .legend-bullet.compostos { background: var(--cor-compostos); }
+
+    .chart-svg {
+      width: 100%;
+      height: 340px;
+      display: block;
+      user-select: none;
+    }
+
+    /* Tabela Mês a Mês */
+    .table-container-card {
+      background: #ffffff;
+      border: 1px solid var(--linha);
+      border-radius: var(--radius-md);
+      padding: 16px;
+      margin-bottom: 18px;
+    }
+
+    .table-scroll-area {
+      max-height: 260px;
+      overflow-y: auto;
+      border: 1px solid var(--linha);
+      border-radius: var(--radius-sm);
+    }
+
+    .finance-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.82rem;
+      text-align: right;
+    }
+
+    .finance-table th {
+      background: #f8fafc;
+      color: var(--navy);
+      font-weight: 800;
+      padding: 8px 10px;
+      border-bottom: 2px solid var(--linha);
+      position: sticky;
+      top: 0;
+      z-index: 2;
+    }
+
+    .finance-table td {
+      padding: 6px 10px;
+      border-bottom: 1px solid #f1f5f9;
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+    }
+
+    .finance-table tr:hover {
+      background: #f8fafc;
+    }
+
+    .finance-table tr.current-month-row {
+      background: #eff6ff !important;
+      font-weight: 800;
+      border-left: 4px solid var(--cor-simples);
+    }
+
+    /* Seção de Cenários Práticos */
+    .scenarios-card {
+      background: #ffffff;
+      border: 1.5px solid #cbd5e1;
+      border-radius: var(--radius-md);
+      padding: 16px 20px;
+      margin-bottom: 18px;
+    }
+
+    .scenarios-buttons-row {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin: 10px 0 14px 0;
+    }
+
+    .btn-scenario {
+      background: #ffffff;
+      border: 1.5px solid var(--linha);
+      border-radius: var(--radius-sm);
+      padding: 6px 12px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: var(--navy);
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .btn-scenario:hover {
+      border-color: var(--azul);
+      background: #f0f7fb;
+    }
+
+    .btn-scenario.active {
+      background: var(--navy);
+      border-color: var(--navy);
+      color: #ffffff;
+    }
+
+    .scenario-prompt-box {
+      background: #f8fafc;
+      border-left: 4px solid var(--azul);
+      border-radius: var(--radius-sm);
+      padding: 12px 14px;
+      font-size: 0.88rem;
+      line-height: 1.5;
+      color: var(--tinta);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header Institucional -->
+  <header class="site-header">
+    <div class="header-container">
+      <a href="../index.html" class="brand-wrapper" title="Voltar para a página inicial">
+        <div class="brand-logo" aria-hidden="true">
+          <svg viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 19L12 5l8 14H4z" />
+          </svg>
+        </div>
+        <div class="brand-texts">
+          <span class="brand-title">Matemática em Movimento</span>
+          <span class="brand-slogan">Explore. Manipule. Compreenda.</span>
+        </div>
+      </a>
+      <div class="header-actions">
+        <a href="../index.html" class="btn-header">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+          Início
+        </a>
+        <button id="btnFullscreen" class="btn-header" title="Alternar modo tela cheia para projeção em sala de aula">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>
+          Projeção
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Breadcrumbs -->
+  <nav class="breadcrumb-bar" aria-label="Navegação estrutural">
+    <div class="breadcrumb-container">
+      <a href="../index.html">Início</a>
+      <span class="breadcrumb-sep">/</span>
+      <a href="../index.html#catalogo">Funções</a>
+      <span class="breadcrumb-sep">/</span>
+      <span class="breadcrumb-current">Juros Simples × Compostos</span>
+    </div>
+  </nav>
+
+  <!-- Conteúdo Principal -->
+  <main class="main-content">
+    <div class="demo-grid">
+
+      <!-- Coluna 1: Laboratório Financeiro -->
+      <section class="card" aria-labelledby="lab-heading">
+        <div class="card-eyebrow">
+          <span class="badge-tag badge-fundamental">9º Ano &amp; Ensino Médio</span>
+          <span>· EDUCAÇÃO FINANCEIRA E FUNÇÕES</span>
+        </div>
+        <h2 id="lab-heading" class="card-title">Juros Simples × Juros Compostos: Linear vs Exponencial</h2>
+        <p class="card-subtitle">
+          Descubra por que <em>"tempo é dinheiro"</em> na matemática financeira. Compare o rendimento constante dos juros simples com a força multiplicadora dos juros sobre juros.
+        </p>
+
+        <!-- Três Sliders Táteis de Controle -->
+        <div class="finance-sliders-grid">
+          <!-- Slider 1: Capital Inicial -->
+          <div class="finance-slider-card">
+            <div class="slider-header-flex">
+              <label for="sliderCapital" style="font-size:0.84rem; font-weight:700; color:var(--navy);">Capital Inicial (C):</label>
+              <span id="badgeCapital" class="finance-slider-val">R$ 1.000,00</span>
+            </div>
+            <input type="range" id="sliderCapital" min="100" max="10000" step="100" value="1000" aria-label="Capital inicial em reais" />
+            <div style="display:flex; justify-content:space-between; font-size:0.72rem; color:var(--muted); margin-top:2px;">
+              <span>R$ 100</span>
+              <span>R$ 10.000</span>
+            </div>
+          </div>
+
+          <!-- Slider 2: Taxa de Juros ao Mês -->
+          <div class="finance-slider-card">
+            <div class="slider-header-flex">
+              <label for="sliderTaxa" style="font-size:0.84rem; font-weight:700; color:var(--navy);">Taxa ao Mês (i):</label>
+              <span id="badgeTaxa" class="finance-slider-val">2,0% a.m.</span>
+            </div>
+            <input type="range" id="sliderTaxa" min="0.5" max="5.0" step="0.5" value="2.0" aria-label="Taxa mensal de juros em porcentagem" />
+            <div style="display:flex; justify-content:space-between; font-size:0.72rem; color:var(--muted); margin-top:2px;">
+              <span>0,5% a.m.</span>
+              <span>5,0% a.m.</span>
+            </div>
+          </div>
+
+          <!-- Slider 3: Tempo em Meses com Play/Pausa -->
+          <div class="finance-slider-card">
+            <div class="slider-header-flex">
+              <label for="sliderTempo" style="font-size:0.84rem; font-weight:700; color:var(--navy);">Tempo (t):</label>
+              <span id="badgeTempo" class="finance-slider-val">12 meses</span>
+            </div>
+            <input type="range" id="sliderTempo" min="1" max="24" step="1" value="12" aria-label="Tempo de aplicação em meses" />
+            <div class="time-control-bar">
+              <button id="btnPlayPause" class="btn-play-pause" title="Avançar o tempo automaticamente para observar a curva se distanciar da reta">
+                <span id="playIcon">▶</span>
+                <span id="playLabel">Ver os 24 Meses</span>
+              </button>
+              <span style="font-size:0.72rem; color:var(--muted); margin-left:auto;">1 a 24 meses</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Painéis Lado a Lado: Comparação Sincronizada -->
+        <div class="comparison-cards-grid">
+          <!-- Painel 1: Juros Simples -->
+          <div class="regime-card card-simples" role="region" aria-label="Resultados de Juros Simples">
+            <div class="regime-header">
+              <div class="regime-title">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="3" y1="20" x2="21" y2="4"/></svg>
+                <span>Juros Simples</span>
+              </div>
+              <span class="regime-badge">Crescimento Linear</span>
+            </div>
+
+            <div class="regime-total-box">
+              <div class="regime-total-label">Montante Final (M):</div>
+              <div class="regime-total-amount" id="amountSimples">R$ 1.240,00</div>
+            </div>
+
+            <div class="regime-metrics-list">
+              <div class="regime-metric-item">
+                <span class="metric-sublabel">Rendimento por Mês:</span>
+                <span class="metric-subvalue" id="monthlySimples">+ R$ 20,00</span>
+              </div>
+              <div class="regime-metric-item">
+                <span class="metric-sublabel">Juros Acumulados:</span>
+                <span class="metric-subvalue" id="accumSimples">R$ 240,00</span>
+              </div>
+            </div>
+
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <span class="regime-formula-tag">M = C · (1 + i · t)</span>
+              <span style="font-size:0.72rem; color:var(--muted); font-weight:600;">Juro sempre constante</span>
+            </div>
+          </div>
+
+          <!-- Painel 2: Juros Compostos -->
+          <div class="regime-card card-compostos" role="region" aria-label="Resultados de Juros Compostos">
+            <div class="regime-header">
+              <div class="regime-title">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 20c4-1 9-4 18-16"/></svg>
+                <span>Juros Compostos</span>
+              </div>
+              <span class="regime-badge">Crescimento Exponencial</span>
+            </div>
+
+            <div class="regime-total-box">
+              <div class="regime-total-label">Montante Final (M):</div>
+              <div class="regime-total-amount" id="amountCompostos">R$ 1.268,24</div>
+            </div>
+
+            <div class="regime-metrics-list">
+              <div class="regime-metric-item">
+                <span class="metric-sublabel">Rendimento neste Mês:</span>
+                <span class="metric-subvalue" id="monthlyCompostos">+ R$ 24,87</span>
+              </div>
+              <div class="regime-metric-item">
+                <span class="metric-sublabel">Juros Acumulados:</span>
+                <span class="metric-subvalue" id="accumCompostos">R$ 268,24</span>
+              </div>
+            </div>
+
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <span class="regime-formula-tag">M = C · (1 + i)ᵗ</span>
+              <span style="font-size:0.72rem; color:#065f46; font-weight:700;">Juro rende juro!</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Banner com a Diferença em Destaque -->
+        <div class="diff-highlight-banner" role="status">
+          <div class="diff-text-group">
+            <div class="diff-title">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
+              <span>Vantagem dos Juros Compostos no Mês <span id="diffMonthNum">12</span>:</span>
+            </div>
+            <div class="diff-explanation">
+              Nos juros simples, o ganho mensal é <strong>sempre fixo</strong> (só incide no capital inicial). Nos juros compostos, cada mês rende mais que o anterior porque <strong>o lucro acumulado passa a render também</strong>.
+            </div>
+          </div>
+          <div class="diff-amount-tag" id="diffAmountTag">+ R$ 28,24 a mais</div>
+        </div>
+
+        <!-- O Gráfico Comparativo: Reta vs Curva Exponencial -->
+        <div class="chart-container-card" role="region" aria-label="Gráfico de comparação entre juros simples e compostos">
+          <div class="chart-header-row">
+            <div class="chart-title">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg>
+              <span>Gráfico de Evolução do Montante (R$ ao longo do tempo)</span>
+            </div>
+            <div class="chart-legend">
+              <div class="legend-item">
+                <span class="legend-bullet simples"></span>
+                <span>Simples (Reta)</span>
+              </div>
+              <div class="legend-item">
+                <span class="legend-bullet compostos"></span>
+                <span>Compostos (Curva)</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- SVG do Gráfico -->
+          <svg id="financeChartSvg" class="chart-svg" viewBox="0 0 760 340" aria-label="Eixo X tempo em meses, Eixo Y montante em reais"></svg>
+        </div>
+
+        <!-- Tabela Mês a Mês com Destaque -->
+        <div class="table-container-card">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+            <div style="font-size:0.92rem; font-weight:800; color:var(--navy); display:flex; align-items:center; gap:6px;">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="20" x2="12" y2="10"/><line x1="18" y1="20" x2="18" y2="4"/><line x1="6" y1="20" x2="6" y2="16"/></svg>
+              <span>Extrato Comparativo Mês a Mês</span>
+            </div>
+            <span style="font-size:0.75rem; color:var(--muted); font-weight:600;">Linha em azul: mês atual</span>
+          </div>
+
+          <div class="table-scroll-area">
+            <table class="finance-table" aria-label="Tabela detalhada de rendimento mês a mês">
+              <thead>
+                <tr>
+                  <th style="text-align:center;">Mês</th>
+                  <th>Juros Simples (M)</th>
+                  <th>Juro Simples/Mês</th>
+                  <th>Juros Compostos (M)</th>
+                  <th>Juro Comp./Mês</th>
+                  <th>Diferença (Comp. − Simp.)</th>
+                </tr>
+              </thead>
+              <tbody id="financeTableBody">
+                <!-- Gerado dinamicamente via JS -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- CENÁRIOS PRÁTICOS (Descoberta Guiada de Educação Financeira) -->
+        <div class="scenarios-card" role="region" aria-label="Cenários práticos de educação financeira">
+          <div style="font-weight:800; font-size:0.95rem; color:var(--navy); display:flex; align-items:center; gap:6px;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg>
+            <span>Laboratório de Descoberta: Teste na Prática</span>
+          </div>
+
+          <div class="scenarios-buttons-row">
+            <button class="btn-scenario active" data-scenario="1">1. Poupança a 2% (12 meses)</button>
+            <button class="btn-scenario" data-scenario="2">2. O Perigo do Empréstimo a 5%</button>
+            <button class="btn-scenario" data-scenario="3">3. Meta: Resgatar R$ 3.000 em 24 meses</button>
+          </div>
+
+          <div class="scenario-prompt-box" id="scenarioPrompt">
+            <!-- Conteúdo dinâmico do cenário selecionado -->
+          </div>
+        </div>
+
+      </section>
+
+      <!-- Coluna 2: Card "Entenda a Ideia" -->
+      <aside class="card" aria-labelledby="entenda-heading">
+        <div class="card-eyebrow">
+          <span>FUNDAMENTAÇÃO MATEMÁTICA E FINANCEIRA</span>
+        </div>
+        <h2 id="entenda-heading" class="card-title">Entenda a Ideia</h2>
+        <p class="card-subtitle">
+          Na matemática, juros simples são modelados por uma <strong>função afim (linear)</strong>, enquanto juros compostos são regidos por uma <strong>função exponencial</strong>.
+        </p>
+
+        <!-- Card de Fórmulas Central em Destaque -->
+        <div class="formula-card">
+          <div class="formula-main" style="color:var(--cor-simples); font-size:1.15rem; margin-bottom:4px;">
+            M = C · (1 + i · t) &nbsp;<span style="font-size:0.8rem; font-weight:700; color:var(--muted);">(Linear)</span>
+          </div>
+          <div class="formula-main" style="color:var(--cor-compostos); font-size:1.15rem;">
+            M = C · (1 + i)ᵗ &nbsp;<span style="font-size:0.8rem; font-weight:700; color:var(--muted);">(Exponencial)</span>
+          </div>
+          <div class="formula-caption">
+            <strong>C</strong> = Capital inicial aplicado &nbsp;|&nbsp; <strong>i</strong> = Taxa de juros decimal (ex.: 2% = 0,02) &nbsp;|&nbsp; <strong>t</strong> = Tempo (meses).
+          </div>
+        </div>
+
+        <!-- 4 Passos Pedagógicos Estruturados -->
+        <div class="steps-list">
+          <div class="step-item">
+            <div class="step-num">1</div>
+            <div class="step-body">
+              <strong>Juros Simples: O Ganho Fixo</strong>
+              Nos juros simples, o rendimento de cada mês é sempre $C \cdot i$. Se você investiu R$ 1.000 a 2%, ganhará <strong>exatamente R$ 20,00 todo mês</strong>, não importa se passaram 2 ou 24 meses. O gráfico é uma reta perfeita de inclinação constante.
+            </div>
+          </div>
+
+          <div class="step-item">
+            <div class="step-num">2</div>
+            <div class="step-body">
+              <strong>Juros Compostos: O Juro sobre Juro</strong>
+              Nos juros compostos, o juro ganho no mês 1 é somado ao saldo, e no mês 2 a taxa incide sobre o total acumulado. Por isso a base cresce a cada etapa ($1 + i$), transformando o tempo em expoente: uma curva que acelera para cima.
+            </div>
+          </div>
+
+          <div class="step-item">
+            <div class="step-num">3</div>
+            <div class="step-body">
+              <strong>O Efeito dos Prazos Longos</strong>
+              Nos primeiros meses (1 a 3), a diferença entre simples e compostos é pequena (poucos reais). Mas a partir do 12º mês, a curva exponencial <em>"decola"</em> e a distância vertical entre as duas linhas se expande exponencialmente.
+            </div>
+          </div>
+
+          <div class="step-item">
+            <div class="step-num">4</div>
+            <div class="step-body">
+              <strong>Aliado no Investimento, Vilão na Dívida</strong>
+              Quando você investe dinheiro, os juros compostos trabalham <strong>a seu favor</strong>. Mas no cheque especial ou rotativo do cartão, eles agem <strong>contra você</strong>, fazendo dívidas dobrarem em pouco tempo.
+            </div>
+          </div>
+        </div>
+
+        <!-- Pergunta para Investigar -->
+        <div class="investigation-card">
+          <div class="investigation-title">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+            <span>Pergunta para Investigar</span>
+          </div>
+          <p class="investigation-text">
+            Com R$ 1.000 a 2% a.m., em qual mês a vantagem dos juros compostos ultrapassa R$ 50,00? E quando ultrapassa R$ 200,00?<br/><br/>
+            Agora <strong>dobre a taxa para 4%</strong>: a diferença apenas dobra ou cresce muito mais do que o dobro? Por que isso acontece em uma função exponencial?
+          </p>
+        </div>
+
+        <!-- Dica de Manipulação -->
+        <div class="manipulation-tip">
+          <strong>Dica Interativa:</strong>
+          Clique no botão <strong>"Ver os 24 Meses"</strong> para disparar a animação contínua e observe os pontos se desenharem no gráfico: repare na curva verde se descolando da reta azul!
+        </div>
+      </aside>
+
+    </div>
+  </main>
+
+  <!-- Rodapé Institucional -->
+  <footer class="site-footer">
+    <div class="footer-container">
+      <div class="footer-links">
+        <a href="../index.html">Página Inicial</a>
+        <span>•</span>
+        <a href="../funcoes/afim.html">Função Afim (Linear)</a>
+        <span>•</span>
+        <a href="../funcoes/quadratica.html">Função Quadrática</a>
+        <span>•</span>
+        <a href="../funcoes/balanca_de_equacoes.html">Balança de Equações</a>
+        <span>•</span>
+        <a href="../numeros/conjuntos_numericos.html">Conjuntos Numéricos</a>
+      </div>
+      <p class="footer-copy">
+        Matemática em Movimento · Plataforma pedagógica aberta para exploração visual e conceitual de matemática.
+      </p>
+    </div>
+  </footer>
+
+  <!-- LÓGICA INTERATIVA EM JAVASCRIPT PURO -->
+  <script>
+    /**
+     * Matemática em Movimento — Juros Simples vs Juros Compostos
+     * Modelagem matemática linear vs exponencial com visualização gráfica SVG,
+     * tabela mês a mês e cenários reais de educação financeira.
+     */
+
+    // Parâmetros do Laboratório
+    let capital = 1000;    // R$ 1.000,00
+    let taxa = 0.02;       // 2,0% a.m. (em decimal)
+    let tempo = 12;        // 12 meses
+
+    // Animação Play/Pausa
+    let isPlaying = false;
+    let playInterval = null;
+
+    // Elementos DOM
+    const sliderCapital = document.getElementById('sliderCapital');
+    const sliderTaxa = document.getElementById('sliderTaxa');
+    const sliderTempo = document.getElementById('sliderTempo');
+
+    const badgeCapital = document.getElementById('badgeCapital');
+    const badgeTaxa = document.getElementById('badgeTaxa');
+    const badgeTempo = document.getElementById('badgeTempo');
+
+    const amountSimples = document.getElementById('amountSimples');
+    const monthlySimples = document.getElementById('monthlySimples');
+    const accumSimples = document.getElementById('accumSimples');
+
+    const amountCompostos = document.getElementById('amountCompostos');
+    const monthlyCompostos = document.getElementById('monthlyCompostos');
+    const accumCompostos = document.getElementById('accumCompostos');
+
+    const diffMonthNum = document.getElementById('diffMonthNum');
+    const diffAmountTag = document.getElementById('diffAmountTag');
+
+    const financeChartSvg = document.getElementById('financeChartSvg');
+    const financeTableBody = document.getElementById('financeTableBody');
+
+    const btnPlayPause = document.getElementById('btnPlayPause');
+    const playIcon = document.getElementById('playIcon');
+    const playLabel = document.getElementById('playLabel');
+
+    const scenarioPrompt = document.getElementById('scenarioPrompt');
+    const scenarioButtons = document.querySelectorAll('.btn-scenario');
+
+    // Utilitário de formatação de moeda brasileira (R$ 1.234,56)
+    function formatCurrency(val) {
+      return val.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+    }
+
+    // Calcula os valores para um determinado mês t
+    function calculateMonthValues(t, cap, rate) {
+      // Juros Simples
+      const montanteSimples = cap * (1 + rate * t);
+      const juroMesSimples = cap * rate;
+      const juroTotalSimples = montanteSimples - cap;
+
+      // Juros Compostos
+      const montanteCompostos = cap * Math.pow(1 + rate, t);
+      const montanteAnterior = t === 0 ? cap : cap * Math.pow(1 + rate, t - 1);
+      const juroMesCompostos = montanteCompostos - montanteAnterior;
+      const juroTotalCompostos = montanteCompostos - cap;
+
+      const diferenca = montanteCompostos - montanteSimples;
+
+      return {
+        montanteSimples,
+        juroMesSimples,
+        juroTotalSimples,
+        montanteCompostos,
+        juroMesCompostos,
+        juroTotalCompostos,
+        diferenca
+      };
+    }
+
+    // Atualiza todos os painéis, texto e gráfico
+    function updateAll() {
+      // Atualiza Badges dos Sliders
+      badgeCapital.textContent = formatCurrency(capital);
+      badgeTaxa.textContent = `${(taxa * 100).toFixed(1).replace('.', ',')}% a.m.`;
+      badgeTempo.textContent = `${tempo} ${tempo === 1 ? 'mês' : 'meses'}`;
+
+      // Cálculos para o mês selecionado
+      const cur = calculateMonthValues(tempo, capital, taxa);
+
+      // Atualiza Painel Simples
+      amountSimples.textContent = formatCurrency(cur.montanteSimples);
+      monthlySimples.textContent = `+ ${formatCurrency(cur.juroMesSimples)}`;
+      accumSimples.textContent = formatCurrency(cur.juroTotalSimples);
+
+      // Atualiza Painel Compostos
+      amountCompostos.textContent = formatCurrency(cur.montanteCompostos);
+      monthlyCompostos.textContent = `+ ${formatCurrency(cur.juroMesCompostos)}`;
+      accumCompostos.textContent = formatCurrency(cur.juroTotalCompostos);
+
+      // Atualiza Banner de Diferença
+      diffMonthNum.textContent = tempo;
+      const pctPlus = cur.juroTotalSimples > 0 ? ((cur.diferenca / cur.juroTotalSimples) * 100).toFixed(1).replace('.', ',') : '0,0';
+      diffAmountTag.textContent = `+ ${formatCurrency(cur.diferenca)} a mais (+${pctPlus}%)`;
+
+      // Atualiza Gráfico e Tabela
+      renderChart();
+      renderTable();
+    }
+
+    // Renderiza o Gráfico de Linhas SVG
+    function renderChart() {
+      financeChartSvg.innerHTML = '';
+      const w = 760;
+      const h = 340;
+      const padLeft = 85;
+      const padRight = 35;
+      const padTop = 30;
+      const padBottom = 45;
+
+      const maxMonths = 24;
+
+      // Montante máximo em 24 meses para escala vertical
+      const maxValSimples = capital * (1 + taxa * maxMonths);
+      const maxValCompostos = capital * Math.pow(1 + taxa, maxMonths);
+      const maxVal = Math.max(maxValSimples, maxValCompostos) * 1.05;
+      const minVal = capital * 0.95;
+
+      function toX(m) {
+        return padLeft + (m / maxMonths) * (w - padLeft - padRight);
+      }
+
+      function toY(val) {
+        return h - padBottom - ((val - minVal) / (maxVal - minVal)) * (h - padTop - padBottom);
+      }
+
+      // Linhas de Grade Horizontais e Eixo Y
+      const numYGrid = 5;
+      for (let i = 0; i <= numYGrid; i++) {
+        const val = minVal + (i / numYGrid) * (maxVal - minVal);
+        const y = toY(val);
+
+        const gridLine = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+        gridLine.setAttribute('x1', padLeft);
+        gridLine.setAttribute('y1', y);
+        gridLine.setAttribute('x2', w - padRight);
+        gridLine.setAttribute('y2', y);
+        gridLine.setAttribute('stroke', '#e2e8f0');
+        gridLine.setAttribute('stroke-width', '1');
+        gridLine.setAttribute('stroke-dasharray', i === 0 ? 'none' : '3 3');
+        financeChartSvg.appendChild(gridLine);
+
+        const lbl = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+        lbl.setAttribute('x', padLeft - 10);
+        lbl.setAttribute('y', y + 4);
+        lbl.setAttribute('font-size', '10');
+        lbl.setAttribute('font-weight', '700');
+        lbl.setAttribute('fill', '#64748b');
+        lbl.setAttribute('text-anchor', 'end');
+        lbl.setAttribute('font-family', 'var(--font-mono)');
+        lbl.textContent = `R$ ${Math.round(val).toLocaleString('pt-BR')}`;
+        financeChartSvg.appendChild(lbl);
+      }
+
+      // Linhas de Grade Verticais e Eixo X (a cada 3 meses)
+      for (let m = 0; m <= maxMonths; m += 3) {
+        const x = toX(m);
+
+        const gridLine = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+        gridLine.setAttribute('x1', x);
+        gridLine.setAttribute('y1', padTop);
+        gridLine.setAttribute('x2', x);
+        gridLine.setAttribute('y2', h - padBottom);
+        gridLine.setAttribute('stroke', '#e2e8f0');
+        gridLine.setAttribute('stroke-width', '1');
+        financeChartSvg.appendChild(gridLine);
+
+        const lbl = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+        lbl.setAttribute('x', x);
+        lbl.setAttribute('y', h - padBottom + 18);
+        lbl.setAttribute('font-size', '11');
+        lbl.setAttribute('font-weight', '700');
+        lbl.setAttribute('fill', '#18324b');
+        lbl.setAttribute('text-anchor', 'middle');
+        lbl.textContent = `${m}m`;
+        financeChartSvg.appendChild(lbl);
+      }
+
+      // Área preenchida entre a Curva de Compostos e a Reta de Simples (Diferença)
+      let areaD = `M ${toX(0)} ${toY(capital)}`;
+      for (let m = 0; m <= maxMonths; m++) {
+        const valC = capital * Math.pow(1 + taxa, m);
+        areaD += ` L ${toX(m)} ${toY(valC)}`;
+      }
+      for (let m = maxMonths; m >= 0; m--) {
+        const valS = capital * (1 + taxa * m);
+        areaD += ` L ${toX(m)} ${toY(valS)}`;
+      }
+      areaD += ' Z';
+
+      const diffArea = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+      diffArea.setAttribute('d', areaD);
+      diffArea.setAttribute('fill', 'rgba(16, 185, 129, 0.14)');
+      financeChartSvg.appendChild(diffArea);
+
+      // Caminho SVG Juros Simples (Reta)
+      let pathSimplesD = `M ${toX(0)} ${toY(capital)}`;
+      for (let m = 1; m <= maxMonths; m++) {
+        pathSimplesD += ` L ${toX(m)} ${toY(capital * (1 + taxa * m))}`;
+      }
+      const pathSimples = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+      pathSimples.setAttribute('d', pathSimplesD);
+      pathSimples.setAttribute('fill', 'none');
+      pathSimples.setAttribute('stroke', '#2563eb');
+      pathSimples.setAttribute('stroke-width', '3');
+      pathSimples.setAttribute('stroke-linecap', 'round');
+      financeChartSvg.appendChild(pathSimples);
+
+      // Caminho SVG Juros Compostos (Curva)
+      let pathCompostosD = `M ${toX(0)} ${toY(capital)}`;
+      for (let m = 1; m <= maxMonths; m++) {
+        pathCompostosD += ` L ${toX(m)} ${toY(capital * Math.pow(1 + taxa, m))}`;
+      }
+      const pathCompostos = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+      pathCompostos.setAttribute('d', pathCompostosD);
+      pathCompostos.setAttribute('fill', 'none');
+      pathCompostos.setAttribute('stroke', '#059669');
+      pathCompostos.setAttribute('stroke-width', '3.5');
+      pathCompostos.setAttribute('stroke-linecap', 'round');
+      financeChartSvg.appendChild(pathCompostos);
+
+      // Linha indicadora vertical pontilhada no Mês Atual (slider de tempo)
+      const curX = toX(tempo);
+      const guideLine = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+      guideLine.setAttribute('x1', curX);
+      guideLine.setAttribute('y1', padTop);
+      guideLine.setAttribute('x2', curX);
+      guideLine.setAttribute('y2', h - padBottom);
+      guideLine.setAttribute('stroke', '#475569');
+      guideLine.setAttribute('stroke-width', '1.5');
+      guideLine.setAttribute('stroke-dasharray', '4 3');
+      financeChartSvg.appendChild(guideLine);
+
+      // Ponto no mês atual para Juros Simples
+      const curValS = capital * (1 + taxa * tempo);
+      const curYS = toY(curValS);
+      const circleS = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+      circleS.setAttribute('cx', curX);
+      circleS.setAttribute('cy', curYS);
+      circleS.setAttribute('r', '6');
+      circleS.setAttribute('fill', '#2563eb');
+      circleS.setAttribute('stroke', '#ffffff');
+      circleS.setAttribute('stroke-width', '2.5');
+      financeChartSvg.appendChild(circleS);
+
+      // Ponto no mês atual para Juros Compostos
+      const curValC = capital * Math.pow(1 + taxa, tempo);
+      const curYC = toY(curValC);
+      const circleC = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+      circleC.setAttribute('cx', curX);
+      circleC.setAttribute('cy', curYC);
+      circleC.setAttribute('r', '6');
+      circleC.setAttribute('fill', '#059669');
+      circleC.setAttribute('stroke', '#ffffff');
+      circleC.setAttribute('stroke-width', '2.5');
+      financeChartSvg.appendChild(circleC);
+
+      // Rótulos flutuantes com os valores no mês atual
+      const tagS = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+      tagS.setAttribute('x', curX + (tempo > 18 ? -10 : 10));
+      tagS.setAttribute('y', curYS - 8);
+      tagS.setAttribute('font-size', '10');
+      tagS.setAttribute('font-weight', '800');
+      tagS.setAttribute('font-family', 'var(--font-mono)');
+      tagS.setAttribute('fill', '#2563eb');
+      tagS.setAttribute('text-anchor', tempo > 18 ? 'end' : 'start');
+      tagS.textContent = `Simples: ${formatCurrency(curValS)}`;
+      financeChartSvg.appendChild(tagS);
+
+      const tagC = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+      tagC.setAttribute('x', curX + (tempo > 18 ? -10 : 10));
+      tagC.setAttribute('y', curYC - 22);
+      tagC.setAttribute('font-size', '10');
+      tagC.setAttribute('font-weight', '800');
+      tagC.setAttribute('font-family', 'var(--font-mono)');
+      tagC.setAttribute('fill', '#059669');
+      tagC.setAttribute('text-anchor', tempo > 18 ? 'end' : 'start');
+      tagC.textContent = `Compostos: ${formatCurrency(curValC)}`;
+      financeChartSvg.appendChild(tagC);
+    }
+
+    // Renderiza a Tabela Mês a Mês
+    function renderTable() {
+      financeTableBody.innerHTML = '';
+      for (let m = 0; m <= 24; m++) {
+        const res = calculateMonthValues(m, capital, taxa);
+        const tr = document.createElement('tr');
+        if (m === tempo) {
+          tr.className = 'current-month-row';
+        }
+
+        tr.innerHTML = `
+          <td style="text-align:center; font-weight:800;">${m === 0 ? 'Início (0)' : `Mês ${m}`}</td>
+          <td style="color:var(--cor-simples); font-weight:700;">${formatCurrency(res.montanteSimples)}</td>
+          <td style="color:#64748b;">${m === 0 ? '—' : `+ ${formatCurrency(res.juroMesSimples)}`}</td>
+          <td style="color:var(--cor-compostos); font-weight:800;">${formatCurrency(res.montanteCompostos)}</td>
+          <td style="color:#059669; font-weight:700;">${m === 0 ? '—' : `+ ${formatCurrency(res.juroMesCompostos)}`}</td>
+          <td style="color:#b45309; font-weight:800;">${m === 0 ? 'R$ 0,00' : `+ ${formatCurrency(res.diferenca)}`}</td>
+        `;
+
+        financeTableBody.appendChild(tr);
+      }
+    }
+
+    // Animação Play/Pausa dos 24 meses
+    btnPlayPause.addEventListener('click', () => {
+      isPlaying = !isPlaying;
+      if (isPlaying) {
+        playIcon.textContent = '⏸';
+        playLabel.textContent = 'Pausar';
+        if (tempo >= 24) tempo = 1;
+
+        playInterval = setInterval(() => {
+          tempo++;
+          sliderTempo.value = tempo;
+          updateAll();
+          if (tempo >= 24) {
+            clearInterval(playInterval);
+            isPlaying = false;
+            playIcon.textContent = '▶';
+            playLabel.textContent = 'Ver os 24 Meses';
+          }
+        }, 550);
+      } else {
+        clearInterval(playInterval);
+        playIcon.textContent = '▶';
+        playLabel.textContent = 'Ver os 24 Meses';
+      }
+    });
+
+    // Ouvintes dos Sliders
+    sliderCapital.addEventListener('input', (e) => {
+      capital = parseFloat(e.target.value);
+      updateAll();
+    });
+
+    sliderTaxa.addEventListener('input', (e) => {
+      taxa = parseFloat(e.target.value) / 100;
+      updateAll();
+    });
+
+    sliderTempo.addEventListener('input', (e) => {
+      tempo = parseInt(e.target.value, 10);
+      updateAll();
+    });
+
+    // Cenários de Descoberta Guiada
+    const scenariosData = {
+      1: {
+        cap: 1000,
+        tax: 2.0,
+        time: 12,
+        title: "1. Guardar R$ 1.000 a 2% a.m. por 12 meses",
+        desc: "Em 12 meses, os juros simples pagam <strong>R$ 20,00 todo mês</strong>, totalizando R$ 240,00 de rendimento (Montante: R$ 1.240,00). Já os juros compostos rendem <strong>R$ 268,24</strong> (Montante: R$ 1.268,24). A diferença de R$ 28,24 parece singela, mas representa <strong>quase 12% a mais de rendimento líquido</strong> sem você ter feito esforço algum!"
+      },
+      2: {
+        cap: 2000,
+        tax: 5.0,
+        time: 6,
+        title: "2. Um empréstimo de R$ 2.000 a 5% a.m. por 6 meses",
+        desc: "<strong>Cuidado com as dívidas!</strong> Em juros simples, você pagaria R$ 600 de juros (Dívida: R$ 2.600,00). Mas os bancos cobram juros compostos: a dívida sobe para <strong>R$ 2.680,19</strong> (+R$ 80,19 a mais em apenas 6 meses). Em cartões e cheque especial (que chegam a 10% a 15% ao mês), o crescimento exponencial dobra a dívida rapidamente!"
+      },
+      3: {
+        cap: 2100,
+        tax: 1.5,
+        time: 24,
+        title: "3. Meta: Ter R$ 3.000,00 daqui a 24 meses a 1,5% a.m. compostos",
+        desc: "Quanto você precisa investir hoje? Pela fórmula inversa $C = \\frac{M}{(1+i)^t} = \\frac{3000}{(1+0,015)^{24}} \\approx \\mathbf{R\\$\\ 2.098,62}$. Mova o slider de capital para ~R$ 2.100,00 e confira no painel de Juros Compostos: o montante atingirá exatamente a meta de R$ 3.000,00!"
+      }
+    };
+
+    function loadScenario(num) {
+      scenarioButtons.forEach(btn => btn.classList.toggle('active', btn.dataset.scenario === num.toString()));
+      const s = scenariosData[num];
+      capital = s.cap;
+      taxa = s.tax / 100;
+      tempo = s.time;
+
+      sliderCapital.value = capital;
+      sliderTaxa.value = s.tax;
+      sliderTempo.value = tempo;
+
+      scenarioPrompt.innerHTML = `
+        <div style="font-weight:800; font-size:0.92rem; color:var(--navy); margin-bottom:6px;">
+          ${s.title}
+        </div>
+        <div>${s.desc}</div>
+      `;
+
+      updateAll();
+    }
+
+    scenarioButtons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        loadScenario(parseInt(btn.dataset.scenario, 10));
+      });
+    });
+
+    // Projeção em tela cheia
+    document.getElementById('btnFullscreen').addEventListener('click', () => {
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().catch(() => {});
+      } else {
+        document.exitFullscreen().catch(() => {});
+      }
+    });
+
+    // Inicialização
+    loadScenario(1);
+  </script>
+</body>
+</html>

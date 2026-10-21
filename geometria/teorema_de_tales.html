@@ -1,0 +1,1242 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Teorema de Tales: Proporcionalidade em Feixes Paralelos · Matemática em Movimento</title>
+  <meta name="description" content="Laboratório interativo do Teorema de Tales. Manipule feixes de retas paralelas cortadas por transversais, visualize segmentos proporcionais, investigue o teorema no triângulo e resolva equações com a incógnita x." />
+  <link rel="stylesheet" href="../css/estilo.css" />
+  <style>
+    /* Estilos específicos da demonstração do Teorema de Tales */
+    :root {
+      --cor-trans-1: #2563eb;       /* Azul Transversal p */
+      --cor-trans-1-light: #eff6ff;
+      --cor-trans-2: #059669;       /* Verde Transversal q */
+      --cor-trans-2-light: #ecfdf5;
+      --cor-parallel: #64748b;      /* Slate Retas Paralelas */
+      --cor-seg-top: #3b82f6;       /* Segmento Superior */
+      --cor-seg-bot: #f59e0b;       /* Segmento Inferior */
+    }
+
+    /* Container do Palco SVG */
+    .tales-stage-wrapper {
+      position: relative;
+      background: radial-gradient(circle at 50% 30%, #ffffff 0%, #f8fafc 100%);
+      border: 1px solid var(--linha);
+      border-radius: var(--radius-md);
+      overflow: hidden;
+      box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.02);
+      margin-bottom: 16px;
+    }
+
+    .tales-svg {
+      width: 100%;
+      height: 420px;
+      display: block;
+      user-select: none;
+      cursor: default;
+    }
+
+    /* Retas Paralelas */
+    .parallel-line {
+      stroke: var(--cor-parallel);
+      stroke-width: 2;
+      stroke-dasharray: 6 4;
+      opacity: 0.85;
+      transition: stroke 0.2s ease;
+    }
+
+    .parallel-line-solid {
+      stroke: var(--navy);
+      stroke-width: 2.5;
+      opacity: 0.95;
+    }
+
+    /* Retas Transversais */
+    .transversal-line-1 {
+      stroke: var(--cor-trans-1);
+      stroke-width: 3;
+      stroke-linecap: round;
+    }
+
+    .transversal-line-2 {
+      stroke: var(--cor-trans-2);
+      stroke-width: 3;
+      stroke-linecap: round;
+    }
+
+    /* Segmentos Destacados */
+    .segment-highlight {
+      stroke-width: 6;
+      stroke-linecap: round;
+      opacity: 0.85;
+      transition: stroke-width 0.15s ease;
+    }
+
+    .segment-highlight:hover {
+      stroke-width: 9;
+      opacity: 1;
+      filter: drop-shadow(0 0 4px rgba(0,0,0,0.25));
+    }
+
+    /* Pinos de Arraste (Handles) */
+    .drag-handle {
+      cursor: grab;
+      transition: transform 0.15s ease, filter 0.15s ease;
+    }
+
+    .drag-handle:hover {
+      transform: scale(1.25);
+      filter: drop-shadow(0 2px 6px rgba(0,0,0,0.3));
+    }
+
+    .drag-handle:active {
+      cursor: grabbing;
+      transform: scale(1.35);
+    }
+
+    /* Rótulos Flutuantes nos Segmentos */
+    .segment-badge-rect {
+      fill: #ffffff;
+      fill-opacity: 0.94;
+      stroke-width: 1.5;
+      rx: 5;
+      filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));
+    }
+
+    .segment-badge-text {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 800;
+      text-anchor: middle;
+      dominant-baseline: central;
+      pointer-events: none;
+    }
+
+    /* Modos e Casos Prontos */
+    .modes-toolbar {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 16px;
+      align-items: center;
+    }
+
+    .btn-mode-chip {
+      background: #ffffff;
+      border: 1.5px solid var(--linha);
+      border-radius: var(--radius-sm);
+      padding: 6px 12px;
+      font-size: 0.82rem;
+      font-weight: 700;
+      color: var(--tinta);
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .btn-mode-chip:hover {
+      border-color: var(--azul);
+      background: #f0f7fb;
+    }
+
+    .btn-mode-chip.active {
+      background: var(--navy);
+      border-color: var(--navy);
+      color: #ffffff;
+    }
+
+    /* Painel de Proporções e Razões Matemáticas */
+    .proportions-live-card {
+      background: #ffffff;
+      border: 2px solid var(--azul);
+      border-radius: var(--radius-md);
+      padding: 16px 20px;
+      margin-bottom: 18px;
+      box-shadow: var(--shadow-card);
+    }
+
+    .proportions-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 14px;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .proportions-title {
+      font-size: 1.02rem;
+      font-weight: 800;
+      color: var(--navy);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .proportions-badge {
+      font-family: var(--font-mono);
+      font-size: 0.82rem;
+      font-weight: 800;
+      padding: 4px 12px;
+      border-radius: 9999px;
+      background: #f0fdf4;
+      color: #166534;
+      border: 1.5px solid #86efac;
+    }
+
+    /* Grade de Razões Equivalentes */
+    .ratios-grid {
+      display: grid;
+      grid-template-columns: 1fr auto 1fr auto 1fr;
+      align-items: center;
+      justify-items: center;
+      gap: 12px;
+      background: #f8fafc;
+      border: 1px solid var(--linha);
+      border-radius: var(--radius-sm);
+      padding: 14px 16px;
+      margin-bottom: 14px;
+    }
+
+    @media (max-width: 640px) {
+      .ratios-grid {
+        grid-template-columns: 1fr;
+        gap: 8px;
+      }
+    }
+
+    .ratio-fraction-box {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      font-family: var(--font-mono);
+    }
+
+    .fraction-num {
+      font-size: 1.15rem;
+      font-weight: 900;
+      color: var(--cor-trans-1);
+      border-bottom: 2px solid var(--navy);
+      padding: 0 10px 2px 10px;
+      text-align: center;
+      width: 100%;
+    }
+
+    .fraction-den {
+      font-size: 1.15rem;
+      font-weight: 900;
+      color: var(--cor-trans-1);
+      padding: 2px 10px 0 10px;
+      text-align: center;
+      width: 100%;
+    }
+
+    .ratio-fraction-box.green-box .fraction-num,
+    .ratio-fraction-box.green-box .fraction-den {
+      color: var(--cor-trans-2);
+    }
+
+    .ratio-equal-sign {
+      font-size: 1.6rem;
+      font-weight: 900;
+      color: var(--navy);
+    }
+
+    .ratio-result-box {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      background: #ffffff;
+      border: 1.5px solid var(--linha);
+      padding: 6px 14px;
+      border-radius: var(--radius-sm);
+    }
+
+    .ratio-result-num {
+      font-family: var(--font-mono);
+      font-size: 1.35rem;
+      font-weight: 900;
+      color: #15803d;
+    }
+
+    /* Multiplicação Cruzada */
+    .cross-product-banner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 10px;
+      background: #fef8eb;
+      border: 1px solid #fde68a;
+      border-radius: var(--radius-sm);
+      padding: 10px 14px;
+      font-size: 0.88rem;
+    }
+
+    .cross-formula-tag {
+      font-family: var(--font-mono);
+      font-weight: 800;
+      color: #92400e;
+    }
+
+    /* Painel de Controles Deslizantes */
+    .tales-sliders-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 14px;
+      margin-bottom: 18px;
+    }
+
+    @media (max-width: 768px) {
+      .tales-sliders-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .slider-box {
+      background: #ffffff;
+      border: 1px solid var(--linha);
+      border-radius: var(--radius-sm);
+      padding: 10px 14px;
+    }
+
+    .slider-label-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.82rem;
+      font-weight: 700;
+      color: var(--navy);
+      margin-bottom: 6px;
+    }
+
+    .slider-badge {
+      font-family: var(--font-mono);
+      font-size: 0.82rem;
+      background: #f1f5f9;
+      padding: 1px 6px;
+      border-radius: 4px;
+      color: var(--navy);
+    }
+
+    /* Jogo / Desafio do x Desconhecido */
+    .quiz-card {
+      background: #ffffff;
+      border: 1.5px dashed #d5a64a;
+      border-radius: var(--radius-md);
+      padding: 16px 20px;
+      margin-bottom: 18px;
+    }
+
+    .quiz-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .quiz-title {
+      font-size: 0.96rem;
+      font-weight: 800;
+      color: var(--navy);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .quiz-options-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin: 12px 0;
+    }
+
+    @media (max-width: 550px) {
+      .quiz-options-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .btn-quiz-option {
+      background: #ffffff;
+      border: 2px solid var(--linha);
+      border-radius: var(--radius-sm);
+      padding: 10px;
+      font-family: var(--font-mono);
+      font-size: 1.1rem;
+      font-weight: 900;
+      color: var(--navy);
+      cursor: pointer;
+      transition: all 0.15s ease;
+      text-align: center;
+    }
+
+    .btn-quiz-option:hover {
+      border-color: var(--azul);
+      background: #f0f7fb;
+      transform: translateY(-2px);
+    }
+
+    .btn-quiz-option.correct {
+      background: #16a34a !important;
+      border-color: #15803d !important;
+      color: #ffffff !important;
+      box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.35);
+    }
+
+    .btn-quiz-option.wrong {
+      background: #dc2626 !important;
+      border-color: #b91c1c !important;
+      color: #ffffff !important;
+      box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.35);
+      animation: shake 0.35s ease-in-out;
+    }
+
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      20%, 60% { transform: translateX(-5px); }
+      40%, 80% { transform: translateX(5px); }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header Institucional -->
+  <header class="site-header">
+    <div class="header-container">
+      <a href="../index.html" class="brand-wrapper" title="Voltar para a página inicial">
+        <div class="brand-logo" aria-hidden="true">
+          <svg viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 19L12 5l8 14H4z" />
+          </svg>
+        </div>
+        <div class="brand-texts">
+          <span class="brand-title">Matemática em Movimento</span>
+          <span class="brand-slogan">Explore. Manipule. Compreenda.</span>
+        </div>
+      </a>
+      <div class="header-actions">
+        <a href="../index.html" class="btn-header">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+          Início
+        </a>
+        <button id="btnFullscreen" class="btn-header" title="Alternar modo tela cheia para projeção em sala de aula">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>
+          Projeção
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Breadcrumbs -->
+  <nav class="breadcrumb-bar" aria-label="Navegação estrutural">
+    <div class="breadcrumb-container">
+      <a href="../index.html">Início</a>
+      <span class="breadcrumb-sep">/</span>
+      <a href="../index.html#catalogo">Geometria</a>
+      <span class="breadcrumb-sep">/</span>
+      <span class="breadcrumb-current">Teorema de Tales</span>
+    </div>
+  </nav>
+
+  <!-- Conteúdo Principal -->
+  <main class="main-content">
+    <div class="demo-grid">
+
+      <!-- Coluna 1: Laboratório Geométrico Interativo -->
+      <section class="card" aria-labelledby="lab-heading">
+        <div class="card-eyebrow">
+          <span class="badge-tag badge-fundamental">8º e 9º Anos &amp; Ensino Médio</span>
+          <span>· LABORATÓRIO DE GEOMETRIA PLANA</span>
+        </div>
+        <h2 id="lab-heading" class="card-title">Teorema de Tales: Proporcionalidade em Feixes Paralelos</h2>
+        <p class="card-subtitle">
+          Um feixe de retas paralelas determina, em duas retas transversais quaisquer, segmentos correspondentes com <strong>rigorosamente a mesma razão proporcional</strong>.
+        </p>
+
+        <!-- Barra de Configurações e Modos de Demonstração -->
+        <div class="modes-toolbar" role="toolbar" aria-label="Modos do Teorema de Tales">
+          <span style="font-size:0.82rem; font-weight:800; color:var(--navy);">Configurações:</span>
+          <button class="btn-mode-chip active" data-mode="classic">Feixe Clássico (3 Paralelas)</button>
+          <button class="btn-mode-chip" data-mode="triangle">Tales no Triângulo</button>
+          <button class="btn-mode-chip" data-mode="hourglass">Transversais Concorrentes (X)</button>
+          <button class="btn-mode-chip" data-mode="four">4 Paralelas Equidistantes</button>
+          <button id="btnResetView" class="btn-mode-chip" style="margin-left:auto; border-color:var(--azul); color:var(--azul);">
+            Restaurar Padrão ↺
+          </button>
+        </div>
+
+        <!-- Palco do Teorema de Tales em SVG -->
+        <div class="tales-stage-wrapper" role="region" aria-label="Diagrama interativo do Teorema de Tales">
+          <svg id="talesSvg" class="tales-svg" viewBox="0 0 760 420" aria-label="Feixe de retas paralelas cortadas por retas transversais"></svg>
+        </div>
+
+        <!-- Painel de Proporções ao Vivo com Multiplicação Cruzada -->
+        <div class="proportions-live-card" role="region" aria-label="Cálculo ao vivo das razões e proporções">
+          <div class="proportions-header">
+            <div class="proportions-title">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="8" y1="12" x2="16" y2="12"/><line x1="12" y1="8" x2="12" y2="16"/></svg>
+              <span>A Proporção Fundamental de Tales</span>
+            </div>
+            <div class="proportions-badge">
+              ⚖️ Razão Constante: k = <span id="constantRatioText">1.50</span>
+            </div>
+          </div>
+
+          <!-- Grade das Razões Equivalentes -->
+          <div class="ratios-grid">
+            <!-- Razão na Transversal 1 (Azul) -->
+            <div class="ratio-fraction-box">
+              <div class="fraction-num">AB = <span id="numAB">4.0 cm</span></div>
+              <div class="fraction-den">BC = <span id="numBC">6.0 cm</span></div>
+            </div>
+
+            <!-- Sinal de Igualdade -->
+            <div class="ratio-equal-sign">=</div>
+
+            <!-- Razão na Transversal 2 (Verde) -->
+            <div class="ratio-fraction-box green-box">
+              <div class="fraction-num">A'B' = <span id="numA1B1">4.8 cm</span></div>
+              <div class="fraction-den">B'C' = <span id="numB1C1">7.2 cm</span></div>
+            </div>
+
+            <!-- Sinal de Igualdade -->
+            <div class="ratio-equal-sign">=</div>
+
+            <!-- Resultado Decimal Idêntico -->
+            <div class="ratio-result-box">
+              <span style="font-size:0.72rem; font-weight:700; color:var(--muted); text-transform:uppercase;">Razão Decimal</span>
+              <span class="ratio-result-num" id="ratioDecimal">0.67</span>
+            </div>
+          </div>
+
+          <!-- Multiplicação Cruzada: Produto dos Extremos = Produto dos Meios -->
+          <div class="cross-product-banner">
+            <div>
+              <strong>Multiplicação Cruzada:</strong>
+              <span class="cross-formula-tag">AB · B'C' = BC · A'B'</span>
+            </div>
+            <div style="font-family:var(--font-mono); font-weight:800; color:#18324b;">
+              <span id="crossCalcLeft">4.0 · 7.2 = 28.8</span> &nbsp;⟺&nbsp; <span id="crossCalcRight">6.0 · 4.8 = 28.8</span> ✓
+            </div>
+          </div>
+        </div>
+
+        <!-- Painel de Sliders Táteis -->
+        <div class="tales-sliders-grid">
+          <!-- Slider 1: Espaçamento entre Paralela 1 e 2 -->
+          <div class="slider-box">
+            <div class="slider-label-row">
+              <label for="sliderDist1">Espaço (r até s):</label>
+              <span id="badgeDist1" class="slider-badge">100 px</span>
+            </div>
+            <input type="range" id="sliderDist1" min="50" max="160" step="5" value="100" aria-label="Espaçamento entre a reta r e a reta s" />
+          </div>
+
+          <!-- Slider 2: Espaçamento entre Paralela 2 e 3 -->
+          <div class="slider-box">
+            <div class="slider-label-row">
+              <label for="sliderDist2">Espaço (s até t):</label>
+              <span id="badgeDist2" class="slider-badge">150 px</span>
+            </div>
+            <input type="range" id="sliderDist2" min="50" max="180" step="5" value="150" aria-label="Espaçamento entre a reta s e a reta t" />
+          </div>
+
+          <!-- Slider 3: Inclinação da Transversal Direita -->
+          <div class="slider-box">
+            <div class="slider-label-row">
+              <label for="sliderAngle2">Inclinação Transversal q:</label>
+              <span id="badgeAngle2" class="slider-badge">25°</span>
+            </div>
+            <input type="range" id="sliderAngle2" min="-45" max="45" step="2" value="25" aria-label="Inclinação da reta transversal direita" />
+          </div>
+        </div>
+
+        <!-- DESAFIO PRÁTICO: ENCONTRE O VALOR DA INCÓGNITA X -->
+        <div class="quiz-card" role="region" aria-label="Desafio de cálculo da incógnita x com Tales">
+          <div class="quiz-header">
+            <div class="quiz-title">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+              <span>Desafio: Descubra o Valor Desconhecido (x)</span>
+            </div>
+            <button id="btnNewChallenge" class="btn-header" style="font-size:0.78rem; padding:4px 10px; background:var(--azul); color:#ffffff; border:none;">
+              Novo Problema 🎲
+            </button>
+          </div>
+
+          <p id="quizPromptText" style="font-size:0.86rem; color:var(--tinta); line-height:1.45; margin-bottom:8px;">
+            No feixe abaixo, temos <strong>AB = 6 cm</strong>, <strong>BC = 9 cm</strong> e <strong>A'B' = 4 cm</strong>. Quanto vale o segmento <strong>B'C' = x</strong>?
+          </p>
+
+          <div class="quiz-options-grid" id="quizOptionsContainer">
+            <!-- Botões gerados dinamicamente via JS -->
+          </div>
+
+          <div id="quizFeedbackBox" style="display:none; font-size:0.86rem; line-height:1.45; padding:10px 14px; border-radius:var(--radius-sm); margin-top:8px;"></div>
+        </div>
+
+      </section>
+
+      <!-- Coluna 2: Card "Entenda a Ideia" -->
+      <aside class="card" aria-labelledby="entenda-heading">
+        <div class="card-eyebrow">
+          <span>FUNDAMENTAÇÃO GEOMÉTRICA</span>
+        </div>
+        <h2 id="entenda-heading" class="card-title">Entenda a Ideia</h2>
+        <p class="card-subtitle">
+          O Teorema de Tales, formulado na Grécia Antiga pelo filósofo e matemático Tales de Mileto (~624–546 a.C.), é a espinha dorsal de toda a geometria de semelhança e proporcionalidade.
+        </p>
+
+        <!-- Card de Fórmula Central em Destaque -->
+        <div class="formula-card">
+          <div class="formula-main" style="color:var(--navy); font-size:1.4rem;">
+            \frac{AB}{BC} = \frac{A'B'}{B'C'} \quad \text{ou} \quad \frac{AB}{A'B'} = \frac{BC}{B'C'}
+          </div>
+          <div class="formula-caption" style="margin-top:8px;">
+            "Se três ou mais retas paralelas são cortadas por duas transversais, a razão entre quaisquer dois segmentos da primeira é igual à razão entre os segmentos correspondentes da segunda."
+          </div>
+        </div>
+
+        <!-- 4 Passos Pedagógicos Estruturados -->
+        <div class="steps-list">
+          <div class="step-item">
+            <div class="step-num">1</div>
+            <div class="step-body">
+              <strong>O Feixe de Paralelas</strong>
+              As retas $r \parallel s \parallel t$ mantêm distâncias constantes entre si. Elas funcionam como "fatiadores" do plano geométrico em faixas de largura proporcional.
+            </div>
+          </div>
+
+          <div class="step-item">
+            <div class="step-num">2</div>
+            <div class="step-body">
+              <strong>A Projeção nas Transversais</strong>
+              Quando uma transversal se inclina mais que a outra, seus segmentos ficam individualmente maiores. Porém, <strong>a razão interna entre os pedaços permanece 100% inalterada</strong>: $\frac{AB}{BC} = \text{constante}$.
+            </div>
+          </div>
+
+          <div class="step-item">
+            <div class="step-num">3</div>
+            <div class="step-body">
+              <strong>O Teorema no Triângulo</strong>
+              Se traçamos uma reta paralela à base de um triângulo cortando os outros dois lados, ela divide os lados proporcionalmente ($\frac{AD}{DB} = \frac{AE}{EC}$). Esta é a base direta da Semelhança de Triângulos.
+            </div>
+          </div>
+
+          <div class="step-item">
+            <div class="step-num">4</div>
+            <div class="step-body">
+              <strong>A Multiplicação Cruzada</strong>
+              A proporção de Tales permite encontrar qualquer medida inacessível (como a altura da Pirâmide de Gizé medida por Tales através da sombra de uma vara) resolvendo uma equação simples: $a \cdot x = b \cdot c$.
+            </div>
+          </div>
+        </div>
+
+        <!-- Pergunta para Investigar -->
+        <div class="investigation-card">
+          <div class="investigation-title">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+            <span>Pergunta para Investigar</span>
+          </div>
+          <p class="investigation-text">
+            Arraste o slider de <strong>Inclinação da Transversal q</strong> de 0° até 40°. Os comprimentos individuais de $A'B'$ e $B'C'$ aumentam visivelmente.<br/><br/>
+            O que acontece com a divisão $\frac{A'B'}{B'C'}$? Ela muda ou permanece exatamente igual à razão $\frac{AB}{BC}$ da outra reta? Por que isso acontece?
+          </p>
+        </div>
+
+        <!-- Dica de Manipulação -->
+        <div class="manipulation-tip">
+          <strong>Dica Interativa:</strong>
+          Você pode arrastar diretamente os círculos coloridos nas pontas das transversais para inclinar as retas livremente pelo palco SVG, observando o cálculo se atualizar em tempo real!
+        </div>
+      </aside>
+
+    </div>
+  </main>
+
+  <!-- Rodapé Institucional -->
+  <footer class="site-footer">
+    <div class="footer-container">
+      <div class="footer-links">
+        <a href="../index.html">Página Inicial</a>
+        <span>•</span>
+        <a href="../geometria/soma-angulos.html">Soma dos Ângulos</a>
+        <span>•</span>
+        <a href="../geometria/pitagoras.html">Teorema de Pitágoras</a>
+        <span>•</span>
+        <a href="../geometria/semelhanca_de_triangulos.html">Semelhança de Triângulos</a>
+        <span>•</span>
+        <a href="../geometria/relacao_de_euler.html">Relação de Euler</a>
+        <span>•</span>
+        <a href="../geometria/solidos_geometricos.html">Sólidos Geométricos</a>
+      </div>
+      <p class="footer-copy">
+        Matemática em Movimento · Plataforma pedagógica aberta para exploração visual e conceitual de matemática.
+      </p>
+    </div>
+  </footer>
+
+  <!-- LÓGICA INTERATIVA EM JAVASCRIPT PURO -->
+  <script>
+    /**
+     * Matemática em Movimento — Teorema de Tales
+     * Feixe de retas paralelas, cálculo euclidiano exato das razões,
+     * manipulação tátil por arrasto e por sliders, modos e quiz interativo.
+     */
+
+    // Parâmetros de Estado
+    let currentMode = 'classic'; // 'classic', 'triangle', 'hourglass', 'four'
+
+    // Posições verticais Y das retas paralelas no SVG (altura total = 420)
+    let yParallels = [80, 190, 340, 390]; // r, s, t, u
+    let numParallels = 3;
+
+    // Ângulo e inclinação das transversais (pontos de controle superior e inferior)
+    // Transversal 1 (p - Azul à esquerda)
+    let trans1TopX = 220;
+    let trans1BotX = 170;
+
+    // Transversal 2 (q - Verde à direita)
+    let trans2TopX = 520;
+    let trans2BotX = 600;
+
+    // Arraste por toque/mouse
+    let activeDrag = null;
+
+    // Elementos DOM
+    const talesSvg = document.getElementById('talesSvg');
+    const numAB = document.getElementById('numAB');
+    const numBC = document.getElementById('numBC');
+    const numA1B1 = document.getElementById('numA1B1');
+    const numB1C1 = document.getElementById('numB1C1');
+    const ratioDecimal = document.getElementById('ratioDecimal');
+    const constantRatioText = document.getElementById('constantRatioText');
+    const crossCalcLeft = document.getElementById('crossCalcLeft');
+    const crossCalcRight = document.getElementById('crossCalcRight');
+
+    const sliderDist1 = document.getElementById('sliderDist1');
+    const sliderDist2 = document.getElementById('sliderDist2');
+    const sliderAngle2 = document.getElementById('sliderAngle2');
+    const badgeDist1 = document.getElementById('badgeDist1');
+    const badgeDist2 = document.getElementById('badgeDist2');
+    const badgeAngle2 = document.getElementById('badgeAngle2');
+
+    const modeButtons = document.querySelectorAll('.btn-mode-chip[data-mode]');
+    const btnResetView = document.getElementById('btnResetView');
+
+    // Desafio Quiz
+    const quizPromptText = document.getElementById('quizPromptText');
+    const quizOptionsContainer = document.getElementById('quizOptionsContainer');
+    const quizFeedbackBox = document.getElementById('quizFeedbackBox');
+    const btnNewChallenge = document.getElementById('btnNewChallenge');
+
+    // Interseção de reta transversal (definida por 2 pontos) com reta horizontal y = yH
+    function getIntersectX(x1, y1, x2, y2, yH) {
+      if (Math.abs(y2 - y1) < 0.0001) return x1;
+      const t = (yH - y1) / (y2 - y1);
+      return x1 + t * (x2 - x1);
+    }
+
+    // Distância euclidiana entre 2 pontos
+    function dist(x1, y1, x2, y2) {
+      return Math.hypot(x2 - x1, y2 - y1);
+    }
+
+    // Renderiza a cena geométrica completa no SVG
+    function renderScene() {
+      talesSvg.innerHTML = '';
+      const svgW = 760;
+      const svgH = 420;
+
+      // Grade sutil de fundo
+      const defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
+      defs.innerHTML = `
+        <pattern id="talesGrid" width="30" height="30" patternUnits="userSpaceOnUse">
+          <path d="M 30 0 L 0 0 0 30" fill="none" stroke="#f1f5f9" stroke-width="1" />
+        </pattern>
+        <filter id="badgeShadow" x="-20%" y="-20%" width="140%" height="140%">
+          <feDropShadow dx="0" dy="2" stdDeviation="2" flood-opacity="0.15" />
+        </filter>
+      `;
+      talesSvg.appendChild(defs);
+
+      const bgRect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+      bgRect.setAttribute('width', svgW);
+      bgRect.setAttribute('height', svgH);
+      bgRect.setAttribute('fill', 'url(#talesGrid)');
+      talesSvg.appendChild(bgRect);
+
+      // Posição vertical das retas paralelas ativas
+      const activeYs = yParallels.slice(0, numParallels);
+
+      // 1. Desenha as Retas Paralelas (r, s, t, u)
+      const parallelNames = ['r', 's', 't', 'u'];
+      activeYs.forEach((y, idx) => {
+        const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+        line.setAttribute('x1', '40');
+        line.setAttribute('y1', y);
+        line.setAttribute('x2', svgW - 40);
+        line.setAttribute('y2', y);
+        line.setAttribute('class', currentMode === 'triangle' && idx === 0 ? 'parallel-line' : 'parallel-line-solid');
+        talesSvg.appendChild(line);
+
+        // Rótulo da reta paralela na borda esquerda
+        const lbl = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+        lbl.setAttribute('x', '22');
+        lbl.setAttribute('y', y + 4);
+        lbl.setAttribute('font-size', '13');
+        lbl.setAttribute('font-weight', '900');
+        lbl.setAttribute('font-style', 'italic');
+        lbl.setAttribute('fill', '#64748b');
+        lbl.textContent = parallelNames[idx];
+        talesSvg.appendChild(lbl);
+      });
+
+      // 2. Transversal 1 (p - Azul à esquerda)
+      // Prolonga a reta além dos limites
+      const t1YTop = 30;
+      const t1YBot = 390;
+      const t1XTop = getIntersectX(trans1TopX, 50, trans1BotX, 370, t1YTop);
+      const t1XBot = getIntersectX(trans1TopX, 50, trans1BotX, 370, t1YBot);
+
+      const transLine1 = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+      transLine1.setAttribute('x1', t1XTop);
+      transLine1.setAttribute('y1', t1YTop);
+      transLine1.setAttribute('x2', t1XBot);
+      transLine1.setAttribute('y2', t1YBot);
+      transLine1.setAttribute('class', 'transversal-line-1');
+      talesSvg.appendChild(transLine1);
+
+      // 3. Transversal 2 (q - Verde à direita)
+      const t2YTop = 30;
+      const t2YBot = 390;
+      const t2XTop = getIntersectX(trans2TopX, 50, trans2BotX, 370, t2YTop);
+      const t2XBot = getIntersectX(trans2TopX, 50, trans2BotX, 370, t2YBot);
+
+      const transLine2 = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+      transLine2.setAttribute('x1', t2XTop);
+      transLine2.setAttribute('y1', t2YTop);
+      transLine2.setAttribute('x2', t2XBot);
+      transLine2.setAttribute('y2', t2YBot);
+      transLine2.setAttribute('class', 'transversal-line-2');
+      talesSvg.appendChild(transLine2);
+
+      // Rótulos das transversais
+      const lblP = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+      lblP.setAttribute('x', t1XTop - 12);
+      lblP.setAttribute('y', t1YTop);
+      lblP.setAttribute('font-size', '14');
+      lblP.setAttribute('font-weight', '900');
+      lblP.setAttribute('font-style', 'italic');
+      lblP.setAttribute('fill', 'var(--cor-trans-1)');
+      lblP.textContent = 'p';
+      talesSvg.appendChild(lblP);
+
+      const lblQ = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+      lblQ.setAttribute('x', t2XTop + 14);
+      lblQ.setAttribute('y', t2YTop);
+      lblQ.setAttribute('font-size', '14');
+      lblQ.setAttribute('font-weight', '900');
+      lblQ.setAttribute('font-style', 'italic');
+      lblQ.setAttribute('fill', 'var(--cor-trans-2)');
+      lblQ.textContent = 'q';
+      talesSvg.appendChild(lblQ);
+
+      // 4. Calcula os pontos de interseção exatos
+      // Pontos na transversal 1: A, B, C, D
+      const pts1 = activeYs.map((y, idx) => ({
+        x: getIntersectX(trans1TopX, 50, trans1BotX, 370, y),
+        y: y,
+        name: ['A', 'B', 'C', 'D'][idx]
+      }));
+
+      // Pontos na transversal 2: A', B', C', D'
+      const pts2 = activeYs.map((y, idx) => ({
+        x: getIntersectX(trans2TopX, 50, trans2BotX, 370, y),
+        y: y,
+        name: ["A'", "B'", "C'", "D'"][idx]
+      }));
+
+      // Se for modo Triângulo, une as transversais no topo em A
+      if (currentMode === 'triangle') {
+        const topTri = pts1[0]; // Vértice A compartilhado
+        const triPoly = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
+        triPoly.setAttribute('points', `${topTri.x},${topTri.y} ${pts1[2].x},${pts1[2].y} ${pts2[2].x},${pts2[2].y}`);
+        triPoly.setAttribute('fill', '#356b8c');
+        triPoly.setAttribute('fill-opacity', '0.07');
+        triPoly.setAttribute('stroke', 'none');
+        talesSvg.appendChild(triPoly);
+      }
+
+      // 5. Segmentos coloridos com destaque sobrepostos
+      // Segmento Superior AB e A'B'
+      drawSegment(pts1[0], pts1[1], 'var(--cor-seg-top)', 'AB');
+      drawSegment(pts2[0], pts2[1], 'var(--cor-seg-top)', "A'B'");
+
+      // Segmento Inferior BC e B'C'
+      drawSegment(pts1[1], pts1[2], 'var(--cor-seg-bot)', 'BC');
+      drawSegment(pts2[1], pts2[2], 'var(--cor-seg-bot)', "B'C'");
+
+      // Se houver 4ª paralela: CD e C'D'
+      if (numParallels === 4) {
+        drawSegment(pts1[2], pts1[3], '#8b5cf6', 'CD');
+        drawSegment(pts2[2], pts2[3], '#8b5cf6', "C'D'");
+      }
+
+      // 6. Desenha os Pontos de Interseção (círculos e rótulos)
+      pts1.forEach(p => drawPoint(p.x, p.y, p.name, 'var(--cor-trans-1)', -16));
+      pts2.forEach(p => drawPoint(p.x, p.y, p.name, 'var(--cor-trans-2)', 16));
+
+      // 7. Pinos de Manipulação Tátil (Handles para arrastar)
+      drawHandle(trans1TopX, 50, 'handle1Top', 'var(--cor-trans-1)');
+      drawHandle(trans1BotX, 370, 'handle1Bot', 'var(--cor-trans-1)');
+      drawHandle(trans2TopX, 50, 'handle2Top', 'var(--cor-trans-2)');
+      drawHandle(trans2BotX, 370, 'handle2Bot', 'var(--cor-trans-2)');
+
+      // 8. Atualiza os Cálculos e Razões
+      updateCalculations(pts1, pts2);
+    }
+
+    // Desenha um segmento destacado com badge de comprimento
+    function drawSegment(p1, p2, color, name) {
+      const segLine = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+      segLine.setAttribute('x1', p1.x);
+      segLine.setAttribute('y1', p1.y);
+      segLine.setAttribute('x2', p2.x);
+      segLine.setAttribute('y2', p2.y);
+      segLine.setAttribute('stroke', color);
+      segLine.setAttribute('class', 'segment-highlight');
+      talesSvg.appendChild(segLine);
+
+      // Ponto médio para o badge de texto
+      const midX = (p1.x + p2.x) / 2;
+      const midY = (p1.y + p2.y) / 2;
+      const lengthCm = (dist(p1.x, p1.y, p2.x, p2.y) / 25).toFixed(1);
+
+      // Badge de medida com fundo
+      const gBadge = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+      gBadge.setAttribute('transform', `translate(${midX}, ${midY})`);
+
+      const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+      rect.setAttribute('x', '-32');
+      rect.setAttribute('y', '-11');
+      rect.setAttribute('width', '64');
+      rect.setAttribute('height', '22');
+      rect.setAttribute('class', 'segment-badge-rect');
+      rect.setAttribute('stroke', color);
+      gBadge.appendChild(rect);
+
+      const txt = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+      txt.setAttribute('class', 'segment-badge-text');
+      txt.setAttribute('fill', color);
+      txt.textContent = `${name}: ${lengthCm}`;
+      gBadge.appendChild(txt);
+
+      talesSvg.appendChild(gBadge);
+    }
+
+    // Desenha um ponto de interseção
+    function drawPoint(x, y, name, color, xOffset) {
+      const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+      circle.setAttribute('cx', x);
+      circle.setAttribute('cy', y);
+      circle.setAttribute('r', '5.5');
+      circle.setAttribute('fill', '#ffffff');
+      circle.setAttribute('stroke', color);
+      circle.setAttribute('stroke-width', '2.5');
+      talesSvg.appendChild(circle);
+
+      const txt = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+      txt.setAttribute('x', x + xOffset);
+      txt.setAttribute('y', y + 4);
+      txt.setAttribute('font-size', '13');
+      txt.setAttribute('font-weight', '900');
+      txt.setAttribute('fill', color);
+      txt.setAttribute('text-anchor', xOffset < 0 ? 'end' : 'start');
+      txt.textContent = name;
+      talesSvg.appendChild(txt);
+    }
+
+    // Desenha os pinos de arraste
+    function drawHandle(x, y, id, color) {
+      const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+      g.setAttribute('class', 'drag-handle');
+      g.setAttribute('data-handle', id);
+      g.setAttribute('tabindex', '0');
+      g.setAttribute('role', 'slider');
+      g.setAttribute('aria-label', `Pino de controle da reta transversal ${id}. Arraste para inclinar.`);
+
+      const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+      circle.setAttribute('cx', x);
+      circle.setAttribute('cy', y);
+      circle.setAttribute('r', '8');
+      circle.setAttribute('fill', color);
+      circle.setAttribute('stroke', '#ffffff');
+      circle.setAttribute('stroke-width', '2.5');
+      g.appendChild(circle);
+
+      talesSvg.appendChild(g);
+    }
+
+    // Atualiza os cálculos matemáticos euclidianos
+    function updateCalculations(pts1, pts2) {
+      // Medidas em centímetros simulados (1cm = 25px)
+      const scale = 25;
+      const dAB = dist(pts1[0].x, pts1[0].y, pts1[1].x, pts1[1].y) / scale;
+      const dBC = dist(pts1[1].x, pts1[1].y, pts1[2].x, pts1[2].y) / scale;
+
+      const dA1B1 = dist(pts2[0].x, pts2[0].y, pts2[1].x, pts2[1].y) / scale;
+      const dB1C1 = dist(pts2[1].x, pts2[1].y, pts2[2].x, pts2[2].y) / scale;
+
+      // Razões
+      const ratio1 = dAB / dBC;
+      const ratio2 = dA1B1 / dB1C1;
+
+      // Atualiza textos no painel
+      numAB.textContent = `${dAB.toFixed(1)} cm`;
+      numBC.textContent = `${dBC.toFixed(1)} cm`;
+      numA1B1.textContent = `${dA1B1.toFixed(1)} cm`;
+      numB1C1.textContent = `${dB1C1.toFixed(1)} cm`;
+
+      ratioDecimal.textContent = ratio1.toFixed(2);
+      constantRatioText.textContent = ratio1.toFixed(2);
+
+      // Multiplicação cruzada: AB * B'C' == BC * A'B'
+      const cross1 = dAB * dB1C1;
+      const cross2 = dBC * dA1B1;
+
+      crossCalcLeft.textContent = `${dAB.toFixed(1)} · ${dB1C1.toFixed(1)} = ${cross1.toFixed(1)}`;
+      crossCalcRight.textContent = `${dBC.toFixed(1)} · ${dA1B1.toFixed(1)} = ${cross2.toFixed(1)}`;
+
+      // Atualiza Badges dos Sliders
+      badgeDist1.textContent = `${yParallels[1] - yParallels[0]} px`;
+      badgeDist2.textContent = `${yParallels[2] - yParallels[1]} px`;
+      const angleDeg = Math.round(Math.atan2(trans2BotX - trans2TopX, 320) * (180 / Math.PI));
+      badgeAngle2.textContent = `${angleDeg}°`;
+    }
+
+    // Configura os modos de visualização pré-definidos
+    function setMode(mode) {
+      currentMode = mode;
+      modeButtons.forEach(btn => btn.classList.toggle('active', btn.dataset.mode === mode));
+
+      if (mode === 'classic') {
+        numParallels = 3;
+        yParallels = [80, 190, 340, 390];
+        trans1TopX = 220;
+        trans1BotX = 170;
+        trans2TopX = 520;
+        trans2BotX = 600;
+        sliderDist1.value = 110;
+        sliderDist2.value = 150;
+        sliderAngle2.value = 14;
+
+      } else if (mode === 'triangle') {
+        numParallels = 3;
+        yParallels = [80, 210, 350, 390];
+        // As duas transversais convergem no topo formando o vértice A do triângulo
+        trans1TopX = 380;
+        trans1BotX = 160;
+        trans2TopX = 380;
+        trans2BotX = 600;
+        sliderDist1.value = 130;
+        sliderDist2.value = 140;
+
+      } else if (mode === 'hourglass') {
+        numParallels = 3;
+        yParallels = [80, 210, 340, 390];
+        // Transversais cruzam entre as paralelas formando a ampulheta
+        trans1TopX = 180;
+        trans1BotX = 580;
+        trans2TopX = 580;
+        trans2BotX = 180;
+
+      } else if (mode === 'four') {
+        numParallels = 4;
+        yParallels = [70, 160, 250, 340];
+        trans1TopX = 230;
+        trans1BotX = 170;
+        trans2TopX = 510;
+        trans2BotX = 610;
+      }
+
+      renderScene();
+    }
+
+    modeButtons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        setMode(btn.dataset.mode);
+      });
+    });
+
+    btnResetView.addEventListener('click', () => {
+      setMode('classic');
+    });
+
+    // Sliders de controle
+    sliderDist1.addEventListener('input', (e) => {
+      const d = parseInt(e.target.value, 10);
+      yParallels[1] = yParallels[0] + d;
+      renderScene();
+    });
+
+    sliderDist2.addEventListener('input', (e) => {
+      const d = parseInt(e.target.value, 10);
+      yParallels[2] = yParallels[1] + d;
+      renderScene();
+    });
+
+    sliderAngle2.addEventListener('input', (e) => {
+      const angDeg = parseInt(e.target.value, 10);
+      const rad = (angDeg * Math.PI) / 180;
+      const mid = 560;
+      const offset = Math.tan(rad) * 160;
+      trans2TopX = mid - offset;
+      trans2BotX = mid + offset;
+      renderScene();
+    });
+
+    // Manipulação Tátil / Mouse por Arrasto nos Pinos (Handles)
+    talesSvg.addEventListener('mousedown', startDrag);
+    talesSvg.addEventListener('touchstart', startDrag, { passive: false });
+
+    window.addEventListener('mousemove', onDrag);
+    window.addEventListener('touchmove', onDrag, { passive: false });
+
+    window.addEventListener('mouseup', endDrag);
+    window.addEventListener('touchend', endDrag);
+
+    function startDrag(e) {
+      const target = e.target.closest('.drag-handle');
+      if (!target) return;
+      activeDrag = target.dataset.handle;
+      e.preventDefault();
+    }
+
+    function onDrag(e) {
+      if (!activeDrag) return;
+      e.preventDefault();
+
+      const rect = talesSvg.getBoundingClientRect();
+      const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+      const x = ((clientX - rect.left) / rect.width) * 760;
+
+      // Limites de arraste
+      const clampedX = Math.max(80, Math.min(680, x));
+
+      if (activeDrag === 'handle1Top') trans1TopX = clampedX;
+      else if (activeDrag === 'handle1Bot') trans1BotX = clampedX;
+      else if (activeDrag === 'handle2Top') trans2TopX = clampedX;
+      else if (activeDrag === 'handle2Bot') trans2BotX = clampedX;
+
+      renderScene();
+    }
+
+    function endDrag() {
+      activeDrag = null;
+    }
+
+    // =========================================================================
+    // JOGO / DESAFIO: ENCONTRE O X DESCONHECIDO
+    // =========================================================================
+    const challengesList = [
+      {
+        prompt: "No feixe abaixo, temos AB = 6 cm, BC = 9 cm e A'B' = 4 cm. Quanto vale B'C' = x?",
+        ab: 6, bc: 9, a1b1: 4, correct: 6,
+        options: [5, 6, 8],
+        explanation: "Pelo Teorema de Tales: 6 / 9 = 4 / x ⟹ 6·x = 9·4 ⟹ 6x = 36 ⟹ x = 6 cm."
+      },
+      {
+        prompt: "Em um triângulo cortado por uma reta paralela à base, temos AD = 5 cm, DB = 10 cm e AE = 4 cm. Quanto vale EC = x?",
+        ab: 5, bc: 10, a1b1: 4, correct: 8,
+        options: [7, 8, 10],
+        explanation: "Pelo Teorema de Tales no Triângulo: 5 / 10 = 4 / x ⟹ 5·x = 40 ⟹ x = 8 cm."
+      },
+      {
+        prompt: "Três retas paralelas determinam segmentos AB = 3 cm, BC = 5 cm e A'B' = 6 cm. Quanto mede B'C' = x?",
+        ab: 3, bc: 5, a1b1: 6, correct: 10,
+        options: [9, 10, 12],
+        explanation: "Pelo Teorema de Tales: 3 / 5 = 6 / x ⟹ 3·x = 5·6 ⟹ 3x = 30 ⟹ x = 10 cm."
+      },
+      {
+        prompt: "Considere AB = 8 cm, BC = 12 cm e B'C' = 15 cm. Quanto mede o segmento superior A'B' = x?",
+        ab: 8, bc: 12, a1b1: 10, correct: 10,
+        options: [8, 10, 11],
+        explanation: "Pelo Teorema de Tales: 8 / 12 = x / 15 ⟹ 12·x = 8·15 ⟹ 12x = 120 ⟹ x = 10 cm."
+      }
+    ];
+
+    let currentQuizIdx = 0;
+
+    function loadQuizChallenge(idx) {
+      currentQuizIdx = idx % challengesList.length;
+      const q = challengesList[currentQuizIdx];
+
+      quizPromptText.innerHTML = q.prompt;
+      quizFeedbackBox.style.display = 'none';
+      quizOptionsContainer.innerHTML = '';
+
+      q.options.forEach(opt => {
+        const btn = document.createElement('button');
+        btn.className = 'btn-quiz-option';
+        btn.textContent = `x = ${opt} cm`;
+        btn.addEventListener('click', () => {
+          checkQuizAnswer(opt, q);
+        });
+        quizOptionsContainer.appendChild(btn);
+      });
+    }
+
+    function checkQuizAnswer(chosen, q) {
+      const isCorrect = (chosen === q.correct);
+
+      document.querySelectorAll('.btn-quiz-option').forEach(b => {
+        b.disabled = true;
+        if (b.textContent === `x = ${q.correct} cm`) {
+          b.classList.add('correct');
+        } else if (b.textContent === `x = ${chosen} cm` && !isCorrect) {
+          b.classList.add('wrong');
+        }
+      });
+
+      quizFeedbackBox.style.display = 'block';
+      if (isCorrect) {
+        quizFeedbackBox.style.background = '#f0fdf4';
+        quizFeedbackBox.style.color = '#166534';
+        quizFeedbackBox.style.border = '1.5px solid #86efac';
+        quizFeedbackBox.innerHTML = `
+          <strong>🎉 Parabéns! Resposta Correta!</strong><br/>
+          ${q.explanation}
+        `;
+      } else {
+        quizFeedbackBox.style.background = '#fef2f2';
+        quizFeedbackBox.style.color = '#991b1b';
+        quizFeedbackBox.style.border = '1.5px solid #fca5a5';
+        quizFeedbackBox.innerHTML = `
+          <strong>❌ Não é ${chosen} cm. A resposta certa é ${q.correct} cm.</strong><br/>
+          ${q.explanation}
+        `;
+      }
+    }
+
+    btnNewChallenge.addEventListener('click', () => {
+      loadQuizChallenge(currentQuizIdx + 1);
+    });
+
+    // Projeção em tela cheia
+    document.getElementById('btnFullscreen').addEventListener('click', () => {
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().catch(() => {});
+      } else {
+        document.exitFullscreen().catch(() => {});
+      }
+    });
+
+    // Inicialização
+    setMode('classic');
+    loadQuizChallenge(0);
+  </script>
+</body>
+</html>

@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Função Quadrática: y = ax² + bx + c · Matemática em Movimento</title>
+  <meta name="description" content="Laboratório visual da Função Quadrática e Parábola. Manipule os coeficientes a, b e c, veja o vértice, o discriminante delta, eixo de simetria e raízes reais." />
+  <link rel="stylesheet" href="../css/estilo.css" />
+  <style>
+    .axis-line {
+      stroke: var(--navy);
+      stroke-width: 2;
+    }
+    .grid-line {
+      stroke: #e4ebf0;
+      stroke-width: 1;
+    }
+    .parabola-path {
+      fill: none;
+      stroke: var(--azul);
+      stroke-width: 3.5;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+    .axis-symmetry {
+      stroke: var(--dourado);
+      stroke-dasharray: 6 5;
+      stroke-width: 2;
+    }
+    .vertex-point {
+      fill: var(--teal);
+      stroke: #ffffff;
+      stroke-width: 3;
+    }
+    .root-point {
+      fill: #c94a4a;
+      stroke: #ffffff;
+      stroke-width: 2.5;
+    }
+    .delta-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-weight: 800;
+      padding: 4px 10px;
+      border-radius: var(--radius-sm);
+      font-size: 0.85rem;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header Institucional -->
+  <header class="site-header">
+    <div class="header-container">
+      <a href="../index.html" class="brand-wrapper" title="Voltar para a página inicial">
+        <div class="brand-logo" aria-hidden="true">
+          <svg viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 19L12 5l8 14H4z" />
+          </svg>
+        </div>
+        <div class="brand-texts">
+          <span class="brand-title">Matemática em Movimento</span>
+          <span class="brand-slogan">Explore. Manipule. Compreenda.</span>
+        </div>
+      </a>
+      <div class="header-actions">
+        <a href="../index.html" class="btn-header">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+          Início
+        </a>
+        <button id="btnFullscreen" class="btn-header" title="Alternar modo tela cheia para projeção em sala de aula">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>
+          Projeção
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Breadcrumbs -->
+  <nav class="breadcrumb-bar" aria-label="Navegação estrutural">
+    <div class="breadcrumb-container">
+      <a href="../index.html">Início</a>
+      <span class="breadcrumb-sep">/</span>
+      <span>Funções</span>
+      <span class="breadcrumb-sep">/</span>
+      <span class="breadcrumb-current">Função Quadrática (y = ax² + bx + c)</span>
+    </div>
+  </nav>
+
+  <!-- Conteúdo Principal -->
+  <main class="main-content">
+    <div class="demo-grid">
+
+      <!-- Coluna 1: Laboratório Interativo -->
+      <section class="card" aria-labelledby="lab-heading">
+        <div class="card-eyebrow">
+          <span class="badge-tag badge-medio">Ensino Médio</span>
+          <span>· LABORATÓRIO INTERATIVO DE PARÁBOLAS</span>
+        </div>
+        <h2 id="lab-heading" class="card-title">Função Quadrática e a Parábola</h2>
+        <p class="card-subtitle">
+          Altere <em>a</em> (concavidade), <em>b</em> (inclinação inicial) e <em>c</em> (termo independente) e visualize em tempo real as raízes, o vértice e o discriminante Δ.
+        </p>
+
+        <!-- Sliders dos Coeficientes a, b, c -->
+        <div class="sliders-panel" style="grid-template-columns: repeat(3, 1fr);">
+          <div class="slider-group">
+            <div class="slider-label-row">
+              <label for="sliderA">Coeficiente a:</label>
+              <span id="badgeA" class="slider-val-badge">1.0</span>
+            </div>
+            <input type="range" id="sliderA" min="-3" max="3" step="0.5" value="1.0" aria-label="Coeficiente a (curvatura e concavidade)" />
+          </div>
+
+          <div class="slider-group">
+            <div class="slider-label-row">
+              <label for="sliderB">Coeficiente b:</label>
+              <span id="badgeB" class="slider-val-badge">0.0</span>
+            </div>
+            <input type="range" id="sliderB" min="-6" max="6" step="0.5" value="0.0" aria-label="Coeficiente b" />
+          </div>
+
+          <div class="slider-group">
+            <div class="slider-label-row">
+              <label for="sliderC">Coeficiente c:</label>
+              <span id="badgeC" class="slider-val-badge">-4.0</span>
+            </div>
+            <input type="range" id="sliderC" min="-6" max="6" step="0.5" value="-4.0" aria-label="Coeficiente c (intercepto em Y)" />
+          </div>
+        </div>
+
+        <!-- Palco Cartesiano da Parábola -->
+        <div class="svg-stage-wrapper">
+          <svg id="quadSvg" class="svg-stage" viewBox="0 0 600 420" aria-label="Plano cartesiano interativo com traçado da parábola">
+            <!-- Grid de coordenadas -->
+            <g id="gridGroup"></g>
+
+            <!-- Eixo de Simetria (linha tracejada) -->
+            <line id="symLine" class="axis-symmetry" x1="300" y1="20" x2="300" y2="400" />
+            <text id="symLabel" x="306" y="35" font-size="11" font-weight="700" fill="#9c731e">eixo</text>
+
+            <!-- Eixos X e Y -->
+            <line class="axis-line" x1="20" y1="210" x2="580" y2="210" />
+            <line class="axis-line" x1="300" y1="20" x2="300" y2="400" />
+            <polygon points="585,210 575,205 575,215" fill="var(--navy)" />
+            <polygon points="300,15 295,25 305,25" fill="var(--navy)" />
+            <text x="580" y="230" font-size="12" font-weight="700" fill="var(--navy)">x</text>
+            <text x="312" y="24" font-size="12" font-weight="700" fill="var(--navy)">y</text>
+
+            <!-- Traçado Contínuo da Parábola -->
+            <path id="parabolaPath" class="parabola-path" />
+
+            <!-- Ponto Intercepto com Eixo Y (0, c) -->
+            <circle id="pointC" cx="300" cy="210" r="6" fill="#356b8c" stroke="#ffffff" stroke-width="2" />
+            <text id="labelPointC" x="312" y="210" font-size="11" font-weight="700" fill="#21445b">(0, c)</text>
+
+            <!-- Ponto Vértice V(xv, yv) -->
+            <g id="vertexGroup">
+              <circle id="vertexPoint" class="vertex-point" cx="300" cy="210" r="7.5" />
+              <text id="vertexLabel" x="300" y="195" font-size="12" font-weight="800" fill="#1e5a58" text-anchor="middle">V(0, -4)</text>
+            </g>
+
+            <!-- Raízes Reais x1 e x2 -->
+            <g id="rootsGroup">
+              <circle id="root1Point" class="root-point" cx="220" cy="210" r="6.5" />
+              <text id="root1Label" x="220" y="230" font-size="11" font-weight="800" fill="#b52828" text-anchor="middle">x₁</text>
+              <circle id="root2Point" class="root-point" cx="380" cy="210" r="6.5" />
+              <text id="root2Label" x="380" y="230" font-size="11" font-weight="800" fill="#b52828" text-anchor="middle">x₂</text>
+            </g>
+          </svg>
+        </div>
+
+        <!-- Dica de manipulação -->
+        <div class="manipulation-hint">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/>
+          </svg>
+          <span>Varie o coeficiente <strong>a</strong> para inverter a parábola. Experimente <strong>c</strong> para transladar a curva verticalmente.</span>
+        </div>
+
+        <!-- Resultado dinâmico em destaque -->
+        <div class="dynamic-result-box" aria-live="polite">
+          <div class="result-title">Discriminante e Análise da Parábola</div>
+          <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+            <div id="dynamicEquationOutput" class="result-formula">
+              y = 1.0x² - 4.0
+            </div>
+            <div id="deltaStatusBadge" class="delta-badge" style="background:#e6f4f1; color:#1e5a58;">
+              Δ = 16.0 (2 raízes reais)
+            </div>
+          </div>
+          <div id="vertexDetails" style="margin-top:6px; font-size:0.92rem; color:var(--muted); font-weight:600;">
+            Vértice: V(0.00, -4.00) · Concavidade voltada para CIMA (ponto de mínimo)
+          </div>
+        </div>
+
+        <!-- Barra de Botões -->
+        <div class="controls-toolbar">
+          <button id="btnReset" class="btn btn-secondary">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+            Restaurar
+          </button>
+          <button id="btnPresetForms" class="btn btn-primary">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="m10 15 5-3-5-3v6Z"/></svg>
+            Experimentar outros casos (Δ &gt; 0, Δ = 0, Δ &lt; 0)
+          </button>
+        </div>
+      </section>
+
+      <!-- Coluna 2: Card "Entenda a Ideia" -->
+      <aside class="card idea-card" aria-labelledby="idea-heading">
+        <div class="card-eyebrow">
+          <span>FUNDAMENTAÇÃO CONCEITUAL</span>
+        </div>
+        <h2 id="idea-heading" class="card-title">Entenda a ideia</h2>
+        <p class="card-subtitle">
+          Como os elementos algébricos da equação definem os pontos geométricos da parábola.
+        </p>
+
+        <!-- Fórmula em Destaque -->
+        <div class="formula-highlight-card">
+          <div class="formula-highlight-label">Equação Geral e Discriminante</div>
+          <div class="formula-highlight-math">y = ax² + bx + c &nbsp;|&nbsp; Δ = b² - 4ac</div>
+        </div>
+
+        <!-- Passos Numerados -->
+        <div class="explanation-steps">
+          <div class="step-item">
+            <span class="step-number" aria-hidden="true">1</span>
+            <div class="step-text">
+              <strong>Concavidade (a):</strong> Se <strong>a &gt; 0</strong>, a parábola tem concavidade voltada para cima e possui um ponto de <em>mínimo</em>. Se <strong>a &lt; 0</strong>, a concavidade é para baixo e possui um ponto de <em>máximo</em>.
+            </div>
+          </div>
+          <div class="step-item">
+            <span class="step-number" aria-hidden="true">2</span>
+            <div class="step-text">
+              <strong>O Vértice V(xᵥ, yᵥ):</strong> É o ponto de inflexão da curva, com <strong>xᵥ = -b / (2a)</strong> e <strong>yᵥ = -Δ / (4a)</strong>. O eixo vertical pontilhado que passa por xᵥ é o eixo de simetria bilateral da parábola.
+            </div>
+          </div>
+          <div class="step-item">
+            <span class="step-number" aria-hidden="true">3</span>
+            <div class="step-text">
+              <strong>O Discriminante (Δ):</strong> Se <strong>Δ &gt; 0</strong>, a curva cruza o eixo X em duas raízes distintas. Se <strong>Δ = 0</strong>, o vértice toca tangencialmente o eixo em uma raiz única dupla. Se <strong>Δ &lt; 0</strong>, a parábola não toca o eixo X.
+            </div>
+          </div>
+        </div>
+
+        <!-- Pergunta para investigar -->
+        <div class="investigation-box">
+          <div class="investigation-header">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+              <path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5"/>
+              <path d="M9 18h6"/><path d="M10 22h4"/>
+            </svg>
+            <span>Pergunta para investigar</span>
+          </div>
+          <p class="investigation-text">
+            Como a alteração do valor de <strong>c</strong> afeta a parábola sem alterar seu formato nem o seu eixo vertical de simetria? O que acontece com as raízes quando você sobe ou desce o valor de c?
+          </p>
+        </div>
+      </aside>
+
+    </div>
+  </main>
+
+  <!-- Rodapé Institucional -->
+  <footer class="site-footer">
+    <div class="site-footer-inner">
+      <p><strong>Matemática em Movimento</strong> · Recurso educacional aberto e gratuito para professores e estudantes.</p>
+      <div class="footer-links">
+        <a href="../index.html">Todas as Demonstrações</a>
+        <span>•</span>
+        <a href="../funcoes/balanca_de_equacoes.html">Balança de Equações</a>
+        <span>•</span>
+        <a href="../funcoes/afim.html">Função Afim</a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Lógica Matemática e Interatividade -->
+  <script>
+    /**
+     * Matemática em Movimento — Demonstração 4: Função Quadrática
+     * Traçado paramétrico de parábola, cálculo de delta, vértice e raízes com honestidade matemática.
+     */
+
+    // Parâmetros do sistema cartesiano
+    const CX = 300; // Origem X no SVG (pixels)
+    const CY = 210; // Origem Y no SVG (pixels)
+    const SCALE_X = 40; // 40px por unidade matemática no eixo X
+    const SCALE_Y = 28; // 28px por unidade matemática no eixo Y
+
+    // Estado dos coeficientes
+    const state = {
+      a: 1.0,
+      b: 0.0,
+      c: -4.0,
+      presetIndex: 0
+    };
+
+    // Casos didáticos fundamentais
+    const presets = [
+      { a: 1.0, b: -4.0, c: 4.0, desc: "Raiz Dupla / Tangente ao Eixo X (Δ = 0)" },
+      { a: 1.0, b: 2.0, c: 3.0, desc: "Sem Raízes Reais / Flutuante (Δ < 0)" },
+      { a: -1.0, b: 2.0, c: 3.0, desc: "Concavidade para Baixo / Ponto Máximo (a < 0)" },
+      { a: 0.5, b: 0.0, c: -2.0, desc: "Abertura Larga Centrada" },
+      { a: 1.0, b: 0.0, c: -4.0, desc: "Clássica Canônica x² - 4 (Δ > 0)" }
+    ];
+
+    // Elementos do DOM
+    const sliderA = document.getElementById('sliderA');
+    const sliderB = document.getElementById('sliderB');
+    const sliderC = document.getElementById('sliderC');
+    const badgeA = document.getElementById('badgeA');
+    const badgeB = document.getElementById('badgeB');
+    const badgeC = document.getElementById('badgeC');
+
+    const parabolaPath = document.getElementById('parabolaPath');
+    const symLine = document.getElementById('symLine');
+    const symLabel = document.getElementById('symLabel');
+    const pointC = document.getElementById('pointC');
+    const labelPointC = document.getElementById('labelPointC');
+    const vertexPoint = document.getElementById('vertexPoint');
+    const vertexLabel = document.getElementById('vertexLabel');
+    const rootsGroup = document.getElementById('rootsGroup');
+    const root1Point = document.getElementById('root1Point');
+    const root1Label = document.getElementById('root1Label');
+    const root2Point = document.getElementById('root2Point');
+    const root2Label = document.getElementById('root2Label');
+
+    const dynamicOutput = document.getElementById('dynamicEquationOutput');
+    const deltaBadge = document.getElementById('deltaStatusBadge');
+    const vertexDetails = document.getElementById('vertexDetails');
+    const gridGroup = document.getElementById('gridGroup');
+
+    /**
+     * Inicializa grade cartesiana
+     */
+    function initGrid() {
+      let gridHtml = '';
+      for (let x = -6; x <= 6; x++) {
+        if (x === 0) continue;
+        const px = CX + x * SCALE_X;
+        gridHtml += `<line class="grid-line" x1="${px}" y1="20" x2="${px}" y2="400" />`;
+        gridHtml += `<text x="${px}" y="${CY + 15}" font-size="10" fill="#8ca0ae" text-anchor="middle">${x}</text>`;
+      }
+      for (let y = -6; y <= 6; y++) {
+        if (y === 0) continue;
+        const py = CY - y * SCALE_Y;
+        gridHtml += `<line class="grid-line" x1="20" y1="${py}" x2="580" y2="${py}" />`;
+        gridHtml += `<text x="${CX - 12}" y="${py + 3}" font-size="10" fill="#8ca0ae" text-anchor="end">${y}</text>`;
+      }
+      gridGroup.innerHTML = gridHtml;
+    }
+
+    /**
+     * Atualiza toda a geometria da parábola e suas propriedades
+     */
+    function updateScene() {
+      let a = state.a;
+      // Garante que 'a' não seja exatamente zero em uma função quadrática
+      if (Math.abs(a) < 0.1) {
+        a = 0.5;
+        state.a = 0.5;
+      }
+      const b = state.b;
+      const c = state.c;
+
+      sliderA.value = a;
+      sliderB.value = b;
+      sliderC.value = c;
+      badgeA.textContent = a.toFixed(1);
+      badgeB.textContent = b.toFixed(1);
+      badgeC.textContent = c.toFixed(1);
+
+      // 1. Traçado paramétrico da Parábola em SVG (amostragem densa para curva suave)
+      let pathD = '';
+      const step = 0.08;
+      let first = true;
+      for (let x = -7.0; x <= 7.0; x += step) {
+        // Fórmula da função quadrática: y = a*x² + b*x + c
+        const y = a * x * x + b * x + c;
+        const px = CX + x * SCALE_X;
+        const py = CY - y * SCALE_Y;
+
+        // Limita os valores no SVG para evitar estouros visuais
+        if (py >= -50 && py <= 470) {
+          if (first) {
+            pathD += `M ${px.toFixed(1)} ${py.toFixed(1)}`;
+            first = false;
+          } else {
+            pathD += ` L ${px.toFixed(1)} ${py.toFixed(1)}`;
+          }
+        } else {
+          first = true;
+        }
+      }
+      parabolaPath.setAttribute('d', pathD);
+
+      // 2. Vértice: xv = -b / (2a), yv = -delta / (4a) = f(xv)
+      const xv = -b / (2 * a);
+      const yv = a * xv * xv + b * xv + c;
+      const pVx = CX + xv * SCALE_X;
+      const pVy = CY - yv * SCALE_Y;
+
+      vertexPoint.setAttribute('cx', pVx);
+      vertexPoint.setAttribute('cy', pVy);
+      vertexLabel.setAttribute('x', pVx);
+      vertexLabel.setAttribute('y', a > 0 ? pVy + 18 : pVy - 12);
+      vertexLabel.textContent = `V(${xv.toFixed(2).replace('.00', '')}, ${yv.toFixed(2).replace('.00', '')})`;
+
+      // 3. Eixo de Simetria: reta vertical x = xv
+      symLine.setAttribute('x1', pVx);
+      symLine.setAttribute('x2', pVx);
+      symLabel.setAttribute('x', pVx + 6);
+      symLabel.textContent = `x = ${xv.toFixed(2).replace('.00', '')}`;
+
+      // 4. Intercepto em Y: (0, c)
+      const pCy = CY - c * SCALE_Y;
+      pointC.setAttribute('cy', pCy);
+      labelPointC.setAttribute('y', pCy - 5);
+      labelPointC.textContent = `(0, ${c.toFixed(1).replace('.0', '')})`;
+
+      // 5. Discriminante: Delta = b² - 4ac
+      const delta = b * b - 4 * a * c;
+
+      // 6. Raízes Reais
+      if (delta > 0.0001) {
+        rootsGroup.style.display = 'block';
+        const sqrtDelta = Math.sqrt(delta);
+        const r1 = (-b - sqrtDelta) / (2 * a);
+        const r2 = (-b + sqrtDelta) / (2 * a);
+
+        const pr1X = CX + r1 * SCALE_X;
+        const pr2X = CX + r2 * SCALE_X;
+
+        root1Point.setAttribute('cx', pr1X);
+        root1Point.setAttribute('cy', CY);
+        root1Label.setAttribute('x', pr1X);
+        root1Label.textContent = `x₁ = ${r1.toFixed(2).replace('.00', '')}`;
+
+        root2Point.setAttribute('cx', pr2X);
+        root2Point.setAttribute('cy', CY);
+        root2Label.setAttribute('x', pr2X);
+        root2Label.textContent = `x₂ = ${r2.toFixed(2).replace('.00', '')}`;
+
+        deltaBadge.style.background = '#e6f4f1';
+        deltaBadge.style.color = '#1e5a58';
+        deltaBadge.textContent = `Δ = ${delta.toFixed(2).replace('.00', '')} (2 raízes reais)`;
+      } else if (Math.abs(delta) <= 0.0001) {
+        rootsGroup.style.display = 'block';
+        const r = -b / (2 * a);
+        const prX = CX + r * SCALE_X;
+        root1Point.setAttribute('cx', prX);
+        root1Point.setAttribute('cy', CY);
+        root1Label.setAttribute('x', prX);
+        root1Label.textContent = `x₁ = x₂ = ${r.toFixed(2).replace('.00', '')}`;
+        root2Point.setAttribute('cx', prX);
+        root2Point.setAttribute('cy', CY);
+        root2Label.textContent = '';
+
+        deltaBadge.style.background = '#fef8eb';
+        deltaBadge.style.color = '#9c731e';
+        deltaBadge.textContent = `Δ = 0.00 (1 raiz real dupla)`;
+      } else {
+        rootsGroup.style.display = 'none';
+        deltaBadge.style.background = '#fdeeee';
+        deltaBadge.style.color = '#b52828';
+        deltaBadge.textContent = `Δ = ${delta.toFixed(2).replace('.00', '')} (sem raízes reais)`;
+      }
+
+      // 7. Equação Formatada
+      let eqStr = 'y = ';
+      const aStr = a === 1 ? '' : a === -1 ? '-' : `${a.toFixed(1).replace('.0', '')}`;
+      eqStr += `${aStr}x²`;
+      if (b > 0) eqStr += ` + ${b === 1 ? '' : b.toFixed(1).replace('.0', '')}x`;
+      else if (b < 0) eqStr += ` - ${Math.abs(b) === 1 ? '' : Math.abs(b).toFixed(1).replace('.0', '')}x`;
+      if (c > 0) eqStr += ` + ${c.toFixed(1).replace('.0', '')}`;
+      else if (c < 0) eqStr += ` - ${Math.abs(c).toFixed(1).replace('.0', '')}`;
+      dynamicOutput.textContent = eqStr;
+
+      // 8. Detalhes Conceituais
+      const concavityStr = a > 0 ? "CIMA (ponto de mínimo)" : "BAIXO (ponto de máximo)";
+      vertexDetails.innerHTML = `
+        Vértice: <strong>V(${xv.toFixed(2).replace('.00', '')}, ${yv.toFixed(2).replace('.00', '')})</strong> · 
+        Concavidade voltada para <strong>${concavityStr}</strong> · 
+        Intercepto Y: <strong>(0, ${c.toFixed(1).replace('.0', '')})</strong>
+      `;
+    }
+
+    // Eventos dos sliders
+    sliderA.addEventListener('input', (e) => {
+      let val = parseFloat(e.target.value);
+      if (val === 0) val = 0.5;
+      state.a = val;
+      updateScene();
+    });
+
+    sliderB.addEventListener('input', (e) => {
+      state.b = parseFloat(e.target.value);
+      updateScene();
+    });
+
+    sliderC.addEventListener('input', (e) => {
+      state.c = parseFloat(e.target.value);
+      updateScene();
+    });
+
+    // Botão Restaurar
+    document.getElementById('btnReset').addEventListener('click', () => {
+      state.a = 1.0;
+      state.b = 0.0;
+      state.c = -4.0;
+      updateScene();
+    });
+
+    // Botão Alternar Casos Especiais
+    document.getElementById('btnPresetForms').addEventListener('click', () => {
+      state.presetIndex = (state.presetIndex + 1) % presets.length;
+      const target = presets[state.presetIndex];
+      state.a = target.a;
+      state.b = target.b;
+      state.c = target.c;
+      updateScene();
+    });
+
+    // Modo Projeção
+    document.getElementById('btnFullscreen').addEventListener('click', () => {
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().catch(() => {});
+      } else {
+        document.exitFullscreen().catch(() => {});
+      }
+    });
+
+    // Inicialização
+    initGrid();
+    updateScene();
+  </script>
+</body>
+</html>

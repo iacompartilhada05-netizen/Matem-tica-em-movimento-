@@ -1,0 +1,1675 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Relação de Euler: V − E + F = 2 · Matemática em Movimento</title>
+  <meta name="description" content="Laboratório 3D interativo da Relação de Euler para poliedros convexos. Gire sólidos em perspectiva, afaste vértices, arestas e faces separadamente, conte clicando na figura e comprove que V − E + F = 2." />
+  <link rel="stylesheet" href="../css/estilo.css" />
+  <style>
+    /* Estilos específicos da Relação de Euler */
+    .solid-selector-bar {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      padding-bottom: 8px;
+      margin-bottom: 16px;
+      scrollbar-width: thin;
+    }
+    .solid-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 14px;
+      font-size: 0.82rem;
+      font-weight: 700;
+      color: var(--tinta);
+      background: #ffffff;
+      border: 1.5px solid var(--linha);
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.15s ease;
+      flex-shrink: 0;
+    }
+    .solid-pill:hover {
+      border-color: var(--azul);
+      color: var(--navy);
+    }
+    .solid-pill.active {
+      background: var(--navy);
+      color: #ffffff;
+      border-color: var(--navy);
+      box-shadow: 0 2px 6px rgba(24, 50, 75, 0.2);
+    }
+
+    /* Modos de Contagem */
+    .count-modes-bar {
+      display: flex;
+      gap: 8px;
+      background: #f8fafc;
+      padding: 8px 12px;
+      border: 1px solid var(--linha);
+      border-radius: var(--radius-md);
+      margin-bottom: 12px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+    .count-mode-label {
+      font-size: 0.78rem;
+      font-weight: 800;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-right: 4px;
+    }
+    .mode-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 7px 14px;
+      font-size: 0.82rem;
+      font-weight: 700;
+      color: var(--tinta);
+      background: #ffffff;
+      border: 1.5px solid var(--linha);
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    .mode-btn:hover {
+      border-color: var(--azul);
+    }
+    .mode-btn.active[data-mode="vertex"] {
+      background: #e67e22;
+      color: #ffffff;
+      border-color: #d35400;
+      box-shadow: 0 2px 6px rgba(230, 126, 34, 0.35);
+    }
+    .mode-btn.active[data-mode="edge"] {
+      background: #27ae60;
+      color: #ffffff;
+      border-color: #1e824c;
+      box-shadow: 0 2px 6px rgba(39, 174, 96, 0.35);
+    }
+    .mode-btn.active[data-mode="face"] {
+      background: #2980b9;
+      color: #ffffff;
+      border-color: #1a5276;
+      box-shadow: 0 2px 6px rgba(41, 128, 185, 0.35);
+    }
+
+    .mode-hint-box {
+      font-size: 0.84rem;
+      padding: 10px 14px;
+      border-radius: var(--radius-sm);
+      background: #fdfefe;
+      color: var(--navy);
+      border: 1px solid var(--linha);
+      border-left: 4px solid var(--azul);
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: border-left-color 0.2s ease;
+    }
+    .mode-hint-box.hint-vertex {
+      border-left-color: #e67e22;
+      background: #fef9f5;
+    }
+    .mode-hint-box.hint-edge {
+      border-left-color: #27ae60;
+      background: #f4fbf7;
+    }
+    .mode-hint-box.hint-face {
+      border-left-color: #2980b9;
+      background: #f4f8fb;
+    }
+
+    /* Palco 3D */
+    .viewport-3d-wrapper {
+      position: relative;
+      background: radial-gradient(circle at 50% 40%, #ffffff 0%, #edf2f7 100%);
+      border: 1px solid var(--linha);
+      border-radius: var(--radius-md);
+      box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.03);
+      overflow: hidden;
+      margin-bottom: 14px;
+      touch-action: none;
+      cursor: grab;
+      user-select: none;
+    }
+    .viewport-3d-wrapper:active {
+      cursor: grabbing;
+    }
+    .stage-svg-3d {
+      width: 100%;
+      height: 380px;
+      display: block;
+      user-select: none;
+      pointer-events: auto;
+    }
+
+    /* Controles de Câmera Sobrepostos */
+    .viewport-overlay-controls {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      z-index: 10;
+    }
+    .viewport-btn {
+      background: rgba(255, 255, 255, 0.94);
+      border: 1px solid var(--linha);
+      border-radius: var(--radius-sm);
+      padding: 6px 10px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: var(--navy);
+      box-shadow: 0 2px 5px rgba(0,0,0,0.06);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      transition: all 0.15s ease;
+    }
+    .viewport-btn:hover {
+      background: #ffffff;
+      border-color: var(--azul);
+    }
+
+    .rotate-instruction-badge {
+      position: absolute;
+      bottom: 10px;
+      left: 10px;
+      background: rgba(24, 50, 75, 0.85);
+      color: #ffffff;
+      font-size: 0.72rem;
+      font-weight: 600;
+      padding: 4px 10px;
+      border-radius: 20px;
+      pointer-events: none;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      backdrop-filter: blur(4px);
+    }
+
+    /* Seção Especial de Afastar (Explodir) Independente */
+    .explode-section-card {
+      background: #f8fafc;
+      border: 1px solid var(--linha);
+      border-radius: var(--radius-md);
+      padding: 14px 16px;
+      margin-bottom: 16px;
+      box-shadow: var(--shadow-subtle);
+    }
+    .explode-section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .explode-header-left {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--navy);
+      font-weight: 800;
+      font-size: 0.88rem;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    .explode-quick-actions {
+      display: flex;
+      gap: 6px;
+    }
+    .btn-explode-quick {
+      background: #ffffff;
+      border: 1px solid var(--linha);
+      border-radius: 6px;
+      padding: 4px 10px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: var(--navy);
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    .btn-explode-quick:hover {
+      border-color: var(--azul);
+      background: #f0f7fa;
+    }
+    .btn-explode-quick:focus-visible {
+      outline: 2px solid var(--azul);
+      outline-offset: 1px;
+    }
+    .explode-tip-text {
+      font-size: 0.8rem;
+      color: var(--muted);
+      line-height: 1.4;
+      margin-bottom: 12px;
+    }
+    .explode-sliders-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 12px;
+    }
+    .explode-slider-item {
+      background: #ffffff;
+      border: 1px solid var(--linha);
+      border-radius: var(--radius-sm);
+      padding: 8px 12px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+    }
+    .explode-slider-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 4px;
+      font-size: 0.78rem;
+      font-weight: 800;
+    }
+    .element-dot {
+      display: inline-block;
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      vertical-align: middle;
+      margin-right: 4px;
+    }
+    .element-line {
+      display: inline-block;
+      width: 12px;
+      height: 3px;
+      border-radius: 2px;
+      vertical-align: middle;
+      margin-right: 4px;
+    }
+    .element-poly {
+      display: inline-block;
+      width: 10px;
+      height: 10px;
+      border-radius: 2px;
+      vertical-align: middle;
+      margin-right: 4px;
+    }
+    .badge-v { background: #fef5ec; color: #d35400; font-weight: 800; }
+    .badge-e { background: #eafaf1; color: #1e824c; font-weight: 800; }
+    .badge-f { background: #ebf5fb; color: #1a5276; font-weight: 800; }
+
+    /* Painel de Contadores */
+    .euler-counters-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+    @media (max-width: 580px) {
+      .euler-counters-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+    .euler-counter-card {
+      background: #ffffff;
+      border: 1px solid var(--linha);
+      border-radius: var(--radius-sm);
+      padding: 12px 14px;
+      box-shadow: var(--shadow-subtle);
+      text-align: center;
+      position: relative;
+      transition: all 0.15s ease;
+    }
+    .euler-counter-card.active-target {
+      box-shadow: 0 0 0 2px currentColor;
+    }
+    .euler-card-name {
+      font-size: 0.72rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 4px;
+    }
+    .euler-card-number {
+      font-size: 1.8rem;
+      font-weight: 900;
+      font-family: var(--font-mono);
+      line-height: 1;
+      margin-bottom: 4px;
+    }
+    .euler-card-target {
+      font-size: 0.74rem;
+      color: var(--muted);
+      font-weight: 600;
+    }
+
+    /* Card Central da Relação */
+    .relation-formula-banner {
+      background: #ffffff;
+      border: 2px solid var(--linha);
+      border-radius: var(--radius-md);
+      padding: 14px 18px;
+      margin-bottom: 16px;
+      text-align: center;
+      box-shadow: var(--shadow-subtle);
+      transition: all 0.25s ease;
+    }
+    .relation-formula-banner.confirmed {
+      background: #f0fdf4;
+      border-color: #86efac;
+      box-shadow: 0 4px 14px rgba(34, 197, 94, 0.18);
+    }
+    .relation-banner-title {
+      font-size: 0.75rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--muted);
+      margin-bottom: 6px;
+    }
+    .relation-banner-math {
+      font-family: var(--font-mono);
+      font-size: 1.6rem;
+      font-weight: 900;
+      color: var(--navy);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .relation-banner-math .var-v { color: #e67e22; }
+    .relation-banner-math .var-e { color: #27ae60; }
+    .relation-banner-math .var-f { color: #2980b9; }
+    .relation-banner-math .res-2 { color: #166534; font-size: 1.8rem; }
+    .relation-status-msg {
+      font-size: 0.86rem;
+      font-weight: 700;
+      color: var(--muted);
+      margin-top: 6px;
+      line-height: 1.4;
+    }
+    .relation-formula-banner.confirmed .relation-status-msg {
+      color: #166534;
+    }
+
+    /* Toast Flutuante de Confirmação de Clique */
+    .click-feedback-toast {
+      position: absolute;
+      top: 12px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(24, 50, 75, 0.9);
+      color: #ffffff;
+      font-size: 0.75rem;
+      font-weight: 700;
+      padding: 5px 12px;
+      border-radius: 20px;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.2s ease;
+      backdrop-filter: blur(4px);
+      z-index: 20;
+    }
+    .click-feedback-toast.show {
+      opacity: 1;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header Institucional -->
+  <header class="site-header">
+    <div class="header-container">
+      <a href="../index.html" class="brand-wrapper" title="Voltar para a página inicial">
+        <div class="brand-logo" aria-hidden="true">
+          <svg viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 19L12 5l8 14H4z" />
+          </svg>
+        </div>
+        <div class="brand-texts">
+          <span class="brand-title">Matemática em Movimento</span>
+          <span class="brand-slogan">Explore. Manipule. Compreenda.</span>
+        </div>
+      </a>
+      <div class="header-actions">
+        <a href="../index.html" class="btn-header">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+          Início
+        </a>
+        <button id="btnFullscreen" class="btn-header" title="Alternar modo tela cheia para projeção em sala de aula">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>
+          Projeção
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Breadcrumbs -->
+  <nav class="breadcrumb-bar" aria-label="Navegação estrutural">
+    <div class="breadcrumb-container">
+      <a href="../index.html">Início</a>
+      <span class="breadcrumb-sep">/</span>
+      <a href="../index.html#catalogo">Geometria</a>
+      <span class="breadcrumb-sep">/</span>
+      <span class="breadcrumb-current">Relação de Euler</span>
+    </div>
+  </nav>
+
+  <!-- Conteúdo Principal -->
+  <main class="main-content">
+    <div class="demo-grid">
+
+      <!-- Coluna 1: Laboratório Interativo 3D -->
+      <section class="card" aria-labelledby="lab-heading">
+        <div class="card-eyebrow">
+          <span class="badge-tag badge-fundamental">Fundamental &amp; Médio</span>
+          <span>· LABORATÓRIO DE GEOMETRIA ESPACIAL</span>
+        </div>
+        <h2 id="lab-heading" class="card-title">Relação de Euler: V − E + F = 2</h2>
+        <p class="card-subtitle">
+          Gire o poliedro 3D arrastando com o dedo ou mouse. Ative os modos de contagem para clicar diretamente nos vértices, arestas e faces, ou afaste os elementos separadamente para contagem visual.
+        </p>
+
+        <!-- Galeria de Sólidos Convexos -->
+        <div class="solid-selector-bar" id="solidSelectorBar" aria-label="Seletor de Poliedros">
+          <!-- Gerado dinamicamente via JS -->
+        </div>
+
+        <!-- Barra de Modos de Contagem -->
+        <div class="count-modes-bar">
+          <span class="count-mode-label">Modo Ativo:</span>
+          <button type="button" class="mode-btn active" data-mode="vertex" id="btnModeVertex" aria-label="Contar vértices na figura">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="8"/></svg>
+            Contar Vértices (V)
+          </button>
+          <button type="button" class="mode-btn" data-mode="edge" id="btnModeEdge" aria-label="Contar arestas na figura">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="4" y1="20" x2="20" y2="4"/></svg>
+            Contar Arestas (E)
+          </button>
+          <button type="button" class="mode-btn" data-mode="face" id="btnModeFace" aria-label="Contar faces na figura">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="12,2 22,20 2,20"/></svg>
+            Contar Faces (F)
+          </button>
+        </div>
+
+        <!-- Orientação Dinâmica para o Aluno -->
+        <div class="mode-hint-box hint-vertex" id="modeHintText">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          <span id="txtHintSpan">Agora clique nos <strong>vértices</strong> da figura para marcá-los em laranja e somar 1.</span>
+        </div>
+
+        <!-- Palco 3D Interativo -->
+        <div class="viewport-3d-wrapper" id="viewport3D">
+          <div id="clickFeedbackToast" class="click-feedback-toast">+1 Vértice marcado!</div>
+          <svg id="stageSvg3D" class="stage-svg-3d" viewBox="0 0 600 380" aria-label="Projeção 3D interativa do poliedro"></svg>
+
+          <!-- Controles de Câmera Sobrepostos -->
+          <div class="viewport-overlay-controls">
+            <button id="btnResetView" class="viewport-btn" title="Restaurar ângulo de visão original">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+              Centralizar
+            </button>
+            <button id="btnToggleSpin" class="viewport-btn" title="Alternar rotação contínua automática">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8" fill="currentColor"/></svg>
+              Girar Auto
+            </button>
+          </div>
+
+          <div class="rotate-instruction-badge">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>
+            Arraste para girar · Clique no modo ativo para contar
+          </div>
+        </div>
+
+        <!-- SEÇÃO AFASTAR (EXPLODIR) SEPARADO POR TIPO -->
+        <div class="explode-section-card">
+          <div class="explode-section-header">
+            <div class="explode-header-left">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m21 21-6-6m6 6v-4.5m0 4.5h-4.5M3 3l6 6M3 3v4.5M3 3h4.5M21 3l-6 6M21 3v4.5M21 3h-4.5M3 21l6-6M3 21v-4.5M3 21h4.5"/></svg>
+              <span>Afastar (Explodir)</span>
+            </div>
+            <div class="explode-quick-actions">
+              <button type="button" id="btnExplodeAll" class="btn-explode-quick" title="Afastar vértices, arestas e faces ao mesmo tempo">
+                Afastar Tudo (100%)
+              </button>
+              <button type="button" id="btnAssembleAll" class="btn-explode-quick" title="Juntar tudo e remontar o sólido original">
+                Juntar Tudo (0%)
+              </button>
+            </div>
+          </div>
+
+          <p class="explode-tip-text">
+            <strong>Dica do professor:</strong> Afastar só as faces ajuda a contar faces; afastar só os vértices ajuda a contar vértices; afastar só as arestas revela a armação estrutural.
+          </p>
+
+          <div class="explode-sliders-grid">
+            <!-- 1. Afastar Vértices -->
+            <div class="explode-slider-item">
+              <div class="explode-slider-row">
+                <label for="sliderExplodeV" style="color: #d35400;">
+                  <span class="element-dot" style="background:#e67e22;"></span>
+                  Afastar Vértices:
+                </label>
+                <span id="badgeExplodeV" class="slider-val-badge badge-v">0%</span>
+              </div>
+              <input type="range" id="sliderExplodeV" min="0" max="100" step="1" value="0" aria-label="Afastamento dos vértices" />
+            </div>
+
+            <!-- 2. Afastar Arestas -->
+            <div class="explode-slider-item">
+              <div class="explode-slider-row">
+                <label for="sliderExplodeE" style="color: #1e824c;">
+                  <span class="element-line" style="background:#27ae60;"></span>
+                  Afastar Arestas:
+                </label>
+                <span id="badgeExplodeE" class="slider-val-badge badge-e">0%</span>
+              </div>
+              <input type="range" id="sliderExplodeE" min="0" max="100" step="1" value="0" aria-label="Afastamento das arestas" />
+            </div>
+
+            <!-- 3. Afastar Faces -->
+            <div class="explode-slider-item">
+              <div class="explode-slider-row">
+                <label for="sliderExplodeF" style="color: #1a5276;">
+                  <span class="element-poly" style="background:#2980b9;"></span>
+                  Afastar Faces:
+                </label>
+                <span id="badgeExplodeF" class="slider-val-badge badge-f">0%</span>
+              </div>
+              <input type="range" id="sliderExplodeF" min="0" max="100" step="1" value="0" aria-label="Afastamento das faces" />
+            </div>
+          </div>
+        </div>
+
+        <!-- Três Contadores Grandes -->
+        <div class="euler-counters-grid">
+          <!-- Vértices -->
+          <div class="euler-counter-card active-target" id="cardV" style="border-top: 4px solid #e67e22; color: #e67e22;">
+            <div class="euler-card-name" style="color: #d35400;">Vértices (V)</div>
+            <div class="euler-card-number" id="countValV" style="color: #d35400;">0</div>
+            <div class="euler-card-target" id="targetLabelV">Meta: ?</div>
+          </div>
+
+          <!-- Arestas -->
+          <div class="euler-counter-card" id="cardE" style="border-top: 4px solid #27ae60; color: #27ae60;">
+            <div class="euler-card-name" style="color: #1e824c;">Arestas (E)</div>
+            <div class="euler-card-number" id="countValE" style="color: #1e824c;">0</div>
+            <div class="euler-card-target" id="targetLabelE">Meta: ?</div>
+          </div>
+
+          <!-- Faces -->
+          <div class="euler-counter-card" id="cardF" style="border-top: 4px solid #2980b9; color: #2980b9;">
+            <div class="euler-card-name" style="color: #1a5276;">Faces (F)</div>
+            <div class="euler-card-number" id="countValF" style="color: #1a5276;">0</div>
+            <div class="euler-card-target" id="targetLabelF">Meta: ?</div>
+          </div>
+        </div>
+
+        <!-- Card da Relação Central de Euler -->
+        <div class="relation-formula-banner" id="relationBanner">
+          <div class="relation-banner-title">Relação de Euler Calculada ao Vivo</div>
+          <div class="relation-banner-math">
+            <span class="var-v" id="mathV">?</span>
+            <span>−</span>
+            <span class="var-e" id="mathE">?</span>
+            <span>+</span>
+            <span class="var-f" id="mathF">?</span>
+            <span>=</span>
+            <span class="res-2" id="mathResult">?</span>
+          </div>
+          <div class="relation-status-msg" id="relationStatusMsg">
+            Clique nos elementos da figura no modo ativo ou use "Preencher automaticamente" para comprovar a relação.
+          </div>
+        </div>
+
+        <!-- Botões de Ação do Laboratório -->
+        <div class="action-buttons-group">
+          <button id="btnAutoFill" class="btn-action btn-action-primary" title="Preencher todos os contadores com os dados reais deste sólido">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3Z"/></svg>
+            Preencher Automaticamente
+          </button>
+          <button id="btnResetCount" class="btn-action btn-action-secondary" title="Zerar a contagem e recomeçar">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+            Zerar Contagem
+          </button>
+          <button id="btnNextSolid" class="btn-action btn-action-secondary" title="Experimentar o próximo poliedro da galeria">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+            Experimentar Outro Sólido
+          </button>
+        </div>
+
+      </section>
+
+      <!-- Coluna 2: Entenda a Ideia Pedagógica -->
+      <aside class="card pedagogical-aside" aria-labelledby="theory-heading">
+        <div class="card-eyebrow">
+          <span>FUNDAMENTAÇÃO TEÓRICA</span>
+        </div>
+        <h2 id="theory-heading" class="card-title">A Fórmula de Euler (1758)</h2>
+
+        <p class="aside-lead">
+          Leonhard Euler percebeu que, em todo poliedro convexo, o número de vértices menos o de arestas mais o de faces é sempre <strong>2</strong>.
+        </p>
+
+        <!-- Fórmula em Destaque -->
+        <div class="formula-box">
+          <div class="formula-label">Teorema de Euler (Leonhard Euler, 1758):</div>
+          <div class="formula-main" style="letter-spacing: 0.05em;">
+            <span style="color:#e67e22;">V</span>
+            <span>−</span>
+            <span style="color:#27ae60;">E</span>
+            <span>+</span>
+            <span style="color:#2980b9;">F</span>
+            <span>=</span>
+            <span style="color:#166534; font-size:1.8rem;">2</span>
+          </div>
+          <div class="formula-legend" style="margin-top: 8px;">
+            V = Vértices (pontos) · E = Arestas (linhas) · F = Faces (superfícies)
+          </div>
+        </div>
+
+        <!-- Três Passos Didáticos Numerados -->
+        <div class="steps-list">
+          <div class="step-item">
+            <div class="step-badge" aria-hidden="true">1</div>
+            <div class="step-content">
+              <h3 class="step-title">Escolha um sólido geométrico</h3>
+              <p class="step-text">
+                Navegue entre tetraedro, cubo, prismas, pirâmide e octaedro no seletor acima.
+              </p>
+            </div>
+          </div>
+
+          <div class="step-item">
+            <div class="step-badge" aria-hidden="true">2</div>
+            <div class="step-content">
+              <h3 class="step-title">Descubra V, E e F</h3>
+              <p class="step-text">
+                Clique na figura para contar vértices, arestas e faces com destaques visuais ou use o preenchimento automático.
+              </p>
+            </div>
+          </div>
+
+          <div class="step-item">
+            <div class="step-badge" aria-hidden="true">3</div>
+            <div class="step-content">
+              <h3 class="step-title">Confira a conta</h3>
+              <p class="step-text">
+                Subtraia as arestas da soma de vértices e faces: o resultado sempre fechará rigorosamente em <strong>2</strong>!
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Pergunta para Investigar -->
+        <div class="investigation-box">
+          <div class="investigation-title">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+              <path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5"/>
+              <path d="M9 18h6"/><path d="M10 22h4"/>
+            </svg>
+            <span>Pergunta para investigar</span>
+          </div>
+          <p class="investigation-text">
+            Um poliedro tem <strong>6 faces e 12 arestas</strong>. Quantos vértices ele tem? Use <em>V − E + F = 2</em> para descobrir sem olhar a figura!
+          </p>
+        </div>
+
+        <!-- Dica de Prismas -->
+        <div style="background: #eef5f8; border: 1px solid #c7dbe6; border-radius: 8px; padding: 12px 14px; margin-top: 16px;">
+          <div style="font-weight: 800; font-size: 0.82rem; color: var(--navy); display: flex; align-items: center; gap: 6px; margin-bottom: 4px;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
+            Desafio dos Prismas
+          </div>
+          <p style="font-size: 0.8rem; color: var(--tinta); line-height: 1.45;">
+            Sem olhar o simulador: um prisma com <strong>base pentagonal</strong> tem quantas arestas? Verifique com a relação de Euler depois de escolher os prismas no seletor!
+          </p>
+        </div>
+
+      </aside>
+
+    </div>
+  </main>
+
+  <!-- Rodapé Institucional -->
+  <footer class="site-footer">
+    <div class="site-footer-inner">
+      <p><strong>Matemática em Movimento</strong> · Recurso educacional aberto e gratuito para professores e estudantes.</p>
+      <div class="footer-links">
+        <a href="../index.html">Todas as Demonstrações</a>
+        <span>•</span>
+        <a href="../geometria/soma-angulos.html">Soma dos Ângulos</a>
+        <span>•</span>
+        <a href="../geometria/pitagoras.html">Teorema de Pitágoras</a>
+        <span>•</span>
+        <a href="../geometria/semelhanca_de_triangulos.html">Semelhança de Triângulos</a>
+        <span>•</span>
+        <a href="../numeros/fracoes_equivalentes.html">Frações Equivalentes</a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Lógica Matemática, Modelos 3D e Interatividade -->
+  <script>
+    /**
+     * Matemática em Movimento — Demonstração: Relação de Euler
+     * Motor 3D com Projeção Perspectiva, Detecção de Cliques Geométrica em Espaço de Tela,
+     * Afastamento Independente de Vértices, Arestas e Faces, e Relação Dinâmica ao Vivo.
+     */
+
+    // Definição dos 7 Poliedros Convexos
+    const polyhedra = [
+      {
+        id: 'tetraedro',
+        name: 'Tetraedro',
+        vCount: 4, eCount: 6, fCount: 4,
+        scale: 110,
+        vertices: [
+          [ 1,  1,  1],
+          [-1, -1,  1],
+          [-1,  1, -1],
+          [ 1, -1, -1]
+        ],
+        faces: [
+          [0, 2, 1],
+          [0, 1, 3],
+          [0, 3, 2],
+          [1, 2, 3]
+        ]
+      },
+      {
+        id: 'cubo',
+        name: 'Cubo (Hexaedro)',
+        vCount: 8, eCount: 12, fCount: 6,
+        scale: 85,
+        vertices: [
+          [-1, -1, -1], [ 1, -1, -1], [ 1,  1, -1], [-1,  1, -1],
+          [-1, -1,  1], [ 1, -1,  1], [ 1,  1,  1], [-1,  1,  1]
+        ],
+        faces: [
+          [4, 5, 6, 7], // Frente
+          [1, 0, 3, 2], // Trás
+          [0, 4, 7, 3], // Esquerda
+          [5, 1, 2, 6], // Direita
+          [7, 6, 2, 3], // Cima
+          [0, 1, 5, 4]  // Baixo
+        ]
+      },
+      {
+        id: 'prisma_triangular',
+        name: 'Prisma Triangular',
+        vCount: 6, eCount: 9, fCount: 5,
+        scale: 85,
+        vertices: (function() {
+          const verts = [];
+          const r = 1.25;
+          for (let i = 0; i < 3; i++) {
+            const a = (i * 2 * Math.PI) / 3 - Math.PI / 2;
+            verts.push([r * Math.cos(a), -1.1, r * Math.sin(a)]);
+          }
+          for (let i = 0; i < 3; i++) {
+            const a = (i * 2 * Math.PI) / 3 - Math.PI / 2;
+            verts.push([r * Math.cos(a), 1.1, r * Math.sin(a)]);
+          }
+          return verts;
+        })(),
+        faces: [
+          [0, 2, 1],       // Base inferior
+          [3, 4, 5],       // Base superior
+          [0, 1, 4, 3],    // Lateral 1
+          [1, 2, 5, 4],    // Lateral 2
+          [2, 0, 3, 5]     // Lateral 3
+        ]
+      },
+      {
+        id: 'prisma_pentagonal',
+        name: 'Prisma Pentagonal',
+        vCount: 10, eCount: 15, fCount: 7,
+        scale: 75,
+        vertices: (function() {
+          const verts = [];
+          const r = 1.25;
+          for (let i = 0; i < 5; i++) {
+            const a = (i * 2 * Math.PI) / 5 - Math.PI / 2;
+            verts.push([r * Math.cos(a), -1.1, r * Math.sin(a)]);
+          }
+          for (let i = 0; i < 5; i++) {
+            const a = (i * 2 * Math.PI) / 5 - Math.PI / 2;
+            verts.push([r * Math.cos(a), 1.1, r * Math.sin(a)]);
+          }
+          return verts;
+        })(),
+        faces: [
+          [0, 4, 3, 2, 1], // Base inferior
+          [5, 6, 7, 8, 9], // Base superior
+          [0, 1, 6, 5],
+          [1, 2, 7, 6],
+          [2, 3, 8, 7],
+          [3, 4, 9, 8],
+          [4, 0, 5, 9]
+        ]
+      },
+      {
+        id: 'prisma_hexagonal',
+        name: 'Prisma Hexagonal',
+        vCount: 12, eCount: 18, fCount: 8,
+        scale: 75,
+        vertices: (function() {
+          const verts = [];
+          const r = 1.2;
+          for (let i = 0; i < 6; i++) {
+            const a = (i * Math.PI) / 3;
+            verts.push([r * Math.cos(a), -1.1, r * Math.sin(a)]);
+          }
+          for (let i = 0; i < 6; i++) {
+            const a = (i * Math.PI) / 3;
+            verts.push([r * Math.cos(a), 1.1, r * Math.sin(a)]);
+          }
+          return verts;
+        })(),
+        faces: [
+          [0, 5, 4, 3, 2, 1], // Base inferior
+          [6, 7, 8, 9, 10, 11], // Base superior
+          [0, 1, 7, 6],
+          [1, 2, 8, 7],
+          [2, 3, 9, 8],
+          [3, 4, 10, 9],
+          [4, 5, 11, 10],
+          [5, 0, 6, 11]
+        ]
+      },
+      {
+        id: 'piramide_quadrada',
+        name: 'Pirâmide Quadrada',
+        vCount: 5, eCount: 8, fCount: 5,
+        scale: 85,
+        vertices: [
+          [-1.1, -0.8, -1.1],
+          [ 1.1, -0.8, -1.1],
+          [ 1.1, -0.8,  1.1],
+          [-1.1, -0.8,  1.1],
+          [ 0,    1.4,  0  ]
+        ],
+        faces: [
+          [0, 3, 2, 1], // Base quadrada
+          [0, 1, 4],    // Face triangular 1
+          [1, 2, 4],    // Face triangular 2
+          [2, 3, 4],    // Face triangular 3
+          [3, 0, 4]     // Face triangular 4
+        ]
+      },
+      {
+        id: 'octaedro',
+        name: 'Octaedro Regular',
+        vCount: 6, eCount: 12, fCount: 8,
+        scale: 100,
+        vertices: [
+          [ 1.2,  0,    0  ],
+          [-1.2,  0,    0  ],
+          [ 0,    1.2,  0  ],
+          [ 0,   -1.2,  0  ],
+          [ 0,    0,    1.2],
+          [ 0,    0,   -1.2]
+        ],
+        faces: [
+          [0, 2, 4], [2, 1, 4], [1, 3, 4], [3, 0, 4],
+          [2, 0, 5], [1, 2, 5], [3, 1, 5], [0, 3, 5]
+        ]
+      }
+    ];
+
+    // Extração automática e consistente das arestas únicas
+    polyhedra.forEach(poly => {
+      const edgeMap = new Map();
+      const edges = [];
+      poly.faces.forEach((face, fIdx) => {
+        for (let i = 0; i < face.length; i++) {
+          const u = face[i];
+          const v = face[(i + 1) % face.length];
+          const min = Math.min(u, v);
+          const max = Math.max(u, v);
+          const key = `${min}-${max}`;
+          if (!edgeMap.has(key)) {
+            const edgeObj = { id: edges.length, u: min, v: max, faces: [fIdx] };
+            edgeMap.set(key, edgeObj);
+            edges.push(edgeObj);
+          } else {
+            edgeMap.get(key).faces.push(fIdx);
+          }
+        }
+      });
+      poly.edges = edges;
+    });
+
+    // Estado da Aplicação
+    const state = {
+      currentSolidIdx: 1, // Começa com o Cubo
+      mode: 'vertex',     // 'vertex', 'edge', 'face'
+      explodeV: 0,        // 0 a 100%
+      explodeE: 0,        // 0 a 100%
+      explodeF: 0,        // 0 a 100%
+      autoSpin: false,
+      rotX: 25 * Math.PI / 180,
+      rotY: -35 * Math.PI / 180,
+      countedVertices: new Set(),
+      countedEdges: new Set(),
+      countedFaces: new Set()
+    };
+
+    // Cache dos elementos renderizados para teste de clique geométrico perfeito
+    let lastRenderedCache = {
+      vertices: [],
+      edges: [],
+      faces: []
+    };
+
+    // Elementos DOM
+    const solidSelectorBar = document.getElementById('solidSelectorBar');
+    const viewport3D = document.getElementById('viewport3D');
+    const stageSvg3D = document.getElementById('stageSvg3D');
+    const clickFeedbackToast = document.getElementById('clickFeedbackToast');
+
+    const sliderExplodeV = document.getElementById('sliderExplodeV');
+    const sliderExplodeE = document.getElementById('sliderExplodeE');
+    const sliderExplodeF = document.getElementById('sliderExplodeF');
+    const badgeExplodeV = document.getElementById('badgeExplodeV');
+    const badgeExplodeE = document.getElementById('badgeExplodeE');
+    const badgeExplodeF = document.getElementById('badgeExplodeF');
+    const btnExplodeAll = document.getElementById('btnExplodeAll');
+    const btnAssembleAll = document.getElementById('btnAssembleAll');
+
+    const btnAutoFill = document.getElementById('btnAutoFill');
+    const btnResetCount = document.getElementById('btnResetCount');
+    const btnNextSolid = document.getElementById('btnNextSolid');
+    const btnResetView = document.getElementById('btnResetView');
+    const btnToggleSpin = document.getElementById('btnToggleSpin');
+
+    const countValV = document.getElementById('countValV');
+    const countValE = document.getElementById('countValE');
+    const countValF = document.getElementById('countValF');
+    const targetLabelV = document.getElementById('targetLabelV');
+    const targetLabelE = document.getElementById('targetLabelE');
+    const targetLabelF = document.getElementById('targetLabelF');
+
+    const cardV = document.getElementById('cardV');
+    const cardE = document.getElementById('cardE');
+    const cardF = document.getElementById('cardF');
+
+    const relationBanner = document.getElementById('relationBanner');
+    const mathV = document.getElementById('mathV');
+    const mathE = document.getElementById('mathE');
+    const mathF = document.getElementById('mathF');
+    const mathResult = document.getElementById('mathResult');
+    const relationStatusMsg = document.getElementById('relationStatusMsg');
+
+    const btnModeVertex = document.getElementById('btnModeVertex');
+    const btnModeEdge = document.getElementById('btnModeEdge');
+    const btnModeFace = document.getElementById('btnModeFace');
+    const modeHintText = document.getElementById('modeHintText');
+    const txtHintSpan = document.getElementById('txtHintSpan');
+
+    function showToast(msg) {
+      clickFeedbackToast.textContent = msg;
+      clickFeedbackToast.classList.add('show');
+      clearTimeout(clickFeedbackToast._timer);
+      clickFeedbackToast._timer = setTimeout(() => {
+        clickFeedbackToast.classList.remove('show');
+      }, 1200);
+    }
+
+    // Inicialização da galeria de sólidos
+    function initSolidSelector() {
+      solidSelectorBar.innerHTML = '';
+      polyhedra.forEach((poly, idx) => {
+        const btn = document.createElement('button');
+        btn.className = `solid-pill ${idx === state.currentSolidIdx ? 'active' : ''}`;
+        btn.textContent = poly.name;
+        btn.addEventListener('click', () => {
+          selectSolid(idx);
+        });
+        solidSelectorBar.appendChild(btn);
+      });
+    }
+
+    function selectSolid(idx) {
+      state.currentSolidIdx = idx;
+      // Reseta contadores ao trocar de sólido (conforme requisito)
+      state.countedVertices.clear();
+      state.countedEdges.clear();
+      state.countedFaces.clear();
+
+      const pills = solidSelectorBar.querySelectorAll('.solid-pill');
+      pills.forEach((p, i) => {
+        p.classList.toggle('active', i === idx);
+      });
+
+      updateUI();
+      render3D();
+    }
+
+    // Alternar Modos de Contagem
+    function setMode(mode) {
+      state.mode = mode;
+      [btnModeVertex, btnModeEdge, btnModeFace].forEach(b => b.classList.remove('active'));
+      [cardV, cardE, cardF].forEach(c => c.classList.remove('active-target'));
+      modeHintText.className = 'mode-hint-box';
+
+      if (mode === 'vertex') {
+        btnModeVertex.classList.add('active');
+        cardV.classList.add('active-target');
+        modeHintText.classList.add('hint-vertex');
+        txtHintSpan.innerHTML = 'Agora clique nos <strong>vértices</strong> da figura para marcá-los em laranja e somar 1.';
+      } else if (mode === 'edge') {
+        btnModeEdge.classList.add('active');
+        cardE.classList.add('active-target');
+        modeHintText.classList.add('hint-edge');
+        txtHintSpan.innerHTML = 'Agora clique nas <strong>arestas</strong> da figura para marcá-las em verde e somar 1.';
+      } else {
+        btnModeFace.classList.add('active');
+        cardF.classList.add('active-target');
+        modeHintText.classList.add('hint-face');
+        txtHintSpan.innerHTML = 'Agora clique nas <strong>faces</strong> da figura para colori-las em azul e somar 1.';
+      }
+      render3D();
+    }
+
+    btnModeVertex.addEventListener('click', () => setMode('vertex'));
+    btnModeEdge.addEventListener('click', () => setMode('edge'));
+    btnModeFace.addEventListener('click', () => setMode('face'));
+
+    // Atualização da Interface e da Relação ao Vivo
+    function updateUI() {
+      const poly = polyhedra[state.currentSolidIdx];
+      const v = state.countedVertices.size;
+      const e = state.countedEdges.size;
+      const f = state.countedFaces.size;
+
+      countValV.textContent = v;
+      countValE.textContent = e;
+      countValF.textContent = f;
+
+      targetLabelV.textContent = `Total: ${poly.vCount}`;
+      targetLabelE.textContent = `Total: ${poly.eCount}`;
+      targetLabelF.textContent = `Total: ${poly.fCount}`;
+
+      // Regra da Relação de Euler ao Vivo:
+      // Mostra "?" apenas para o que ainda não foi contado
+      mathV.textContent = (v > 0) ? v : '?';
+      mathE.textContent = (e > 0) ? e : '?';
+      mathF.textContent = (f > 0) ? f : '?';
+
+      const allCompleted = (v === poly.vCount && e === poly.eCount && f === poly.fCount);
+      const allStarted = (v > 0 && e > 0 && f > 0);
+
+      if (allCompleted) {
+        // Conclusão total dos três valores
+        const res = v - e + f;
+        mathResult.textContent = res;
+        relationBanner.classList.add('confirmed');
+        relationStatusMsg.innerHTML = `🎉 <strong>Para todo poliedro convexo, V − E + F = 2 — confira com outro sólido!</strong> (${v} − ${e} + ${f} = 2)`;
+      } else if (allStarted) {
+        // Três valores contados parcialmente
+        mathResult.textContent = (v - e + f);
+        relationBanner.classList.remove('confirmed');
+        relationStatusMsg.textContent = `Contagem parcial: ${v} de ${poly.vCount} vértices, ${e} de ${poly.eCount} arestas, ${f} de ${poly.fCount} faces.`;
+      } else {
+        // Ainda falta preencher algum contador
+        mathResult.textContent = '?';
+        relationBanner.classList.remove('confirmed');
+        const faltantes = [];
+        if (v === 0) faltantes.push('Vértices');
+        if (e === 0) faltantes.push('Arestas');
+        if (f === 0) faltantes.push('Faces');
+        relationStatusMsg.textContent = `Clique na figura para contar ${faltantes.join(', ')} ou use "Preencher automaticamente".`;
+      }
+    }
+
+    // Ações dos Quatro Controles de Afastamento
+    sliderExplodeV.addEventListener('input', (ev) => {
+      state.explodeV = parseInt(ev.target.value, 10);
+      badgeExplodeV.textContent = `${state.explodeV}%`;
+      render3D();
+    });
+
+    sliderExplodeE.addEventListener('input', (ev) => {
+      state.explodeE = parseInt(ev.target.value, 10);
+      badgeExplodeE.textContent = `${state.explodeE}%`;
+      render3D();
+    });
+
+    sliderExplodeF.addEventListener('input', (ev) => {
+      state.explodeF = parseInt(ev.target.value, 10);
+      badgeExplodeF.textContent = `${state.explodeF}%`;
+      render3D();
+    });
+
+    btnExplodeAll.addEventListener('click', () => {
+      state.explodeV = 100;
+      state.explodeE = 100;
+      state.explodeF = 100;
+      sliderExplodeV.value = 100;
+      sliderExplodeE.value = 100;
+      sliderExplodeF.value = 100;
+      badgeExplodeV.textContent = '100%';
+      badgeExplodeE.textContent = '100%';
+      badgeExplodeF.textContent = '100%';
+      render3D();
+      showToast('Afastamento total (100%) aplicado aos 3 elementos!');
+    });
+
+    btnAssembleAll.addEventListener('click', () => {
+      state.explodeV = 0;
+      state.explodeE = 0;
+      state.explodeF = 0;
+      sliderExplodeV.value = 0;
+      sliderExplodeE.value = 0;
+      sliderExplodeF.value = 0;
+      badgeExplodeV.textContent = '0%';
+      badgeExplodeE.textContent = '0%';
+      badgeExplodeF.textContent = '0%';
+      render3D();
+      showToast('Sólido juntado (0%) com sucesso!');
+    });
+
+    // Botões de Ação
+    btnAutoFill.addEventListener('click', () => {
+      const poly = polyhedra[state.currentSolidIdx];
+      for (let i = 0; i < poly.vCount; i++) state.countedVertices.add(i);
+      for (let i = 0; i < poly.eCount; i++) state.countedEdges.add(i);
+      for (let i = 0; i < poly.fCount; i++) state.countedFaces.add(i);
+      updateUI();
+      render3D();
+      showToast(`Preenchido: V=${poly.vCount}, E=${poly.eCount}, F=${poly.fCount}`);
+    });
+
+    btnResetCount.addEventListener('click', () => {
+      state.countedVertices.clear();
+      state.countedEdges.clear();
+      state.countedFaces.clear();
+      updateUI();
+      render3D();
+      showToast('Contagem zerada!');
+    });
+
+    btnNextSolid.addEventListener('click', () => {
+      const nextIdx = (state.currentSolidIdx + 1) % polyhedra.length;
+      selectSolid(nextIdx);
+    });
+
+    btnResetView.addEventListener('click', () => {
+      state.rotX = 25 * Math.PI / 180;
+      state.rotY = -35 * Math.PI / 180;
+      render3D();
+      showToast('Visão centralizada!');
+    });
+
+    btnToggleSpin.addEventListener('click', () => {
+      state.autoSpin = !state.autoSpin;
+      btnToggleSpin.style.background = state.autoSpin ? '#e6f4f1' : '';
+      btnToggleSpin.style.borderColor = state.autoSpin ? 'var(--teal)' : '';
+    });
+
+    // -----------------------------------------------------------------
+    // MOTOR DE RENDERIZAÇÃO 3D (SVG + PERSPECTIVA + PROFUNDIDADE REAL)
+    // -----------------------------------------------------------------
+
+    function rotate3D(v, rx, ry) {
+      const cosY = Math.cos(ry);
+      const sinY = Math.sin(ry);
+      const x1 = v[0] * cosY + v[2] * sinY;
+      const y1 = v[1];
+      const z1 = -v[0] * sinY + v[2] * cosY;
+
+      const cosX = Math.cos(rx);
+      const sinX = Math.sin(rx);
+      const x2 = x1;
+      const y2 = y1 * cosX - z1 * sinX;
+      const z2 = y1 * sinX + z1 * cosX;
+
+      return [x2, y2, z2];
+    }
+
+    function project3D(v3d, cx, cy, fov, scale) {
+      const distance = 4.2;
+      const z = v3d[2] * (scale / 100);
+      const depth = distance - z;
+      const safeDepth = Math.max(0.6, depth);
+      const factor = (fov / safeDepth) * (scale / 100);
+      return {
+        x: cx + v3d[0] * factor,
+        y: cy - v3d[1] * factor,
+        z: v3d[2],
+        depth: depth
+      };
+    }
+
+    function cross(a, b) {
+      return [
+        a[1] * b[2] - a[2] * b[1],
+        a[2] * b[0] - a[0] * b[2],
+        a[0] * b[1] - a[1] * b[0]
+      ];
+    }
+
+    function sub(a, b) {
+      return [a[0] - b[0], a[1] - b[1], a[2] - b[2]];
+    }
+
+    function norm(v) {
+      const len = Math.hypot(v[0], v[1], v[2]) || 1;
+      return [v[0] / len, v[1] / len, v[2] / len];
+    }
+
+    function render3D() {
+      const poly = polyhedra[state.currentSolidIdx];
+      const cx = 300;
+      const cy = 190;
+      const fov = 260;
+      const scale = poly.scale;
+
+      const shiftAmountV = 0.65 * (state.explodeV / 100);
+      const shiftAmountE = 0.55 * (state.explodeE / 100);
+      const shiftAmountF = 0.60 * (state.explodeF / 100);
+
+      stageSvg3D.innerHTML = '';
+
+      // Reset cache de elementos projetados para detecção de clique
+      lastRenderedCache.vertices = [];
+      lastRenderedCache.edges = [];
+      lastRenderedCache.faces = [];
+
+      // 1. Processar e Projetar Faces
+      const faceData = poly.faces.map((faceIndices, fIdx) => {
+        let center = [0, 0, 0];
+        faceIndices.forEach(idx => {
+          center[0] += poly.vertices[idx][0];
+          center[1] += poly.vertices[idx][1];
+          center[2] += poly.vertices[idx][2];
+        });
+        center = [center[0] / faceIndices.length, center[1] / faceIndices.length, center[2] / faceIndices.length];
+
+        const v0 = poly.vertices[faceIndices[0]];
+        const v1 = poly.vertices[faceIndices[1]];
+        const v2 = poly.vertices[faceIndices[2]];
+        let n = norm(cross(sub(v1, v0), sub(v2, v0)));
+
+        const dotC = n[0] * center[0] + n[1] * center[1] + n[2] * center[2];
+        if (dotC < 0) {
+          n = [-n[0], -n[1], -n[2]];
+        }
+
+        const rotNormal = rotate3D(n, state.rotX, state.rotY);
+
+        // Vértices da face com o deslocamento independente de faces (explodeF)
+        const shiftedFaceVerts = faceIndices.map(vIdx => {
+          const baseV = poly.vertices[vIdx];
+          const shiftedV = [
+            baseV[0] + n[0] * shiftAmountF,
+            baseV[1] + n[1] * shiftAmountF,
+            baseV[2] + n[2] * shiftAmountF
+          ];
+          const rotShifted = rotate3D(shiftedV, state.rotX, state.rotY);
+          return {
+            vIdx: vIdx,
+            rot3d: rotShifted,
+            proj: project3D(rotShifted, cx, cy, fov, scale)
+          };
+        });
+
+        const avgZ = shiftedFaceVerts.reduce((sum, item) => sum + item.rot3d[2], 0) / shiftedFaceVerts.length;
+        const isFacingFront = rotNormal[2] > -0.05;
+
+        return {
+          fIdx: fIdx,
+          indices: faceIndices,
+          normal: rotNormal,
+          avgZ: avgZ,
+          isFront: isFacingFront,
+          verts: shiftedFaceVerts
+        };
+      });
+
+      // Ordenar faces de trás para frente para o Algoritmo do Pintor
+      const sortedFaces = [...faceData].sort((a, b) => a.avgZ - b.avgZ);
+
+      // Renderizar Faces
+      sortedFaces.forEach(f => {
+        const isCounted = state.countedFaces.has(f.fIdx);
+        const pathPoints = f.verts.map(v => `${v.proj.x.toFixed(1)},${v.proj.y.toFixed(1)}`).join(' ');
+
+        const polygon = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
+        polygon.setAttribute('points', pathPoints);
+
+        // Estilo de preenchimento e destaque: Faces em azul (#2980b9)
+        if (isCounted) {
+          polygon.setAttribute('fill', '#2980b9');
+          polygon.setAttribute('fill-opacity', f.isFront ? '0.75' : '0.40');
+          polygon.setAttribute('stroke', '#1a5276');
+          polygon.setAttribute('stroke-width', '2.5');
+        } else {
+          if (f.isFront) {
+            polygon.setAttribute('fill', '#356b8c');
+            polygon.setAttribute('fill-opacity', '0.22');
+            polygon.setAttribute('stroke', '#356b8c');
+            polygon.setAttribute('stroke-width', '1.8');
+          } else {
+            polygon.setAttribute('fill', '#cbd5e1');
+            polygon.setAttribute('fill-opacity', '0.12');
+            polygon.setAttribute('stroke', '#94a3b8');
+            polygon.setAttribute('stroke-width', '1.2');
+            polygon.setAttribute('stroke-dasharray', '3 3');
+          }
+        }
+
+        stageSvg3D.appendChild(polygon);
+
+        // Armazenar no cache para teste de clique geométrico
+        lastRenderedCache.faces.push({
+          fIdx: f.fIdx,
+          isFront: f.isFront,
+          avgZ: f.avgZ,
+          polyPoints: f.verts.map(v => ({ x: v.proj.x, y: v.proj.y }))
+        });
+      });
+
+      // 2. Processar e Renderizar Arestas (com afastamento independente explodeE)
+      poly.edges.forEach((edge, eIdx) => {
+        const isCounted = state.countedEdges.has(eIdx);
+        const vU = poly.vertices[edge.u];
+        const vV = poly.vertices[edge.v];
+
+        // Vetor radial a partir do ponto médio da aresta
+        const mid = [(vU[0] + vV[0]) / 2, (vU[1] + vV[1]) / 2, (vU[2] + vV[2]) / 2];
+        const rNorm = norm(mid);
+
+        // Deslocamento da aresta
+        const shiftedU = [vU[0] + rNorm[0] * shiftAmountE, vU[1] + rNorm[1] * shiftAmountE, vU[2] + rNorm[2] * shiftAmountE];
+        const shiftedV = [vV[0] + rNorm[0] * shiftAmountE, vV[1] + rNorm[1] * shiftAmountE, vV[2] + rNorm[2] * shiftAmountE];
+
+        const rotU = rotate3D(shiftedU, state.rotX, state.rotY);
+        const rotV = rotate3D(shiftedV, state.rotX, state.rotY);
+
+        const projU = project3D(rotU, cx, cy, fov, scale);
+        const projV = project3D(rotV, cx, cy, fov, scale);
+
+        // Linha visual da aresta: Arestas contadas em verde (#27ae60)
+        const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+        line.setAttribute('x1', projU.x.toFixed(1));
+        line.setAttribute('y1', projU.y.toFixed(1));
+        line.setAttribute('x2', projV.x.toFixed(1));
+        line.setAttribute('y2', projV.y.toFixed(1));
+        line.setAttribute('stroke-linecap', 'round');
+
+        if (isCounted) {
+          line.setAttribute('stroke', '#27ae60');
+          line.setAttribute('stroke-width', '5');
+        } else {
+          line.setAttribute('stroke', '#356b8c');
+          line.setAttribute('stroke-width', '2.2');
+        }
+
+        stageSvg3D.appendChild(line);
+
+        // Armazenar no cache para teste de clique geométrico
+        lastRenderedCache.edges.push({
+          eIdx: eIdx,
+          avgZ: (rotU[2] + rotV[2]) / 2,
+          x1: projU.x,
+          y1: projU.y,
+          x2: projV.x,
+          y2: projV.y
+        });
+      });
+
+      // 3. Processar e Renderizar Vértices (com afastamento independente explodeV)
+      const sortedVerts = poly.vertices.map((v, vIdx) => {
+        const rNorm = norm(v);
+        const shiftedV = [
+          v[0] + rNorm[0] * shiftAmountV,
+          v[1] + rNorm[1] * shiftAmountV,
+          v[2] + rNorm[2] * shiftAmountV
+        ];
+        const rotV = rotate3D(shiftedV, state.rotX, state.rotY);
+        const proj = project3D(rotV, cx, cy, fov, scale);
+        return { vIdx, rotV, proj };
+      }).sort((a, b) => a.rotV[2] - b.rotV[2]);
+
+      sortedVerts.forEach(item => {
+        const isCounted = state.countedVertices.has(item.vIdx);
+
+        // Círculo visual do vértice: Vértices contados em laranja (#e67e22)
+        const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+        circle.setAttribute('cx', item.proj.x.toFixed(1));
+        circle.setAttribute('cy', item.proj.y.toFixed(1));
+
+        if (isCounted) {
+          circle.setAttribute('r', '9');
+          circle.setAttribute('fill', '#e67e22');
+          circle.setAttribute('stroke', '#ffffff');
+          circle.setAttribute('stroke-width', '2.5');
+        } else {
+          circle.setAttribute('r', '6');
+          circle.setAttribute('fill', item.rotV[2] > -0.2 ? '#18324b' : '#647684');
+          circle.setAttribute('stroke', '#ffffff');
+          circle.setAttribute('stroke-width', '1.5');
+        }
+
+        stageSvg3D.appendChild(circle);
+
+        // Rótulo discreto do vértice contado
+        if (isCounted) {
+          const txt = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+          txt.setAttribute('x', (item.proj.x + 11).toFixed(1));
+          txt.setAttribute('y', (item.proj.y - 7).toFixed(1));
+          txt.setAttribute('font-size', '11');
+          txt.setAttribute('font-weight', '900');
+          txt.setAttribute('font-family', 'ui-monospace, monospace');
+          txt.setAttribute('fill', '#d35400');
+          txt.setAttribute('stroke', '#ffffff');
+          txt.setAttribute('stroke-width', '3');
+          txt.setAttribute('paint-order', 'stroke');
+          txt.textContent = `V${item.vIdx + 1}`;
+          stageSvg3D.appendChild(txt);
+        }
+
+        // Armazenar no cache para teste de clique geométrico
+        lastRenderedCache.vertices.push({
+          vIdx: item.vIdx,
+          z: item.rotV[2],
+          x: item.proj.x,
+          y: item.proj.y
+        });
+      });
+    }
+
+    // -----------------------------------------------------------------
+    // ALGORITMOS DE DETECÇÃO GEOMÉTRICA DE CLIQUE (HIT-TESTING ROBUSTO)
+    // -----------------------------------------------------------------
+
+    // Distância de um ponto a um segmento de reta 2D
+    function distPointToSegment(px, py, x1, y1, x2, y2) {
+      const dx = x2 - x1;
+      const dy = y2 - y1;
+      const l2 = dx * dx + dy * dy;
+      if (l2 === 0) return Math.hypot(px - x1, py - y1);
+      let t = ((px - x1) * dx + (py - y1) * dy) / l2;
+      t = Math.max(0, Math.min(1, t));
+      const projX = x1 + t * dx;
+      const projY = y1 + t * dy;
+      return Math.hypot(px - projX, py - projY);
+    }
+
+    // Algoritmo de Ponto em Polígono (Ray-Casting 2D)
+    function isPointInPoly(px, py, polyPoints) {
+      let inside = false;
+      for (let i = 0, j = polyPoints.length - 1; i < polyPoints.length; j = i++) {
+        const xi = polyPoints[i].x, yi = polyPoints[i].y;
+        const xj = polyPoints[j].x, yj = polyPoints[j].y;
+        const intersect = ((yi > py) !== (yj > py)) &&
+          (px < (xj - xi) * (py - yi) / (yj - yi) + xi);
+        if (intersect) inside = !inside;
+      }
+      return inside;
+    }
+
+    // Tratador Mestre de Clique no Palco 3D
+    function handle3DClick(clientX, clientY) {
+      const rect = stageSvg3D.getBoundingClientRect();
+      const svgX = ((clientX - rect.left) / rect.width) * 600;
+      const svgY = ((clientY - rect.top) / rect.height) * 380;
+
+      if (state.mode === 'vertex') {
+        // Tolerância de 28px para tocar com conforto até no celular
+        let candidate = null;
+        let bestDist = 28;
+
+        lastRenderedCache.vertices.forEach(v => {
+          const d = Math.hypot(svgX - v.x, svgY - v.y);
+          if (d <= bestDist) {
+            // Em caso de proximidade, prioriza o que está mais à frente na câmera (maior Z)
+            if (!candidate || v.z > candidate.z) {
+              candidate = v;
+              bestDist = d;
+            }
+          }
+        });
+
+        if (candidate) {
+          if (!state.countedVertices.has(candidate.vIdx)) {
+            state.countedVertices.add(candidate.vIdx);
+            showToast(`+1 Vértice (V${candidate.vIdx + 1}) contado!`);
+            updateUI();
+            render3D();
+          } else {
+            showToast(`Vértice V${candidate.vIdx + 1} já havia sido contado.`);
+          }
+        }
+      } else if (state.mode === 'edge') {
+        // Tolerância de 20px ao redor da aresta
+        let candidate = null;
+        let bestDist = 20;
+
+        lastRenderedCache.edges.forEach(e => {
+          const d = distPointToSegment(svgX, svgY, e.x1, e.y1, e.x2, e.y2);
+          if (d <= bestDist) {
+            if (!candidate || e.avgZ > candidate.avgZ) {
+              candidate = e;
+              bestDist = d;
+            }
+          }
+        });
+
+        if (candidate) {
+          if (!state.countedEdges.has(candidate.eIdx)) {
+            state.countedEdges.add(candidate.eIdx);
+            showToast(`+1 Aresta (E${candidate.eIdx + 1}) contada!`);
+            updateUI();
+            render3D();
+          } else {
+            showToast(`Aresta E${candidate.eIdx + 1} já havia sido contada.`);
+          }
+        }
+      } else if (state.mode === 'face') {
+        // Polígonos que contêm o clique
+        const hitFaces = lastRenderedCache.faces.filter(f => isPointInPoly(svgX, svgY, f.polyPoints));
+
+        if (hitFaces.length > 0) {
+          // Prioriza a face voltada para a câmera com maior Z
+          hitFaces.sort((a, b) => b.avgZ - a.avgZ);
+          const topFace = hitFaces[0];
+
+          if (!state.countedFaces.has(topFace.fIdx)) {
+            state.countedFaces.add(topFace.fIdx);
+            showToast(`+1 Face (F${topFace.fIdx + 1}) contada!`);
+            updateUI();
+            render3D();
+          } else {
+            showToast(`Face F${topFace.fIdx + 1} já havia sido contada.`);
+          }
+        }
+      }
+    }
+
+    // -----------------------------------------------------------------
+    // CONTROLES DE ROTAÇÃO E CLIQUE POR POINTER EVENTS
+    // -----------------------------------------------------------------
+    let isPointerDown = false;
+    let startX = 0, startY = 0;
+    let hasMovedSignificantly = false;
+
+    viewport3D.addEventListener('pointerdown', (e) => {
+      isPointerDown = true;
+      startX = e.clientX;
+      startY = e.clientY;
+      hasMovedSignificantly = false;
+      state.lastMouseX = e.clientX;
+      state.lastMouseY = e.clientY;
+      viewport3D.setPointerCapture(e.pointerId);
+    });
+
+    viewport3D.addEventListener('pointermove', (e) => {
+      if (!isPointerDown) return;
+      const dx = e.clientX - state.lastMouseX;
+      const dy = e.clientY - state.lastMouseY;
+      const totalDist = Math.hypot(e.clientX - startX, e.clientY - startY);
+
+      if (totalDist > 6) {
+        hasMovedSignificantly = true;
+      }
+
+      state.rotY += dx * 0.009;
+      state.rotX += dy * 0.009;
+      state.rotX = Math.max(-Math.PI / 2.2, Math.min(Math.PI / 2.2, state.rotX));
+
+      state.lastMouseX = e.clientX;
+      state.lastMouseY = e.clientY;
+      render3D();
+    });
+
+    const finishPointer = (e) => {
+      if (!isPointerDown) return;
+      isPointerDown = false;
+      try {
+        viewport3D.releasePointerCapture(e.pointerId);
+      } catch (_) {}
+
+      // Se não arrastou significativamente, foi um toque/clique de contagem legítimo!
+      if (!hasMovedSignificantly) {
+        handle3DClick(e.clientX, e.clientY);
+      }
+    };
+
+    viewport3D.addEventListener('pointerup', finishPointer);
+    viewport3D.addEventListener('pointercancel', finishPointer);
+
+    // Loop de Animação para Rotação Automática
+    function animationLoop() {
+      if (state.autoSpin && !isPointerDown) {
+        state.rotY += 0.012;
+        render3D();
+      }
+      requestAnimationFrame(animationLoop);
+    }
+    requestAnimationFrame(animationLoop);
+
+    // Modo Projeção em Tela Cheia
+    document.getElementById('btnFullscreen').addEventListener('click', () => {
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().catch(() => {});
+      } else {
+        document.exitFullscreen().catch(() => {});
+      }
+    });
+
+    // Inicialização da Página
+    initSolidSelector();
+    setMode('vertex');
+    updateUI();
+    render3D();
+  </script>
+</body>
+</html>

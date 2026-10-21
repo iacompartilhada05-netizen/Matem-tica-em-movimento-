@@ -1,0 +1,1941 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sólidos Geométricos: Área, Volume e Perímetro · Matemática em Movimento</title>
+  <meta name="description" content="Laboratório 3D interativo de Sólidos Geométricos. Explore cubo, paralelepípedo, prismas, pirâmides, cilindro, cone e esfera. Altere dimensões, visualize o interior translúcido, desdobre a planificação 2D e compare volumes iguais com áreas diferentes." />
+  <link rel="stylesheet" href="../css/estilo.css" />
+  <style>
+    /* Estilos específicos da demonstração de Sólidos Geométricos */
+    .solid-pills-bar {
+      display: flex;
+      gap: 6px;
+      overflow-x: auto;
+      padding-bottom: 8px;
+      margin-bottom: 14px;
+      scrollbar-width: thin;
+    }
+
+    .solid-pill {
+      background: #ffffff;
+      border: 1px solid var(--linha);
+      color: var(--tinta);
+      padding: 7px 12px;
+      border-radius: var(--radius-sm);
+      font-size: 0.8rem;
+      font-weight: 700;
+      white-space: nowrap;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.15s ease;
+    }
+
+    .solid-pill:hover {
+      border-color: var(--azul);
+      color: var(--azul);
+      background: #f0f7fb;
+    }
+
+    .solid-pill.active {
+      background: var(--navy);
+      color: #ffffff;
+      border-color: var(--navy);
+      box-shadow: 0 2px 6px rgba(24, 50, 75, 0.2);
+    }
+
+    /* Palco 3D */
+    .viewport-3d-wrapper {
+      position: relative;
+      background: radial-gradient(circle at 50% 40%, #ffffff 0%, #edf2f7 100%);
+      border: 1px solid var(--linha);
+      border-radius: var(--radius-md);
+      box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.03);
+      overflow: hidden;
+      margin-bottom: 14px;
+      touch-action: none;
+      cursor: grab;
+      user-select: none;
+      height: 380px;
+    }
+
+    .viewport-3d-wrapper:active {
+      cursor: grabbing;
+    }
+
+    .stage-svg-3d {
+      width: 100%;
+      height: 100%;
+      display: block;
+      user-select: none;
+    }
+
+    /* Controles de Câmera e Visualização Sobrepostos */
+    .viewport-overlay-controls {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      z-index: 10;
+    }
+
+    .viewport-btn {
+      background: rgba(255, 255, 255, 0.94);
+      border: 1px solid var(--linha);
+      border-radius: var(--radius-sm);
+      padding: 6px 10px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: var(--navy);
+      box-shadow: 0 2px 5px rgba(0,0,0,0.06);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      transition: all 0.15s ease;
+      backdrop-filter: blur(4px);
+    }
+
+    .viewport-btn:hover {
+      background: #ffffff;
+      border-color: var(--azul);
+      color: var(--azul);
+    }
+
+    .viewport-btn.active {
+      background: var(--teal);
+      border-color: var(--teal);
+      color: #ffffff;
+    }
+
+    .rotate-instruction-badge {
+      position: absolute;
+      bottom: 10px;
+      left: 10px;
+      background: rgba(24, 50, 75, 0.88);
+      color: #ffffff;
+      font-size: 0.72rem;
+      font-weight: 600;
+      padding: 4px 10px;
+      border-radius: 20px;
+      pointer-events: none;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      backdrop-filter: blur(4px);
+      z-index: 5;
+    }
+
+    /* Sliders de Dimensões Dinâmicos */
+    .sliders-panel {
+      background: #f8fafc;
+      border: 1px solid var(--linha);
+      border-radius: var(--radius-md);
+      padding: 14px 16px;
+      margin-bottom: 16px;
+    }
+
+    .sliders-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 12px;
+    }
+
+    .slider-group {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .slider-label-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.82rem;
+      font-weight: 700;
+      color: var(--navy);
+    }
+
+    .slider-val-badge {
+      font-family: var(--font-mono);
+      font-size: 0.86rem;
+      font-weight: 800;
+      color: var(--teal);
+      background: var(--teal-light);
+      border: 1px solid var(--teal-border);
+      padding: 1px 8px;
+      border-radius: 4px;
+    }
+
+    .slider-group input[type="range"] {
+      width: 100%;
+      accent-color: var(--azul);
+      cursor: pointer;
+    }
+
+    /* Painel de Resultados de Área, Volume e Perímetro */
+    .results-dashboard {
+      background: #ffffff;
+      border: 1px solid var(--linha);
+      border-radius: var(--radius-md);
+      padding: 14px 16px;
+      margin-bottom: 16px;
+      box-shadow: var(--shadow-subtle);
+    }
+
+    .results-header {
+      font-size: 0.82rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--navy);
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .results-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 10px;
+    }
+
+    .result-metric-card {
+      background: #f8fafc;
+      border: 1px solid var(--linha);
+      border-radius: var(--radius-sm);
+      padding: 10px 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .result-metric-card.volume-card {
+      background: #edf5f8;
+      border-color: var(--azul);
+      border-width: 1.5px;
+    }
+
+    .metric-eyebrow {
+      font-size: 0.7rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--muted);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .metric-formula-title {
+      font-family: var(--font-mono);
+      font-size: 0.84rem;
+      font-weight: 700;
+      color: var(--navy);
+    }
+
+    .metric-calc-line {
+      font-size: 0.78rem;
+      color: var(--muted);
+      font-family: var(--font-mono);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .metric-final-val {
+      font-size: 1.15rem;
+      font-weight: 900;
+      font-family: var(--font-mono);
+      color: var(--navy);
+      margin-top: 2px;
+    }
+
+    .metric-final-val.highlight-teal {
+      color: var(--teal);
+    }
+
+    .metric-final-val.highlight-azul {
+      color: var(--azul);
+    }
+
+    .metric-final-val.highlight-dourado {
+      color: var(--dourado);
+    }
+
+    /* Barra de Ações: Planificação, Comparação, Restaurar */
+    .actions-bar {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 16px;
+    }
+
+    .btn-action {
+      background: #ffffff;
+      border: 1.5px solid var(--linha);
+      border-radius: var(--radius-sm);
+      padding: 8px 14px;
+      font-size: 0.82rem;
+      font-weight: 700;
+      color: var(--navy);
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.15s ease;
+    }
+
+    .btn-action:hover {
+      border-color: var(--azul);
+      color: var(--azul);
+      background: #f0f7fb;
+    }
+
+    .btn-action.active {
+      background: var(--navy);
+      border-color: var(--navy);
+      color: #ffffff;
+    }
+
+    /* Modal / Painel da Planificação 2D */
+    .net-view-panel {
+      display: none;
+      background: #ffffff;
+      border: 1.5px solid var(--teal);
+      border-radius: var(--radius-md);
+      padding: 16px;
+      margin-bottom: 16px;
+      box-shadow: var(--shadow-card);
+      animation: fadeIn 0.2s ease-in-out;
+    }
+
+    .net-view-panel.show {
+      display: block;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-4px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .net-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+
+    .net-title {
+      font-size: 0.95rem;
+      font-weight: 800;
+      color: var(--navy);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .net-callout {
+      background: #f0fdf9;
+      border-left: 4px solid var(--teal);
+      border-radius: 4px;
+      padding: 8px 12px;
+      font-size: 0.84rem;
+      color: var(--tinta);
+      margin-bottom: 12px;
+      line-height: 1.4;
+    }
+
+    .net-svg-stage {
+      width: 100%;
+      height: 320px;
+      background: #fafbfc;
+      border: 1px solid var(--linha);
+      border-radius: var(--radius-sm);
+      display: block;
+    }
+
+    /* Painel de Comparação Isoperimétrica */
+    .compare-panel {
+      display: none;
+      background: #fdfaf3;
+      border: 1.5px solid var(--dourado);
+      border-radius: var(--radius-md);
+      padding: 16px;
+      margin-bottom: 16px;
+      animation: fadeIn 0.2s ease-in-out;
+    }
+
+    .compare-panel.show {
+      display: block;
+    }
+
+    .compare-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+
+    .compare-title {
+      font-size: 0.92rem;
+      font-weight: 800;
+      color: var(--navy);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .compare-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    @media (max-width: 700px) {
+      .compare-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .compare-card {
+      background: #ffffff;
+      border: 1px solid var(--linha);
+      border-radius: var(--radius-sm);
+      padding: 12px;
+      text-align: center;
+    }
+
+    .compare-card.winner {
+      border-color: #27ae60;
+      background: #f4fbf7;
+    }
+
+    .compare-card-title {
+      font-size: 0.84rem;
+      font-weight: 800;
+      color: var(--navy);
+      margin-bottom: 4px;
+    }
+
+    .compare-card-metric {
+      font-family: var(--font-mono);
+      font-size: 0.82rem;
+      color: var(--muted);
+      margin-bottom: 2px;
+    }
+
+    .compare-card-area {
+      font-family: var(--font-mono);
+      font-size: 1.15rem;
+      font-weight: 900;
+      color: var(--navy);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header Institucional -->
+  <header class="site-header">
+    <div class="header-container">
+      <a href="../index.html" class="brand-wrapper" title="Voltar para a página inicial">
+        <div class="brand-logo" aria-hidden="true">
+          <svg viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 19L12 5l8 14H4z" />
+          </svg>
+        </div>
+        <div class="brand-texts">
+          <span class="brand-title">Matemática em Movimento</span>
+          <span class="brand-slogan">Explore. Manipule. Compreenda.</span>
+        </div>
+      </a>
+      <div class="header-actions">
+        <a href="../index.html" class="btn-header">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+          Início
+        </a>
+        <button id="btnFullscreen" class="btn-header" title="Alternar modo tela cheia para projeção em sala de aula">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>
+          Projeção
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Breadcrumbs -->
+  <nav class="breadcrumb-bar" aria-label="Navegação estrutural">
+    <div class="breadcrumb-container">
+      <a href="../index.html">Início</a>
+      <span class="breadcrumb-sep">/</span>
+      <a href="../index.html#catalogo">Geometria</a>
+      <span class="breadcrumb-sep">/</span>
+      <span class="breadcrumb-current">Sólidos Geométricos</span>
+    </div>
+  </nav>
+
+  <!-- Conteúdo Principal -->
+  <main class="main-content">
+    <div class="demo-grid">
+
+      <!-- Coluna 1: Laboratório Interativo 3D -->
+      <section class="card" aria-labelledby="lab-heading">
+        <div class="card-eyebrow">
+          <span class="badge-tag badge-fundamental">7º ao 9º Ano e Ensino Médio</span>
+          <span>· LABORATÓRIO 3D DE GEOMETRIA ESPACIAL</span>
+        </div>
+        <h2 id="lab-heading" class="card-title">Sólidos Geométricos: Área, Volume e Perímetro</h2>
+        <p class="card-subtitle">
+          Alterne entre 8 sólidos geométricos, altere suas dimensões, gire no espaço 3D, ative a transparência para enxergar o interior e desdobre a planificação 2D.
+        </p>
+
+        <!-- Seletor dos 8 Sólidos Geométricos -->
+        <div class="solid-pills-bar" id="solidSelectorBar" role="tablist" aria-label="Seletor de sólidos geométricos">
+          <!-- Gerado dinamicamente -->
+        </div>
+
+        <!-- Palco 3D Interativo -->
+        <div class="viewport-3d-wrapper" id="viewport3D" role="region" aria-label="Visualizador 3D do sólido geométrico. Arraste para rotacionar.">
+          <svg id="stageSvg3D" class="stage-svg-3d" viewBox="0 0 600 380" aria-hidden="true"></svg>
+
+          <!-- Controles de Câmera e Visualização Sobrepostos -->
+          <div class="viewport-overlay-controls">
+            <button id="btnResetView" class="viewport-btn" title="Restaurar ângulo de visão original">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+              Centralizar
+            </button>
+            <button id="btnToggleTransp" class="viewport-btn active" title="Alternar visão translúcida com altura interna e raio">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+              Ver Interior
+            </button>
+            <button id="btnToggleSpin" class="viewport-btn" title="Alternar rotação contínua automática">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8" fill="currentColor"/></svg>
+              Girar Auto
+            </button>
+          </div>
+
+          <div class="rotate-instruction-badge">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>
+            Arraste com o mouse ou toque para girar em 3D
+          </div>
+        </div>
+
+        <!-- Dica de manipulação dimensional -->
+        <div class="manipulation-hint">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/>
+          </svg>
+          <span>Escolha um sólido e mude as dimensões. Observe como perímetro, área e volume crescem — e repare que o volume cresce <strong>muito mais rápido</strong> que a área quando as medidas aumentam!</span>
+        </div>
+
+        <!-- Sliders Dinâmicos das Dimensões do Sólido Atual -->
+        <div class="sliders-panel">
+          <div style="font-size:0.8rem; font-weight:800; text-transform:uppercase; color:var(--muted); margin-bottom:8px;">
+            Ajustar Medidas do Sólido (em unidades u)
+          </div>
+          <div class="sliders-grid" id="slidersGrid">
+            <!-- Gerado dinamicamente conforme o sólido -->
+          </div>
+        </div>
+
+        <!-- Barra de Ações: Planificação e Comparação -->
+        <div class="actions-bar">
+          <button id="btnToggleNet" class="btn-action">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg>
+            Ver Planificação 2D
+          </button>
+          <button id="btnToggleCompare" class="btn-action">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 3h5v5"/><path d="M8 21H3v-5"/><path d="M21 3l-7 7"/><path d="M3 21l7-7"/></svg>
+            Comparar Volumes Iguais (Esfera vs Cubo vs Cilindro)
+          </button>
+        </div>
+
+        <!-- Painel Expansível de Planificação 2D -->
+        <div class="net-view-panel" id="netViewPanel" role="region" aria-label="Planificação bidimensional do sólido">
+          <div class="net-header">
+            <div class="net-title">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 2 22 22 22"/><polygon points="12 8 6 20 18 20" stroke-dasharray="2 2"/></svg>
+              <span id="netTitleText">Planificação (Rede 2D)</span>
+            </div>
+            <button id="btnCloseNet" class="btn-header" style="color:var(--navy); border-color:var(--linha); background:#ffffff;">
+              Montar de Novo (Fechar)
+            </button>
+          </div>
+          <div class="net-callout">
+            <strong>Princípio Fundamental da Área Total:</strong> Ao abrir o sólido no plano, comprovamos que a <strong>Área Total</strong> é rigorosamente a soma das áreas de todas essas figuras geométricas planas (bases + faces laterais).
+          </div>
+          <svg id="netSvg" class="net-svg-stage" viewBox="0 0 600 320" aria-label="Rede 2D do sólido"></svg>
+        </div>
+
+        <!-- Painel Expansível de Comparação Isoperimétrica -->
+        <div class="compare-panel" id="comparePanel" role="region" aria-label="Comparação de superfícies com volumes iguais">
+          <div class="compare-header">
+            <div class="compare-title">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
+              <span>Mesmo Volume, Formas Diferentes: O Segredo da Esfera</span>
+            </div>
+            <button id="btnCloseCompare" class="btn-header" style="color:var(--navy); border-color:var(--linha); background:#ffffff;">
+              Fechar Comparação
+            </button>
+          </div>
+          <p style="font-size:0.84rem; color:var(--tinta); line-height:1.45; margin-bottom:10px;">
+            Três recipientes com exatamente o <strong>mesmo volume interno (<span id="compareVolTarget">64.0</span> u³)</strong>: veja como a área da superfície externa varia radicalmente conforme o formato!
+          </p>
+          <div class="compare-grid" id="compareGrid">
+            <!-- Preenchido dinamicamente -->
+          </div>
+          <div style="background:#eef5f8; border-radius:6px; padding:10px 12px; margin-top:10px; font-size:0.8rem; color:var(--navy); line-height:1.4;">
+            <strong>💡 Descoberta Científica:</strong> Entre todos os sólidos geométricos de mesmo volume no universo, a <strong>esfera</strong> é a que tem a <em>menor área de superfície</em>. Por isso, gotas de chuva e bolhas de sabão são esféricas: a natureza economiza energia superficial mínima!
+          </div>
+        </div>
+
+        <!-- Painel de Resultados Numéricos e Fórmulas em Tempo Real -->
+        <div class="results-dashboard" aria-live="polite">
+          <div class="results-header">
+            <span>Resultados e Fórmulas Calculados ao Vivo</span>
+            <span id="badgeCurrentSolidName" style="color:var(--azul); font-size:0.85rem;">Cubo (a = 4.0 u)</span>
+          </div>
+
+          <div class="results-grid" id="resultsGrid">
+            <!-- Cards de Perímetro da Base, Área da Base, Área Lateral, Área Total, Volume e Soma de Arestas -->
+          </div>
+        </div>
+      </section>
+
+      <!-- Coluna 2: Card "Entenda a Ideia" -->
+      <aside class="card idea-card" aria-labelledby="idea-heading">
+        <div class="card-eyebrow">
+          <span>FUNDAMENTAÇÃO CONCEITUAL</span>
+        </div>
+        <h2 id="idea-heading" class="card-title">Entenda a ideia</h2>
+        <p class="card-subtitle">
+          A geometria espacial conecta grandezas de uma, duas e três dimensões: comprimentos (1D), superfícies (2D) e capacidades internas (3D).
+        </p>
+
+        <!-- Fórmula em Destaque -->
+        <div class="formula-highlight-card">
+          <div class="formula-highlight-label">Relação Dimensional Fundamental</div>
+          <div class="formula-highlight-math" style="font-size:0.95rem; line-height:1.5;">
+            <div style="margin-bottom:4px;">1D: Perímetro = Contorno das bases / Arestas (u)</div>
+            <div style="margin-bottom:4px; color:var(--teal);">2D: Área Total = A_lateral + A_bases (u²)</div>
+            <div style="color:var(--azul);">3D: Volume = Espaço interno ocupado (u³)</div>
+          </div>
+        </div>
+
+        <!-- Passos Numerados -->
+        <div class="explanation-steps">
+          <div class="step-item">
+            <span class="step-number" aria-hidden="true">1</span>
+            <div class="step-text">
+              <strong>Perímetro da Base vs. Soma das Arestas:</strong> O perímetro mede a linha de contorno da base (em unidades lineares, u). Nos poliedros, a soma das arestas mede todo o esqueleto ou armação de arame necessária para construir o sólido.
+            </div>
+          </div>
+          <div class="step-item">
+            <span class="step-number" aria-hidden="true">2</span>
+            <div class="step-text">
+              <strong>Áreas e a Planificação:</strong> A área mede quanta tinta ou papel é necessária para revestir o exterior do sólido. Ao abrir o botão <em>"Ver Planificação"</em>, veja como cada face vira uma figura plana comum (retângulos, triângulos ou círculos) cuja soma é a Área Total.
+            </div>
+          </div>
+          <div class="step-item">
+            <span class="step-number" aria-hidden="true">3</span>
+            <div class="step-text">
+              <strong>Prismas e Cilindros (Retos):</strong> O volume é obtido preenchendo a base ao longo da altura: <em>V = A_base · h</em>.
+            </div>
+          </div>
+          <div class="step-item">
+            <span class="step-number" aria-hidden="true">4</span>
+            <div class="step-text">
+              <strong>Pirâmides e Cones (Pontiagudos):</strong> Como o sólido afunila uniformemente até o vértice no topo, seu volume é exatamente <strong>um terço</strong> do prisma ou cilindro de mesma base e altura: <em>V = (A_base · h) / 3</em>!
+            </div>
+          </div>
+          <div class="step-item">
+            <span class="step-number" aria-hidden="true">5</span>
+            <div class="step-text">
+              <strong>A Esfera:</strong> A esfera não tem bases planas nem arestas: sua superfície é contínua com <em>A = 4πr²</em> (exatamente 4 círculos máximos!) e volume <em>V = (4/3)πr³</em>, demonstrado por Arquimedes.
+            </div>
+          </div>
+        </div>
+
+        <!-- Pergunta para Investigar -->
+        <div class="investigation-box">
+          <div class="investigation-header">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+              <path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5"/>
+              <path d="M9 18h6"/><path d="M10 22h4"/>
+            </svg>
+            <span>Pergunta para investigar</span>
+          </div>
+          <p class="investigation-text">
+            Um cilindro e um cone têm a <strong>MESMA base</strong> (mesmo raio <em>r</em>) e a <strong>MESMA altura</strong> (<em>h</em>). Quantas vezes o volume do cilindro é maior que o do cone? Teste no simulador mantendo o mesmo <em>r</em> e <em>h</em> para ambos. E agora, se você dobrar a altura do cone, o que acontece com seu volume?
+          </p>
+        </div>
+      </aside>
+
+    </div>
+  </main>
+
+  <!-- Rodapé Institucional -->
+  <footer class="site-footer">
+    <div class="site-footer-inner">
+      <p><strong>Matemática em Movimento</strong> · Recurso educacional aberto e gratuito para professores e estudantes.</p>
+      <div class="footer-links">
+        <a href="../index.html">Todas as Demonstrações</a>
+        <span>•</span>
+        <a href="../geometria/soma-angulos.html">Soma dos Ângulos</a>
+        <span>•</span>
+        <a href="../geometria/pitagoras.html">Teorema de Pitágoras</a>
+        <span>•</span>
+        <a href="../geometria/relacao_de_euler.html">Relação de Euler</a>
+        <span>•</span>
+        <a href="../geometria/semelhanca_de_triangulos.html">Semelhança de Triângulos</a>
+        <span>•</span>
+        <a href="../geometria/solidos_geometricos.html">Sólidos Geométricos</a>
+        <span>•</span>
+        <a href="../trigonometria/triangulo_retangulo.html">Trigonometria</a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Lógica Matemática, Modelos 3D, Planificação e Métricas -->
+  <script>
+    /**
+     * Sólidos Geométricos: Área, Volume e Perímetro
+     * Motor 3D puro em SVG com Projeção Perspectiva, Iluminação Lambertiana,
+     * Transparência, Planificação 2D e Comparação Isoperimétrica.
+     */
+
+    const PI = Math.PI;
+
+    // Catálogo dos 8 sólidos com parâmetros, geradores de malha 3D e fórmulas
+    const solidsData = [
+      {
+        id: 'cubo',
+        name: 'Cubo',
+        category: 'Poliedro Regular',
+        params: [
+          { key: 'a', label: 'Aresta (a)', min: 1, max: 10, step: 0.5, default: 4 }
+        ],
+        calcMetrics(p) {
+          const a = p.a;
+          const pBase = 4 * a;
+          const aBase = a * a;
+          const aLat = 4 * a * a;
+          const aTotal = 6 * a * a;
+          const vol = a * a * a;
+          const sumEdges = 12 * a;
+          return {
+            pBase: { val: pBase, formula: 'P_base = 4 · a', calc: `4 · ${a}` },
+            aBase: { val: aBase, formula: 'A_base = a²', calc: `${a}²` },
+            aLat: { val: aLat, formula: 'A_lat = 4 · a²', calc: `4 · ${a}²` },
+            aTotal: { val: aTotal, formula: 'A_total = 6 · a²', calc: `6 · ${a}² = ${aLat} + 2·${aBase}` },
+            vol: { val: vol, formula: 'V = a³', calc: `${a}³` },
+            extra: { label: 'Soma das Arestas', val: sumEdges, formula: 'Σ arestas = 12 · a', calc: `12 · ${a}` }
+          };
+        },
+        generate3D(p) {
+          const s = 1.3;
+          const hW = s; const hH = s; const hD = s;
+          const vertices = [
+            [-hW, -hH, -hD], [ hW, -hH, -hD], [ hW,  hH, -hD], [-hW,  hH, -hD],
+            [-hW, -hH,  hD], [ hW, -hH,  hD], [ hW,  hH,  hD], [-hW,  hH,  hD]
+          ];
+          const faces = [
+            { idx: [4, 5, 6, 7], isBase: false }, // Frente
+            { idx: [1, 0, 3, 2], isBase: false }, // Trás
+            { idx: [0, 4, 7, 3], isBase: false }, // Esquerda
+            { idx: [5, 1, 2, 6], isBase: false }, // Direita
+            { idx: [7, 6, 2, 3], isBase: true },  // Base superior
+            { idx: [0, 1, 5, 4], isBase: true }   // Base inferior
+          ];
+          return { vertices, faces, scale: 90 };
+        }
+      },
+      {
+        id: 'paralelepipedo',
+        name: 'Paralelepípedo',
+        category: 'Prisma Reto',
+        params: [
+          { key: 'a', label: 'Comprimento (a)', min: 1, max: 10, step: 0.5, default: 5 },
+          { key: 'b', label: 'Largura (b)', min: 1, max: 10, step: 0.5, default: 3 },
+          { key: 'c', label: 'Altura (c)', min: 1, max: 10, step: 0.5, default: 4 }
+        ],
+        calcMetrics(p) {
+          const { a, b, c } = p;
+          const pBase = 2 * (a + b);
+          const aBase = a * b;
+          const aLat = 2 * (a + b) * c;
+          const aTotal = 2 * (a * b + a * c + b * c);
+          const vol = a * b * c;
+          const sumEdges = 4 * (a + b + c);
+          return {
+            pBase: { val: pBase, formula: 'P_base = 2·(a + b)', calc: `2·(${a} + ${b})` },
+            aBase: { val: aBase, formula: 'A_base = a · b', calc: `${a} · ${b}` },
+            aLat: { val: aLat, formula: 'A_lat = 2·(a + b)·c', calc: `2·(${a} + ${b}) · ${c}` },
+            aTotal: { val: aTotal, formula: 'A_total = 2·(ab + ac + bc)', calc: `2·(${a*b} + ${a*c} + ${b*c})` },
+            vol: { val: vol, formula: 'V = a · b · c', calc: `${a} · ${b} · ${c}` },
+            extra: { label: 'Soma das Arestas', val: sumEdges, formula: 'Σ arestas = 4·(a + b + c)', calc: `4·(${a} + ${b} + ${c})` }
+          };
+        },
+        generate3D(p) {
+          const maxDim = Math.max(p.a, p.b, p.c, 1);
+          const f = 2.4 / maxDim;
+          const hW = (p.a * f) / 2;
+          const hH = (p.c * f) / 2;
+          const hD = (p.b * f) / 2;
+          const vertices = [
+            [-hW, -hH, -hD], [ hW, -hH, -hD], [ hW,  hH, -hD], [-hW,  hH, -hD],
+            [-hW, -hH,  hD], [ hW, -hH,  hD], [ hW,  hH,  hD], [-hW,  hH,  hD]
+          ];
+          const faces = [
+            { idx: [4, 5, 6, 7], isBase: false },
+            { idx: [1, 0, 3, 2], isBase: false },
+            { idx: [0, 4, 7, 3], isBase: false },
+            { idx: [5, 1, 2, 6], isBase: false },
+            { idx: [7, 6, 2, 3], isBase: true },
+            { idx: [0, 1, 5, 4], isBase: true }
+          ];
+          return { vertices, faces, scale: 90 };
+        }
+      },
+      {
+        id: 'prisma_triangular',
+        name: 'Prisma Triangular',
+        category: 'Prisma Regular',
+        params: [
+          { key: 'a', label: 'Lado da Base (a)', min: 1, max: 10, step: 0.5, default: 4 },
+          { key: 'h', label: 'Altura (h)', min: 1, max: 10, step: 0.5, default: 6 }
+        ],
+        calcMetrics(p) {
+          const { a, h } = p;
+          const pBase = 3 * a;
+          const aBase = (a * a * Math.sqrt(3)) / 4;
+          const aLat = 3 * a * h;
+          const aTotal = aLat + 2 * aBase;
+          const vol = aBase * h;
+          return {
+            pBase: { val: pBase, formula: 'P_base = 3 · a', calc: `3 · ${a}` },
+            aBase: { val: aBase, approx: true, formula: 'A_base = (a²√3) / 4', calc: `(${a}² · 1,732) / 4` },
+            aLat: { val: aLat, formula: 'A_lat = 3 · a · h', calc: `3 · ${a} · ${h}` },
+            aTotal: { val: aTotal, approx: true, formula: 'A_total = A_lat + 2·A_base', calc: `${aLat} + 2·${aBase.toFixed(2)}` },
+            vol: { val: vol, approx: true, formula: 'V = A_base · h', calc: `${aBase.toFixed(2)} · ${h}` }
+          };
+        },
+        generate3D(p) {
+          const maxDim = Math.max(p.a, p.h, 1);
+          const f = 2.4 / maxDim;
+          const r = (p.a * f) / Math.sqrt(3);
+          const hY = (p.h * f) / 2;
+          const vertices = [];
+          for (let i = 0; i < 3; i++) {
+            const ang = (i * 2 * PI) / 3 - PI / 2;
+            vertices.push([r * Math.cos(ang), -hY, r * Math.sin(ang)]);
+          }
+          for (let i = 0; i < 3; i++) {
+            const ang = (i * 2 * PI) / 3 - PI / 2;
+            vertices.push([r * Math.cos(ang), hY, r * Math.sin(ang)]);
+          }
+          const faces = [
+            { idx: [0, 2, 1], isBase: true },
+            { idx: [3, 4, 5], isBase: true },
+            { idx: [0, 1, 4, 3], isBase: false },
+            { idx: [1, 2, 5, 4], isBase: false },
+            { idx: [2, 0, 3, 5], isBase: false }
+          ];
+          return { vertices, faces, scale: 95 };
+        }
+      },
+      {
+        id: 'prisma_hexagonal',
+        name: 'Prisma Hexagonal',
+        category: 'Prisma Regular',
+        params: [
+          { key: 'a', label: 'Lado da Base (a)', min: 1, max: 10, step: 0.5, default: 3 },
+          { key: 'h', label: 'Altura (h)', min: 1, max: 10, step: 0.5, default: 6 }
+        ],
+        calcMetrics(p) {
+          const { a, h } = p;
+          const pBase = 6 * a;
+          const aBase = (3 * a * a * Math.sqrt(3)) / 2;
+          const aLat = 6 * a * h;
+          const aTotal = aLat + 2 * aBase;
+          const vol = aBase * h;
+          return {
+            pBase: { val: pBase, formula: 'P_base = 6 · a', calc: `6 · ${a}` },
+            aBase: { val: aBase, approx: true, formula: 'A_base = (3a²√3) / 2', calc: `(3·${a}² · 1,732) / 2` },
+            aLat: { val: aLat, formula: 'A_lat = 6 · a · h', calc: `6 · ${a} · ${h}` },
+            aTotal: { val: aTotal, approx: true, formula: 'A_total = A_lat + 2·A_base', calc: `${aLat} + 2·${aBase.toFixed(2)}` },
+            vol: { val: vol, approx: true, formula: 'V = A_base · h', calc: `${aBase.toFixed(2)} · ${h}` }
+          };
+        },
+        generate3D(p) {
+          const maxDim = Math.max(p.a * 1.8, p.h, 1);
+          const f = 2.4 / maxDim;
+          const r = p.a * f;
+          const hY = (p.h * f) / 2;
+          const vertices = [];
+          for (let i = 0; i < 6; i++) {
+            const ang = (i * 2 * PI) / 6;
+            vertices.push([r * Math.cos(ang), -hY, r * Math.sin(ang)]);
+          }
+          for (let i = 0; i < 6; i++) {
+            const ang = (i * 2 * PI) / 6;
+            vertices.push([r * Math.cos(ang), hY, r * Math.sin(ang)]);
+          }
+          const faces = [
+            { idx: [0, 5, 4, 3, 2, 1], isBase: true },
+            { idx: [6, 7, 8, 9, 10, 11], isBase: true }
+          ];
+          for (let i = 0; i < 6; i++) {
+            const next = (i + 1) % 6;
+            faces.push({ idx: [i, next, next + 6, i + 6], isBase: false });
+          }
+          return { vertices, faces, scale: 95 };
+        }
+      },
+      {
+        id: 'piramide_quadrada',
+        name: 'Pirâmide Quadrada',
+        category: 'Pirâmide Regular',
+        params: [
+          { key: 'a', label: 'Lado da Base (a)', min: 1, max: 10, step: 0.5, default: 4 },
+          { key: 'h', label: 'Altura (h)', min: 1, max: 10, step: 0.5, default: 5 }
+        ],
+        calcMetrics(p) {
+          const { a, h } = p;
+          const pBase = 4 * a;
+          const aBase = a * a;
+          const apotema = Math.hypot(h, a / 2);
+          const aLat = 4 * ((a * apotema) / 2);
+          const aTotal = aBase + aLat;
+          const vol = (aBase * h) / 3;
+          return {
+            pBase: { val: pBase, formula: 'P_base = 4 · a', calc: `4 · ${a}` },
+            aBase: { val: aBase, formula: 'A_base = a²', calc: `${a}²` },
+            aLat: { val: aLat, approx: true, formula: 'A_lat = 2 · a · g', calc: `2 · ${a} · ${apotema.toFixed(2)} (apótema g)` },
+            aTotal: { val: aTotal, approx: true, formula: 'A_total = A_base + A_lat', calc: `${aBase} + ${aLat.toFixed(2)}` },
+            vol: { val: vol, approx: true, formula: 'V = (A_base · h) / 3', calc: `(${aBase} · ${h}) / 3` }
+          };
+        },
+        generate3D(p) {
+          const maxDim = Math.max(p.a, p.h, 1);
+          const f = 2.4 / maxDim;
+          const hW = (p.a * f) / 2;
+          const hY = (p.h * f) / 2;
+          const vertices = [
+            [-hW, -hY, -hW], [ hW, -hY, -hW], [ hW, -hY,  hW], [-hW, -hY,  hW],
+            [  0,  hY,   0] // Ápice
+          ];
+          const faces = [
+            { idx: [0, 3, 2, 1], isBase: true }, // Base
+            { idx: [0, 1, 4], isBase: false },
+            { idx: [1, 2, 4], isBase: false },
+            { idx: [2, 3, 4], isBase: false },
+            { idx: [3, 0, 4], isBase: false }
+          ];
+          return { vertices, faces, scale: 95 };
+        }
+      },
+      {
+        id: 'cilindro',
+        name: 'Cilindro',
+        category: 'Corpo Redondo',
+        params: [
+          { key: 'r', label: 'Raio da Base (r)', min: 1, max: 10, step: 0.5, default: 3 },
+          { key: 'h', label: 'Altura (h)', min: 1, max: 10, step: 0.5, default: 6 }
+        ],
+        calcMetrics(p) {
+          const { r, h } = p;
+          const pBase = 2 * PI * r;
+          const aBase = PI * r * r;
+          const aLat = 2 * PI * r * h;
+          const aTotal = aLat + 2 * aBase;
+          const vol = PI * r * r * h;
+          return {
+            pBase: { val: pBase, approx: true, formula: 'P_base = 2 · π · r', calc: `2 · 3,14 · ${r}` },
+            aBase: { val: aBase, approx: true, formula: 'A_base = π · r²', calc: `3,14 · ${r}²` },
+            aLat: { val: aLat, approx: true, formula: 'A_lat = 2 · π · r · h', calc: `2 · 3,14 · ${r} · ${h}` },
+            aTotal: { val: aTotal, approx: true, formula: 'A_total = A_lat + 2·A_base', calc: `${aLat.toFixed(2)} + 2·${aBase.toFixed(2)}` },
+            vol: { val: vol, approx: true, formula: 'V = π · r² · h', calc: `3,14 · ${r}² · ${h}` }
+          };
+        },
+        generate3D(p) {
+          const maxDim = Math.max(p.r * 2, p.h, 1);
+          const f = 2.4 / maxDim;
+          const r = p.r * f;
+          const hY = (p.h * f) / 2;
+          const N = 24;
+          const vertices = [];
+          for (let i = 0; i < N; i++) {
+            const ang = (i * 2 * PI) / N;
+            vertices.push([r * Math.cos(ang), -hY, r * Math.sin(ang)]);
+          }
+          for (let i = 0; i < N; i++) {
+            const ang = (i * 2 * PI) / N;
+            vertices.push([r * Math.cos(ang), hY, r * Math.sin(ang)]);
+          }
+          const baseBottom = [];
+          const baseTop = [];
+          for (let i = 0; i < N; i++) {
+            baseBottom.push(N - 1 - i);
+            baseTop.push(N + i);
+          }
+          const faces = [
+            { idx: baseBottom, isBase: true },
+            { idx: baseTop, isBase: true }
+          ];
+          for (let i = 0; i < N; i++) {
+            const next = (i + 1) % N;
+            faces.push({ idx: [i, next, next + N, i + N], isBase: false });
+          }
+          return { vertices, faces, scale: 95, isCurved: true };
+        }
+      },
+      {
+        id: 'cone',
+        name: 'Cone',
+        category: 'Corpo Redondo',
+        params: [
+          { key: 'r', label: 'Raio da Base (r)', min: 1, max: 10, step: 0.5, default: 3 },
+          { key: 'h', label: 'Altura (h)', min: 1, max: 10, step: 0.5, default: 6 }
+        ],
+        calcMetrics(p) {
+          const { r, h } = p;
+          const pBase = 2 * PI * r;
+          const aBase = PI * r * r;
+          const geratriz = Math.hypot(r, h);
+          const aLat = PI * r * geratriz;
+          const aTotal = aBase + aLat;
+          const vol = (PI * r * r * h) / 3;
+          return {
+            pBase: { val: pBase, approx: true, formula: 'P_base = 2 · π · r', calc: `2 · 3,14 · ${r}` },
+            aBase: { val: aBase, approx: true, formula: 'A_base = π · r²', calc: `3,14 · ${r}²` },
+            aLat: { val: aLat, approx: true, formula: 'A_lat = π · r · g', calc: `3,14 · ${r} · ${geratriz.toFixed(2)} (geratriz g)` },
+            aTotal: { val: aTotal, approx: true, formula: 'A_total = A_base + A_lat', calc: `${aBase.toFixed(2)} + ${aLat.toFixed(2)}` },
+            vol: { val: vol, approx: true, formula: 'V = (π · r² · h) / 3', calc: `(3,14 · ${r}² · ${h}) / 3` }
+          };
+        },
+        generate3D(p) {
+          const maxDim = Math.max(p.r * 2, p.h, 1);
+          const f = 2.4 / maxDim;
+          const r = p.r * f;
+          const hY = (p.h * f) / 2;
+          const N = 24;
+          const vertices = [];
+          for (let i = 0; i < N; i++) {
+            const ang = (i * 2 * PI) / N;
+            vertices.push([r * Math.cos(ang), -hY, r * Math.sin(ang)]);
+          }
+          vertices.push([0, hY, 0]); // Ápice no índice N
+          const baseBottom = [];
+          for (let i = 0; i < N; i++) {
+            baseBottom.push(N - 1 - i);
+          }
+          const faces = [{ idx: baseBottom, isBase: true }];
+          for (let i = 0; i < N; i++) {
+            const next = (i + 1) % N;
+            faces.push({ idx: [i, next, N], isBase: false });
+          }
+          return { vertices, faces, scale: 95, isCurved: true };
+        }
+      },
+      {
+        id: 'esfera',
+        name: 'Esfera',
+        category: 'Corpo Redondo Perfeito',
+        params: [
+          { key: 'r', label: 'Raio (r)', min: 1, max: 10, step: 0.5, default: 3.5 }
+        ],
+        calcMetrics(p) {
+          const r = p.r;
+          const pEquator = 2 * PI * r;
+          const aEquator = PI * r * r;
+          const aTotal = 4 * PI * r * r;
+          const vol = (4 / 3) * PI * r * r * r;
+          return {
+            pBase: { val: pEquator, approx: true, formula: 'Círculo Máximo = 2·π·r', calc: `2 · 3,14 · ${r} (Equador)` },
+            aBase: { val: aEquator, approx: true, formula: 'Secção Equatorial = π·r²', calc: `3,14 · ${r}²` },
+            aLat: { val: aTotal, approx: true, formula: 'Superfície Contínua = 4·π·r²', calc: `4 · 3,14 · ${r}²` },
+            aTotal: { val: aTotal, approx: true, formula: 'A_total = 4 · π · r²', calc: `4 · 3,14 · ${r}² = 4 círculos!` },
+            vol: { val: vol, approx: true, formula: 'V = (4/3) · π · r³', calc: `(4/3) · 3,14 · ${r}³` }
+          };
+        },
+        generate3D(p) {
+          const r = 1.35;
+          const latBands = 10;
+          const lonBands = 16;
+          const vertices = [];
+          for (let lat = 0; lat <= latBands; lat++) {
+            const theta = (lat * PI) / latBands;
+            const sinT = Math.sin(theta);
+            const cosT = Math.cos(theta);
+            for (let lon = 0; lon <= lonBands; lon++) {
+              const phi = (lon * 2 * PI) / lonBands;
+              vertices.push([r * sinT * Math.cos(phi), r * cosT, r * sinT * Math.sin(phi)]);
+            }
+          }
+          const faces = [];
+          for (let lat = 0; lat < latBands; lat++) {
+            for (let lon = 0; lon < lonBands; lon++) {
+              const first = lat * (lonBands + 1) + lon;
+              const second = first + lonBands + 1;
+              faces.push({ idx: [first, first + 1, second + 1, second], isBase: false });
+            }
+          }
+          return { vertices, faces, scale: 95, isCurved: true, isSphere: true };
+        }
+      }
+    ];
+
+    // Estado da simulação
+    const state = {
+      currentSolidIdx: 0,
+      params: { a: 4 },
+      transparency: true,
+      autoSpin: false,
+      rotX: 20 * (PI / 180),
+      rotY: -35 * (PI / 180),
+      showNet: false,
+      showCompare: false
+    };
+
+    // Elementos DOM
+    const solidSelectorBar = document.getElementById('solidSelectorBar');
+    const viewport3D = document.getElementById('viewport3D');
+    const stageSvg3D = document.getElementById('stageSvg3D');
+    const slidersGrid = document.getElementById('slidersGrid');
+    const resultsGrid = document.getElementById('resultsGrid');
+    const badgeCurrentSolidName = document.getElementById('badgeCurrentSolidName');
+
+    const btnResetView = document.getElementById('btnResetView');
+    const btnToggleTransp = document.getElementById('btnToggleTransp');
+    const btnToggleSpin = document.getElementById('btnToggleSpin');
+    const btnToggleNet = document.getElementById('btnToggleNet');
+    const btnToggleCompare = document.getElementById('btnToggleCompare');
+
+    const netViewPanel = document.getElementById('netViewPanel');
+    const netSvg = document.getElementById('netSvg');
+    const netTitleText = document.getElementById('netTitleText');
+    const btnCloseNet = document.getElementById('btnCloseNet');
+
+    const comparePanel = document.getElementById('comparePanel');
+    const compareGrid = document.getElementById('compareGrid');
+    const compareVolTarget = document.getElementById('compareVolTarget');
+    const btnCloseCompare = document.getElementById('btnCloseCompare');
+
+    // Inicialização da galeria de botões dos 8 sólidos
+    function initSolidSelector() {
+      solidSelectorBar.innerHTML = '';
+      solidsData.forEach((s, idx) => {
+        const btn = document.createElement('button');
+        btn.className = `solid-pill ${idx === state.currentSolidIdx ? 'active' : ''}`;
+        btn.textContent = s.name;
+        btn.setAttribute('role', 'tab');
+        btn.setAttribute('aria-selected', idx === state.currentSolidIdx ? 'true' : 'false');
+        btn.addEventListener('click', () => {
+          selectSolid(idx);
+        });
+        solidSelectorBar.appendChild(btn);
+      });
+    }
+
+    function selectSolid(idx) {
+      state.currentSolidIdx = idx;
+      const solid = solidsData[idx];
+
+      // Inicializa os parâmetros com os padrões deste sólido
+      state.params = {};
+      solid.params.forEach(p => {
+        state.params[p.key] = p.default;
+      });
+
+      // Atualiza pills
+      const pills = solidSelectorBar.querySelectorAll('.solid-pill');
+      pills.forEach((p, i) => {
+        const isActive = i === idx;
+        p.classList.toggle('active', isActive);
+        p.setAttribute('aria-selected', isActive ? 'true' : 'false');
+      });
+
+      renderSliders();
+      updateAll();
+    }
+
+    // Renderização dos sliders dinâmicos
+    function renderSliders() {
+      slidersGrid.innerHTML = '';
+      const solid = solidsData[state.currentSolidIdx];
+
+      solid.params.forEach(p => {
+        const group = document.createElement('div');
+        group.className = 'slider-group';
+
+        const row = document.createElement('div');
+        row.className = 'slider-label-row';
+
+        const label = document.createElement('label');
+        label.htmlFor = `slider_${p.key}`;
+        label.textContent = p.label;
+
+        const badge = document.createElement('span');
+        badge.className = 'slider-val-badge';
+        badge.id = `badge_${p.key}`;
+        badge.textContent = `${state.params[p.key].toFixed(1)} u`;
+
+        row.appendChild(label);
+        row.appendChild(badge);
+
+        const input = document.createElement('input');
+        input.type = 'range';
+        input.id = `slider_${p.key}`;
+        input.min = p.min;
+        input.max = p.max;
+        input.step = p.step;
+        input.value = state.params[p.key];
+        input.setAttribute('aria-label', p.label);
+
+        input.addEventListener('input', (e) => {
+          const val = parseFloat(e.target.value);
+          state.params[p.key] = val;
+          badge.textContent = `${val.toFixed(1)} u`;
+          updateAll();
+        });
+
+        group.appendChild(row);
+        group.appendChild(input);
+        slidersGrid.appendChild(group);
+      });
+    }
+
+    // Rotação e Projeção Matemática 3D
+    function rotate3D(v, rx, ry) {
+      const cosY = Math.cos(ry);
+      const sinY = Math.sin(ry);
+      const x1 = v[0] * cosY + v[2] * sinY;
+      const y1 = v[1];
+      const z1 = -v[0] * sinY + v[2] * cosY;
+
+      const cosX = Math.cos(rx);
+      const sinX = Math.sin(rx);
+      const x2 = x1;
+      const y2 = y1 * cosX - z1 * sinX;
+      const z2 = y1 * sinX + z1 * cosX;
+
+      return [x2, y2, z2];
+    }
+
+    function project3D(v3d, cx, cy, fov, scale) {
+      const distance = 4.2;
+      const z = v3d[2] * (scale / 100);
+      const depth = distance - z;
+      const safeDepth = Math.max(0.6, depth);
+      const factor = (fov / safeDepth) * (scale / 100);
+      return {
+        x: cx + v3d[0] * factor,
+        y: cy - v3d[1] * factor,
+        z: v3d[2],
+        depth: depth
+      };
+    }
+
+    function cross(a, b) {
+      return [
+        a[1] * b[2] - a[2] * b[1],
+        a[2] * b[0] - a[0] * b[2],
+        a[0] * b[1] - a[1] * b[0]
+      ];
+    }
+
+    function sub(a, b) {
+      return [a[0] - b[0], a[1] - b[1], a[2] - b[2]];
+    }
+
+    function norm(v) {
+      const len = Math.hypot(v[0], v[1], v[2]) || 1;
+      return [v[0] / len, v[1] / len, v[2] / len];
+    }
+
+    // Renderização do Sólido 3D
+    function render3D() {
+      const solid = solidsData[state.currentSolidIdx];
+      const model = solid.generate3D(state.params);
+
+      const cx = 300;
+      const cy = 190;
+      const fov = 260;
+      const scale = model.scale;
+
+      stageSvg3D.innerHTML = '';
+
+      // 1. Processar Faces
+      const faceData = model.faces.map((fObj, fIdx) => {
+        const faceIndices = fObj.idx;
+        let center = [0, 0, 0];
+        faceIndices.forEach(idx => {
+          center[0] += model.vertices[idx][0];
+          center[1] += model.vertices[idx][1];
+          center[2] += model.vertices[idx][2];
+        });
+        center = [center[0] / faceIndices.length, center[1] / faceIndices.length, center[2] / faceIndices.length];
+
+        const v0 = model.vertices[faceIndices[0]];
+        const v1 = model.vertices[faceIndices[1]];
+        const v2 = model.vertices[faceIndices[2 % faceIndices.length]];
+        let n = norm(cross(sub(v1, v0), sub(v2, v0)));
+
+        const dotC = n[0] * center[0] + n[1] * center[1] + n[2] * center[2];
+        if (dotC < 0) {
+          n = [-n[0], -n[1], -n[2]];
+        }
+
+        const rotNormal = rotate3D(n, state.rotX, state.rotY);
+
+        const projectedVerts = faceIndices.map(vIdx => {
+          const rotV = rotate3D(model.vertices[vIdx], state.rotX, state.rotY);
+          return {
+            rot3d: rotV,
+            proj: project3D(rotV, cx, cy, fov, scale)
+          };
+        });
+
+        const avgZ = projectedVerts.reduce((sum, item) => sum + item.rot3d[2], 0) / projectedVerts.length;
+        const isFacingFront = rotNormal[2] > -0.05;
+
+        // Iluminação direcional estilo Lambert (luz vindo do alto-esquerda-frente)
+        const lightDir = norm([0.5, 0.8, 0.7]);
+        const diffuse = Math.max(0.18, rotNormal[0] * lightDir[0] + rotNormal[1] * lightDir[1] + rotNormal[2] * lightDir[2]);
+
+        return {
+          fIdx: fIdx,
+          isBase: fObj.isBase,
+          normal: rotNormal,
+          avgZ: avgZ,
+          isFront: isFacingFront,
+          diffuse: diffuse,
+          verts: projectedVerts
+        };
+      });
+
+      // Ordenar faces de trás para frente (Algoritmo do Pintor)
+      const sortedFaces = [...faceData].sort((a, b) => a.avgZ - b.avgZ);
+
+      // Renderizar Faces
+      sortedFaces.forEach(f => {
+        const pathPoints = f.verts.map(v => `${v.proj.x.toFixed(1)},${v.proj.y.toFixed(1)}`).join(' ');
+        const polygon = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
+        polygon.setAttribute('points', pathPoints);
+
+        let baseColor = f.isBase ? '#2c7a78' : '#356b8c';
+        if (model.isSphere) {
+          baseColor = '#356b8c';
+        }
+
+        polygon.setAttribute('fill', baseColor);
+        if (state.transparency) {
+          polygon.setAttribute('fill-opacity', f.isFront ? '0.24' : '0.10');
+          polygon.setAttribute('stroke', baseColor);
+          polygon.setAttribute('stroke-width', '1.2');
+          polygon.setAttribute('stroke-opacity', f.isFront ? '0.85' : '0.35');
+        } else {
+          // Opaco com sombreamento realista
+          const brightness = Math.round(f.diffuse * 100);
+          polygon.setAttribute('fill-opacity', (0.45 + f.diffuse * 0.5).toFixed(2));
+          polygon.setAttribute('stroke', '#ffffff');
+          polygon.setAttribute('stroke-width', '1');
+        }
+
+        stageSvg3D.appendChild(polygon);
+      });
+
+      // 2. Se Transparência estiver ativa, desenhar Guias Internas (Altura tracejada, Raio, Centro)
+      if (state.transparency) {
+        drawInternalGuides(solid, model, cx, cy, fov, scale);
+      }
+    }
+
+    // Desenha as medidas internas no modo Transparência
+    function drawInternalGuides(solid, model, cx, cy, fov, scale) {
+      const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+      g.setAttribute('class', 'internal-guides');
+
+      if (solid.id === 'esfera') {
+        // Centro da esfera e raio r
+        const center3D = rotate3D([0, 0, 0], state.rotX, state.rotY);
+        const centerProj = project3D(center3D, cx, cy, fov, scale);
+
+        const rPoint3D = rotate3D([1.35, 0, 0], state.rotX, state.rotY);
+        const rProj = project3D(rPoint3D, cx, cy, fov, scale);
+
+        // Linha do raio
+        const rLine = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+        rLine.setAttribute('x1', centerProj.x);
+        rLine.setAttribute('y1', centerProj.y);
+        rLine.setAttribute('x2', rProj.x);
+        rLine.setAttribute('y2', rProj.y);
+        rLine.setAttribute('stroke', '#e67e22');
+        rLine.setAttribute('stroke-width', '2.5');
+        g.appendChild(rLine);
+
+        // Ponto central
+        const centerDot = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+        centerDot.setAttribute('cx', centerProj.x);
+        centerDot.setAttribute('cy', centerProj.y);
+        centerDot.setAttribute('r', '4');
+        centerDot.setAttribute('fill', '#e67e22');
+        g.appendChild(centerDot);
+
+        // Texto r
+        const textR = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+        textR.setAttribute('x', (centerProj.x + rProj.x) / 2);
+        textR.setAttribute('y', (centerProj.y + rProj.y) / 2 - 8);
+        textR.setAttribute('fill', '#e67e22');
+        textR.setAttribute('font-size', '12');
+        textR.setAttribute('font-weight', '800');
+        textR.setAttribute('text-anchor', 'middle');
+        textR.textContent = `r = ${state.params.r.toFixed(1)}`;
+        g.appendChild(textR);
+
+      } else if (solid.id === 'cilindro' || solid.id === 'cone') {
+        const maxDim = Math.max(state.params.r * 2, state.params.h, 1);
+        const f = 2.4 / maxDim;
+        const rVal = state.params.r * f;
+        const hY = (state.params.h * f) / 2;
+
+        const bottomCenter = rotate3D([0, -hY, 0], state.rotX, state.rotY);
+        const topCenter = rotate3D([0, hY, 0], state.rotX, state.rotY);
+        const baseEdge = rotate3D([rVal, -hY, 0], state.rotX, state.rotY);
+
+        const bcProj = project3D(bottomCenter, cx, cy, fov, scale);
+        const tcProj = project3D(topCenter, cx, cy, fov, scale);
+        const beProj = project3D(baseEdge, cx, cy, fov, scale);
+
+        // Altura h (tracejada)
+        const hLine = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+        hLine.setAttribute('x1', bcProj.x);
+        hLine.setAttribute('y1', bcProj.y);
+        hLine.setAttribute('x2', tcProj.x);
+        hLine.setAttribute('y2', tcProj.y);
+        hLine.setAttribute('stroke', '#d5a64a');
+        hLine.setAttribute('stroke-width', '2.5');
+        hLine.setAttribute('stroke-dasharray', '5 4');
+        g.appendChild(hLine);
+
+        // Raio da base r
+        const rLine = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+        rLine.setAttribute('x1', bcProj.x);
+        rLine.setAttribute('y1', bcProj.y);
+        rLine.setAttribute('x2', beProj.x);
+        rLine.setAttribute('y2', beProj.y);
+        rLine.setAttribute('stroke', '#2c7a78');
+        rLine.setAttribute('stroke-width', '2.5');
+        g.appendChild(rLine);
+
+        // Ponto central da base
+        const dot = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+        dot.setAttribute('cx', bcProj.x);
+        dot.setAttribute('cy', bcProj.y);
+        dot.setAttribute('r', '3.5');
+        dot.setAttribute('fill', '#2c7a78');
+        g.appendChild(dot);
+
+        // Rótulos h e r
+        const textH = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+        textH.setAttribute('x', (bcProj.x + tcProj.x) / 2 - 12);
+        textH.setAttribute('y', (bcProj.y + tcProj.y) / 2);
+        textH.setAttribute('fill', '#d5a64a');
+        textH.setAttribute('font-size', '12');
+        textH.setAttribute('font-weight', '800');
+        textH.textContent = `h = ${state.params.h.toFixed(1)}`;
+        g.appendChild(textH);
+
+        const textR = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+        textR.setAttribute('x', (bcProj.x + beProj.x) / 2);
+        textR.setAttribute('y', (bcProj.y + beProj.y) / 2 + 15);
+        textR.setAttribute('fill', '#2c7a78');
+        textR.setAttribute('font-size', '12');
+        textR.setAttribute('font-weight', '800');
+        textR.setAttribute('text-anchor', 'middle');
+        textR.textContent = `r = ${state.params.r.toFixed(1)}`;
+        g.appendChild(textR);
+
+      } else if (solid.id === 'piramide_quadrada') {
+        const maxDim = Math.max(state.params.a, state.params.h, 1);
+        const f = 2.4 / maxDim;
+        const hY = (state.params.h * f) / 2;
+
+        const bottomCenter = rotate3D([0, -hY, 0], state.rotX, state.rotY);
+        const topCenter = rotate3D([0, hY, 0], state.rotX, state.rotY);
+
+        const bcProj = project3D(bottomCenter, cx, cy, fov, scale);
+        const tcProj = project3D(topCenter, cx, cy, fov, scale);
+
+        const hLine = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+        hLine.setAttribute('x1', bcProj.x);
+        hLine.setAttribute('y1', bcProj.y);
+        hLine.setAttribute('x2', tcProj.x);
+        hLine.setAttribute('y2', tcProj.y);
+        hLine.setAttribute('stroke', '#d5a64a');
+        hLine.setAttribute('stroke-width', '2.5');
+        hLine.setAttribute('stroke-dasharray', '5 4');
+        g.appendChild(hLine);
+
+        const textH = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+        textH.setAttribute('x', (bcProj.x + tcProj.x) / 2 - 12);
+        textH.setAttribute('y', (bcProj.y + tcProj.y) / 2);
+        textH.setAttribute('fill', '#d5a64a');
+        textH.setAttribute('font-size', '12');
+        textH.setAttribute('font-weight', '800');
+        textH.textContent = `h = ${state.params.h.toFixed(1)}`;
+        g.appendChild(textH);
+      }
+
+      stageSvg3D.appendChild(g);
+    }
+
+    // Atualização dos Painéis de Resultados
+    function updateResults() {
+      const solid = solidsData[state.currentSolidIdx];
+      const m = solid.calcMetrics(state.params);
+
+      // Nome e dimensão no cabeçalho
+      const paramStr = Object.entries(state.params).map(([k, v]) => `${k} = ${v.toFixed(1)} u`).join(' · ');
+      badgeCurrentSolidName.textContent = `${solid.name} (${paramStr})`;
+
+      resultsGrid.innerHTML = '';
+
+      function createMetricCard(title, valObj, unit, highlightColor, isVolume) {
+        const card = document.createElement('div');
+        card.className = `result-metric-card ${isVolume ? 'volume-card' : ''}`;
+
+        const eyebrow = document.createElement('div');
+        eyebrow.className = 'metric-eyebrow';
+        eyebrow.innerHTML = `<span>${title}</span><span>[${unit}]</span>`;
+
+        const formulaTitle = document.createElement('div');
+        formulaTitle.className = 'metric-formula-title';
+        formulaTitle.textContent = valObj.formula;
+
+        const calcLine = document.createElement('div');
+        calcLine.className = 'metric-calc-line';
+        calcLine.textContent = `= ${valObj.calc}`;
+
+        const finalVal = document.createElement('div');
+        finalVal.className = `metric-final-val ${highlightColor ? `highlight-${highlightColor}` : ''}`;
+        const approxPrefix = valObj.approx ? '≈ ' : '= ';
+        finalVal.textContent = `${approxPrefix}${valObj.val.toFixed(2)} ${unit}`;
+
+        card.appendChild(eyebrow);
+        card.appendChild(formulaTitle);
+        card.appendChild(calcLine);
+        card.appendChild(finalVal);
+
+        return card;
+      }
+
+      resultsGrid.appendChild(createMetricCard('Perímetro da Base', m.pBase, 'u', null, false));
+      resultsGrid.appendChild(createMetricCard('Área da Base', m.aBase, 'u²', 'teal', false));
+      resultsGrid.appendChild(createMetricCard('Área Lateral', m.aLat, 'u²', 'azul', false));
+      resultsGrid.appendChild(createMetricCard('Área Total da Superfície', m.aTotal, 'u²', 'dourado', false));
+      resultsGrid.appendChild(createMetricCard('Volume do Sólido (Capacidade)', m.vol, 'u³', 'azul', true));
+
+      if (m.extra) {
+        resultsGrid.appendChild(createMetricCard(m.extra.label, m.extra, 'u', null, false));
+      }
+    }
+
+    // Renderizador de Planificação 2D Dinâmica
+    function renderNet() {
+      netSvg.innerHTML = '';
+      const solid = solidsData[state.currentSolidIdx];
+      netTitleText.textContent = `Planificação (Rede 2D): ${solid.name}`;
+
+      const svgW = 600;
+      const svgH = 320;
+
+      // Grade sutil
+      const defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
+      defs.innerHTML = `
+        <pattern id="netGrid" width="20" height="20" patternUnits="userSpaceOnUse">
+          <path d="M 20 0 L 0 0 0 20" fill="none" stroke="#eef2f5" stroke-width="1" />
+        </pattern>
+      `;
+      netSvg.appendChild(defs);
+
+      const bg = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+      bg.setAttribute('width', svgW);
+      bg.setAttribute('height', svgH);
+      bg.setAttribute('fill', 'url(#netGrid)');
+      netSvg.appendChild(bg);
+
+      function drawRect(x, y, w, h, fill, stroke, label) {
+        const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+        rect.setAttribute('x', x);
+        rect.setAttribute('y', y);
+        rect.setAttribute('width', w);
+        rect.setAttribute('height', h);
+        rect.setAttribute('fill', fill);
+        rect.setAttribute('stroke', stroke);
+        rect.setAttribute('stroke-width', '2');
+        rect.setAttribute('rx', '2');
+        netSvg.appendChild(rect);
+
+        if (label) {
+          const t = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+          t.setAttribute('x', x + w / 2);
+          t.setAttribute('y', y + h / 2 + 4);
+          t.setAttribute('text-anchor', 'middle');
+          t.setAttribute('font-size', '11');
+          t.setAttribute('font-weight', '700');
+          t.setAttribute('fill', '#ffffff');
+          t.textContent = label;
+          netSvg.appendChild(t);
+        }
+      }
+
+      function drawPolygon(pointsStr, fill, stroke, label, cx, cy) {
+        const poly = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
+        poly.setAttribute('points', pointsStr);
+        poly.setAttribute('fill', fill);
+        poly.setAttribute('stroke', stroke);
+        poly.setAttribute('stroke-width', '2');
+        netSvg.appendChild(poly);
+
+        if (label && cx && cy) {
+          const t = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+          t.setAttribute('x', cx);
+          t.setAttribute('y', cy + 4);
+          t.setAttribute('text-anchor', 'middle');
+          t.setAttribute('font-size', '10');
+          t.setAttribute('font-weight', '700');
+          t.setAttribute('fill', '#ffffff');
+          t.textContent = label;
+          netSvg.appendChild(t);
+        }
+      }
+
+      function drawCircle(cx, cy, r, fill, stroke, label) {
+        const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+        circle.setAttribute('cx', cx);
+        circle.setAttribute('cy', cy);
+        circle.setAttribute('r', r);
+        circle.setAttribute('fill', fill);
+        circle.setAttribute('stroke', stroke);
+        circle.setAttribute('stroke-width', '2');
+        netSvg.appendChild(circle);
+
+        if (label) {
+          const t = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+          t.setAttribute('x', cx);
+          t.setAttribute('y', cy + 4);
+          t.setAttribute('text-anchor', 'middle');
+          t.setAttribute('font-size', '11');
+          t.setAttribute('font-weight', '700');
+          t.setAttribute('fill', '#ffffff');
+          t.textContent = label;
+          netSvg.appendChild(t);
+        }
+      }
+
+      // Desenho da planificação conforme sólido
+      if (solid.id === 'cubo') {
+        const s = 50;
+        const ox = 180;
+        const oy = 60;
+        // Cruz latina de 6 quadrados
+        drawRect(ox + s, oy, s, s, '#2c7a78', '#18324b', 'Base Sup');
+        drawRect(ox, oy + s, s, s, '#356b8c', '#18324b', 'Face');
+        drawRect(ox + s, oy + s, s, s, '#356b8c', '#18324b', 'Face');
+        drawRect(ox + 2 * s, oy + s, s, s, '#356b8c', '#18324b', 'Face');
+        drawRect(ox + 3 * s, oy + s, s, s, '#356b8c', '#18324b', 'Face');
+        drawRect(ox + s, oy + 2 * s, s, s, '#2c7a78', '#18324b', 'Base Inf');
+
+      } else if (solid.id === 'paralelepipedo') {
+        const wA = 70; const wB = 45; const hC = 65;
+        const ox = 150; const oy = 60;
+        drawRect(ox + wB, oy, wA, wB, '#2c7a78', '#18324b', 'Base');
+        drawRect(ox, oy + wB, wB, hC, '#356b8c', '#18324b', 'Lat');
+        drawRect(ox + wB, oy + wB, wA, hC, '#356b8c', '#18324b', 'Frente');
+        drawRect(ox + wB + wA, oy + wB, wB, hC, '#356b8c', '#18324b', 'Lat');
+        drawRect(ox + 2 * wB + wA, oy + wB, wA, hC, '#356b8c', '#18324b', 'Trás');
+        drawRect(ox + wB, oy + wB + hC, wA, wB, '#2c7a78', '#18324b', 'Base');
+
+      } else if (solid.id === 'cilindro') {
+        const r = 36;
+        const rectW = 260; // 2·π·r desenrolado
+        const rectH = 120;
+        const ox = 170;
+        const oy = 95;
+
+        // Retângulo lateral
+        drawRect(ox, oy, rectW, rectH, '#356b8c', '#18324b', 'Área Lateral Desenrolada (2·π·r × h)');
+        // Círculo base superior
+        drawCircle(ox + rectW / 2, oy - r, r, '#2c7a78', '#18324b', 'Base');
+        // Círculo base inferior
+        drawCircle(ox + rectW / 2, oy + rectH + r, r, '#2c7a78', '#18324b', 'Base');
+
+      } else if (solid.id === 'cone') {
+        const r = 38;
+        const cx = 280; const cy = 160;
+        // Setor circular lateral
+        const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+        path.setAttribute('d', `M ${cx} ${cy} L ${cx - 130} ${cy - 50} A 140 140 0 0 1 ${cx + 130} ${cy - 50} Z`);
+        path.setAttribute('fill', '#356b8c');
+        path.setAttribute('stroke', '#18324b');
+        path.setAttribute('stroke-width', '2');
+        netSvg.appendChild(path);
+
+        const tLat = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+        tLat.setAttribute('x', cx);
+        tLat.setAttribute('y', cy - 80);
+        tLat.setAttribute('text-anchor', 'middle');
+        tLat.setAttribute('font-size', '11');
+        tLat.setAttribute('font-weight', '700');
+        tLat.setAttribute('fill', '#ffffff');
+        tLat.textContent = 'Setor Lateral (Ângulo θ = 360°·r/g)';
+        netSvg.appendChild(tLat);
+
+        // Círculo base
+        drawCircle(cx, cy + 60, r, '#2c7a78', '#18324b', 'Base Circular');
+
+      } else if (solid.id === 'piramide_quadrada') {
+        const s = 70;
+        const hTri = 65;
+        const ox = 265; const oy = 125;
+        // Quadrado da base
+        drawRect(ox, oy, s, s, '#2c7a78', '#18324b', 'Base');
+        // 4 triângulos
+        drawPolygon(`${ox},${oy} ${ox + s},${oy} ${ox + s/2},${oy - hTri}`, '#356b8c', '#18324b', 'Lat', ox + s/2, oy - hTri/2);
+        drawPolygon(`${ox},${oy + s} ${ox + s},${oy + s} ${ox + s/2},${oy + s + hTri}`, '#356b8c', '#18324b', 'Lat', ox + s/2, oy + s + hTri/2);
+        drawPolygon(`${ox},${oy} ${ox},${oy + s} ${ox - hTri},${oy + s/2}`, '#356b8c', '#18324b', 'Lat', ox - hTri/2, oy + s/2);
+        drawPolygon(`${ox + s},${oy} ${ox + s},${oy + s} ${ox + s + hTri},${oy + s/2}`, '#356b8c', '#18324b', 'Lat', ox + s + hTri/2, oy + s/2);
+
+      } else if (solid.id === 'prisma_triangular') {
+        const s = 60; const h = 110;
+        const ox = 210; const oy = 100;
+        drawRect(ox, oy, s, h, '#356b8c', '#18324b', 'Face 1');
+        drawRect(ox + s, oy, s, h, '#356b8c', '#18324b', 'Face 2');
+        drawRect(ox + 2*s, oy, s, h, '#356b8c', '#18324b', 'Face 3');
+        // Triângulos das bases
+        const hTri = (s * Math.sqrt(3)) / 2;
+        drawPolygon(`${ox + s},${oy} ${ox + 2*s},${oy} ${ox + 1.5*s},${oy - hTri}`, '#2c7a78', '#18324b', 'Base', ox + 1.5*s, oy - hTri/2);
+        drawPolygon(`${ox + s},${oy + h} ${ox + 2*s},${oy + h} ${ox + 1.5*s},${oy + h + hTri}`, '#2c7a78', '#18324b', 'Base', ox + 1.5*s, oy + h + hTri/2);
+
+      } else if (solid.id === 'prisma_hexagonal') {
+        const s = 34; const h = 100;
+        const ox = 190; const oy = 110;
+        for (let i = 0; i < 6; i++) {
+          drawRect(ox + i * s, oy, s, h, '#356b8c', '#18324b', `${i+1}`);
+        }
+        // Hexágonos nas bases
+        const rH = s;
+        function getHexPoints(cx, cy) {
+          const pts = [];
+          for (let i = 0; i < 6; i++) {
+            const a = (i * 2 * PI) / 6;
+            pts.push(`${(cx + rH * Math.cos(a)).toFixed(1)},${(cy + rH * Math.sin(a)).toFixed(1)}`);
+          }
+          return pts.join(' ');
+        }
+        drawPolygon(getHexPoints(ox + 2.5 * s, oy - rH), '#2c7a78', '#18324b', 'Base', ox + 2.5 * s, oy - rH);
+        drawPolygon(getHexPoints(ox + 2.5 * s, oy + h + rH), '#2c7a78', '#18324b', 'Base', ox + 2.5 * s, oy + h + rH);
+
+      } else if (solid.id === 'esfera') {
+        // Explicação didática: Teorema de Gauss (A esfera não é perfeitamente planificável sem distorção)
+        const tWarning = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+        tWarning.setAttribute('x', svgW / 2);
+        tWarning.setAttribute('y', 130);
+        tWarning.setAttribute('text-anchor', 'middle');
+        tWarning.setAttribute('font-size', '14');
+        tWarning.setAttribute('font-weight', '800');
+        tWarning.setAttribute('fill', '#18324b');
+        tWarning.textContent = 'A Esfera Não é Planificável sem Distorção!';
+        netSvg.appendChild(tWarning);
+
+        const tSub = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+        tSub.setAttribute('x', svgW / 2);
+        tSub.setAttribute('y', 165);
+        tSub.setAttribute('text-anchor', 'middle');
+        tSub.setAttribute('font-size', '12');
+        tSub.setAttribute('fill', '#647684');
+        tSub.textContent = 'Teorema Egregium de Gauss: curvatura gaussiana positiva impede desenrolar uma esfera no plano.';
+        netSvg.appendChild(tSub);
+
+        const tSol = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+        tSol.setAttribute('x', svgW / 2);
+        tSol.setAttribute('y', 195);
+        tSol.setAttribute('text-anchor', 'middle');
+        tSol.setAttribute('font-size', '12');
+        tSol.setAttribute('font-weight', '700');
+        tSol.setAttribute('fill', '#2c7a78');
+        tSol.textContent = 'Cartógrafos e matemáticos usam fusos ou gomos aproximados (como mapas-múndi de Mercator ou fuso senoidal).';
+        netSvg.appendChild(tSol);
+      }
+    }
+
+    // Renderizador de Comparação Isoperimétrica
+    function renderComparison() {
+      // Tomamos como referência o volume do sólido atual
+      const currentSolid = solidsData[state.currentSolidIdx];
+      const m = currentSolid.calcMetrics(state.params);
+      let targetV = m.vol.val;
+      if (targetV < 5) targetV = 64; // valor didático agradável se for muito pequeno
+
+      compareVolTarget.textContent = targetV.toFixed(1);
+      compareGrid.innerHTML = '';
+
+      // 1. Cubo de mesmo volume: V = a³ => a = V^(1/3) => A = 6·a²
+      const aCubo = Math.cbrt(targetV);
+      const aTotalCubo = 6 * aCubo * aCubo;
+
+      // 2. Cilindro equilátero (h = 2r): V = 2·π·r³ => r = (V / 2π)^(1/3) => A = 6·π·r²
+      const rCil = Math.cbrt(targetV / (2 * PI));
+      const aTotalCil = 6 * PI * rCil * rCil;
+
+      // 3. Esfera de mesmo volume: V = (4/3)·π·r³ => r = (3V / 4π)^(1/3) => A = 4·π·r²
+      const rEsfera = Math.cbrt((3 * targetV) / (4 * PI));
+      const aTotalEsfera = 4 * PI * rEsfera * rEsfera;
+
+      function createCompareCard(name, dimStr, aVal, isWinner) {
+        const card = document.createElement('div');
+        card.className = `compare-card ${isWinner ? 'winner' : ''}`;
+        card.innerHTML = `
+          <div class="compare-card-title">${name}</div>
+          <div class="compare-card-metric">${dimStr}</div>
+          <div class="compare-card-metric" style="color:var(--azul);">Volume: ${targetV.toFixed(1)} u³</div>
+          <div style="font-size:0.75rem; text-transform:uppercase; color:var(--muted); margin-top:8px;">Área Total:</div>
+          <div class="compare-card-area ${isWinner ? 'highlight-teal' : ''}">${aVal.toFixed(1)} u²</div>
+          ${isWinner ? '<div style="font-size:0.75rem; font-weight:800; color:#27ae60; margin-top:4px;">★ MENOR SUPERFÍCIE!</div>' : ''}
+        `;
+        return card;
+      }
+
+      compareGrid.appendChild(createCompareCard('Cubo', `Aresta a ≈ ${aCubo.toFixed(2)} u`, aTotalCubo, false));
+      compareGrid.appendChild(createCompareCard('Cilindro Equilátero', `Raio r ≈ ${rCil.toFixed(2)} u`, aTotalCil, false));
+      compareGrid.appendChild(createCompareCard('Esfera Perfeita', `Raio r ≈ ${rEsfera.toFixed(2)} u`, aTotalEsfera, true));
+    }
+
+    function updateAll() {
+      render3D();
+      updateResults();
+      if (state.showNet) renderNet();
+      if (state.showCompare) renderComparison();
+    }
+
+    // Gerenciamento de Interação com Pointer Events no Palco 3D
+    let isDragging = false;
+    let lastPointerX = 0;
+    let lastPointerY = 0;
+
+    viewport3D.addEventListener('pointerdown', (e) => {
+      isDragging = true;
+      lastPointerX = e.clientX;
+      lastPointerY = e.clientY;
+      viewport3D.setPointerCapture(e.pointerId);
+    });
+
+    viewport3D.addEventListener('pointermove', (e) => {
+      if (!isDragging) return;
+      const dx = e.clientX - lastPointerX;
+      const dy = e.clientY - lastPointerY;
+      lastPointerX = e.clientX;
+      lastPointerY = e.clientY;
+
+      state.rotY += dx * 0.008;
+      state.rotX += dy * 0.008;
+
+      // Limitar rotação vertical para evitar inversão
+      state.rotX = Math.max(-PI / 2.2, Math.min(PI / 2.2, state.rotX));
+
+      render3D();
+    });
+
+    function endDrag(e) {
+      if (isDragging) {
+        isDragging = false;
+        try { viewport3D.releasePointerCapture(e.pointerId); } catch (_) {}
+      }
+    }
+
+    viewport3D.addEventListener('pointerup', endDrag);
+    viewport3D.addEventListener('pointercancel', endDrag);
+
+    // Controles de Câmera
+    btnResetView.addEventListener('click', () => {
+      state.rotX = 20 * (PI / 180);
+      state.rotY = -35 * (PI / 180);
+      render3D();
+    });
+
+    btnToggleTransp.addEventListener('click', () => {
+      state.transparency = !state.transparency;
+      btnToggleTransp.classList.toggle('active', state.transparency);
+      render3D();
+    });
+
+    let spinAnimationId = null;
+    function spinLoop() {
+      if (!state.autoSpin) return;
+      state.rotY += 0.012;
+      render3D();
+      spinAnimationId = requestAnimationFrame(spinLoop);
+    }
+
+    btnToggleSpin.addEventListener('click', () => {
+      state.autoSpin = !state.autoSpin;
+      btnToggleSpin.classList.toggle('active', state.autoSpin);
+      if (state.autoSpin) {
+        spinLoop();
+      } else {
+        cancelAnimationFrame(spinAnimationId);
+      }
+    });
+
+    // Planificação e Comparação
+    btnToggleNet.addEventListener('click', () => {
+      state.showNet = !state.showNet;
+      btnToggleNet.classList.toggle('active', state.showNet);
+      netViewPanel.classList.toggle('show', state.showNet);
+      if (state.showNet) renderNet();
+    });
+
+    btnCloseNet.addEventListener('click', () => {
+      state.showNet = false;
+      btnToggleNet.classList.remove('active');
+      netViewPanel.classList.remove('show');
+    });
+
+    btnToggleCompare.addEventListener('click', () => {
+      state.showCompare = !state.showCompare;
+      btnToggleCompare.classList.toggle('active', state.showCompare);
+      comparePanel.classList.toggle('show', state.showCompare);
+      if (state.showCompare) renderComparison();
+    });
+
+    btnCloseCompare.addEventListener('click', () => {
+      state.showCompare = false;
+      btnToggleCompare.classList.remove('active');
+      comparePanel.classList.remove('show');
+    });
+
+    // Modo Projeção em Sala de Aula (Fullscreen)
+    document.getElementById('btnFullscreen').addEventListener('click', () => {
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().catch(() => {});
+      } else {
+        document.exitFullscreen().catch(() => {});
+      }
+    });
+
+    // Inicialização geral
+    initSolidSelector();
+    renderSliders();
+    updateAll();
+  </script>
+</body>
+</html>

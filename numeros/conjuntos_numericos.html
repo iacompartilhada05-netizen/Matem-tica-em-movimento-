@@ -1,0 +1,1850 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Conjuntos Numéricos: N, Z, Q, I e R · Matemática em Movimento</title>
+  <meta name="description" content="Laboratório interativo dos Conjuntos Numéricos (Naturais, Inteiros, Racionais, Irracionais e Reais). Diagrama de Venn, classificador de números, gerador de dízimas periódicas e reta numérica com zoom." />
+  <link rel="stylesheet" href="../css/estilo.css" />
+  <style>
+    /* Estilos específicos da demonstração de Conjuntos Numéricos */
+    :root {
+      --cor-n: #2e7d32; /* Verde Naturais */
+      --cor-n-light: #e8f5e9;
+      --cor-z: #2b6cb0; /* Azul Inteiros */
+      --cor-z-light: #ebf8ff;
+      --cor-q: #d97706; /* Dourado/Âmbar Racionais */
+      --cor-q-light: #fef3c7;
+      --cor-i: #7c3aed; /* Púrpura Irracionais */
+      --cor-i-light: #f5f3ff;
+      --cor-r: #18324b; /* Navy Reais */
+      --cor-r-light: #f1f5f9;
+    }
+
+    /* Diagrama de Venn SVG */
+    .venn-container {
+      position: relative;
+      background: #ffffff;
+      border: 1px solid var(--linha);
+      border-radius: var(--radius-md);
+      box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.02);
+      overflow: hidden;
+      margin-bottom: 16px;
+    }
+
+    .venn-svg {
+      width: 100%;
+      height: 380px;
+      display: block;
+      user-select: none;
+    }
+
+    .venn-svg text {
+      pointer-events: none;
+    }
+
+    .venn-region {
+      cursor: pointer;
+      transition: fill-opacity 0.2s ease, stroke-width 0.2s ease, filter 0.2s ease;
+    }
+
+    .venn-region:hover {
+      filter: brightness(0.95);
+    }
+
+    .venn-region.active-region {
+      stroke-width: 3.5px !important;
+      stroke-dasharray: none !important;
+      filter: drop-shadow(0 0 6px rgba(24, 50, 75, 0.25));
+    }
+
+    /* Info card do conjunto clicado */
+    .set-info-callout {
+      background: #f8fafc;
+      border: 1px solid var(--linha);
+      border-left: 5px solid var(--navy);
+      border-radius: var(--radius-sm);
+      padding: 12px 16px;
+      margin-bottom: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      transition: all 0.2s ease;
+    }
+
+    .set-info-title {
+      font-size: 0.92rem;
+      font-weight: 800;
+      color: var(--navy);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .set-info-desc {
+      font-size: 0.84rem;
+      color: var(--tinta);
+      line-height: 1.45;
+    }
+
+    .set-info-examples {
+      font-family: var(--font-mono);
+      font-size: 0.82rem;
+      color: var(--muted);
+      background: #ffffff;
+      border: 1px solid var(--linha);
+      border-radius: 4px;
+      padding: 4px 8px;
+      margin-top: 4px;
+      display: inline-block;
+    }
+
+    /* Toolbar de Ações do Diagrama */
+    .venn-toolbar {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 16px;
+    }
+
+    .btn-venn-filter {
+      background: #ffffff;
+      border: 1.5px solid var(--linha);
+      border-radius: var(--radius-sm);
+      padding: 6px 12px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: var(--tinta);
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.15s ease;
+    }
+
+    .btn-venn-filter:hover {
+      border-color: var(--azul);
+      background: #f0f7fb;
+    }
+
+    .btn-venn-filter.active-filter {
+      background: var(--navy);
+      border-color: var(--navy);
+      color: #ffffff;
+    }
+
+    /* Seção do Jogo Classificador */
+    .classifier-card {
+      background: #ffffff;
+      border: 1.5px solid var(--azul);
+      border-radius: var(--radius-md);
+      padding: 18px 20px;
+      margin-bottom: 18px;
+      box-shadow: var(--shadow-card);
+    }
+
+    .classifier-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 14px;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .classifier-title {
+      font-size: 1.05rem;
+      font-weight: 800;
+      color: var(--navy);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .score-badge {
+      font-family: var(--font-mono);
+      font-size: 0.84rem;
+      font-weight: 800;
+      background: #eef5f8;
+      color: var(--navy);
+      border: 1px solid #c7dbe6;
+      padding: 4px 10px;
+      border-radius: var(--radius-sm);
+    }
+
+    .number-display-box {
+      background: radial-gradient(circle at 50% 50%, #ffffff 0%, #f4f8fa 100%);
+      border: 2px dashed #b9d2e1;
+      border-radius: var(--radius-md);
+      padding: 20px;
+      text-align: center;
+      margin-bottom: 16px;
+    }
+
+    .number-to-classify {
+      font-family: var(--font-mono);
+      font-size: 2.3rem;
+      font-weight: 900;
+      color: var(--navy);
+      letter-spacing: -0.02em;
+      margin-bottom: 4px;
+    }
+
+    .number-tip {
+      font-size: 0.82rem;
+      color: var(--muted);
+      font-weight: 500;
+    }
+
+    /* Botões de Seleção dos 5 Conjuntos */
+    .set-choices-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+
+    @media (max-width: 600px) {
+      .set-choices-grid {
+        grid-template-columns: repeat(3, 1fr);
+      }
+    }
+
+    .btn-set-choice {
+      position: relative;
+      background: #ffffff;
+      border: 2px solid var(--linha);
+      border-radius: var(--radius-sm);
+      padding: 10px 4px;
+      text-align: center;
+      cursor: pointer;
+      font-weight: 800;
+      font-size: 0.95rem;
+      color: var(--tinta);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2px;
+      transition: all 0.18s cubic-bezier(0.4, 0, 0.2, 1);
+      user-select: none;
+    }
+
+    .btn-set-choice:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+    }
+
+    /* Estado CORRETO: Verde vivo e vibrante com destaque */
+    .btn-set-choice.is-correct {
+      background: #16a34a !important;
+      border-color: #15803d !important;
+      color: #ffffff !important;
+      box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.35), 0 4px 12px rgba(22, 163, 74, 0.28) !important;
+      transform: translateY(-2px);
+    }
+
+    .btn-set-choice.is-correct .btn-set-sublabel {
+      color: #f0fdf4 !important;
+      opacity: 1 !important;
+      font-weight: 700;
+    }
+
+    /* Estado ERRADO: Vermelho vivo com animação de tremor e destaque */
+    .btn-set-choice.is-wrong {
+      background: #dc2626 !important;
+      border-color: #b91c1c !important;
+      color: #ffffff !important;
+      box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.35), 0 4px 12px rgba(220, 38, 38, 0.28) !important;
+      animation: shakeChoice 0.35s ease-in-out;
+    }
+
+    .btn-set-choice.is-wrong .btn-set-sublabel {
+      color: #fef2f2 !important;
+      opacity: 1 !important;
+      font-weight: 700;
+    }
+
+    @keyframes shakeChoice {
+      0%, 100% { transform: translateX(0); }
+      20%, 60% { transform: translateX(-5px); }
+      40%, 80% { transform: translateX(5px); }
+    }
+
+    /* Selo circular de confirmação no canto do botão */
+    .choice-badge-indicator {
+      display: none;
+      position: absolute;
+      top: -7px;
+      right: -7px;
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      font-size: 11px;
+      font-weight: 900;
+      line-height: 20px;
+      text-align: center;
+      color: #ffffff;
+      border: 2px solid #ffffff;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.25);
+      z-index: 2;
+    }
+
+    .btn-set-choice.is-correct .choice-badge-indicator {
+      display: block;
+      background: #15803d;
+    }
+
+    .btn-set-choice.is-wrong .choice-badge-indicator {
+      display: block;
+      background: #991b1b;
+    }
+
+    .btn-set-sublabel {
+      font-size: 0.68rem;
+      font-weight: 600;
+      opacity: 0.85;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    /* Feedback de Resposta do Jogo */
+    .feedback-banner {
+      display: none;
+      border-radius: var(--radius-sm);
+      padding: 12px 14px;
+      margin-bottom: 16px;
+      font-size: 0.86rem;
+      line-height: 1.45;
+      animation: fadeIn 0.2s ease-in-out;
+    }
+
+    .feedback-banner.success {
+      background: #f0fdf4;
+      border: 1px solid #bbf7d0;
+      border-left: 5px solid #22c55e;
+      color: #14532d;
+    }
+
+    .feedback-banner.error {
+      background: #fef2f2;
+      border: 1px solid #fecaca;
+      border-left: 5px solid #ef4444;
+      color: #7f1d1d;
+    }
+
+    .feedback-path-badge {
+      display: inline-block;
+      font-family: var(--font-mono);
+      font-weight: 800;
+      font-size: 0.84rem;
+      background: rgba(255, 255, 255, 0.85);
+      border: 1px solid currentColor;
+      padding: 2px 8px;
+      border-radius: 4px;
+      margin-top: 4px;
+    }
+
+    /* Bloco Personalizado do Professor */
+    .custom-input-row {
+      display: flex;
+      gap: 8px;
+      margin-top: 12px;
+      padding-top: 12px;
+      border-top: 1px dashed var(--linha);
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .custom-input-row input {
+      flex: 1;
+      min-width: 140px;
+      padding: 7px 10px;
+      border: 1.5px solid var(--linha);
+      border-radius: var(--radius-sm);
+      font-family: var(--font-mono);
+      font-size: 0.9rem;
+    }
+
+    .custom-input-row input:focus {
+      outline: none;
+      border-color: var(--azul);
+    }
+
+    /* Bloco Exploração de Decimais Q vs I */
+    .decimals-explorer-card {
+      background: #ffffff;
+      border: 1px solid var(--linha);
+      border-radius: var(--radius-md);
+      padding: 16px;
+      margin-bottom: 18px;
+    }
+
+    .decimals-title {
+      font-size: 0.95rem;
+      font-weight: 800;
+      color: var(--navy);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+
+    .decimal-display-area {
+      background: #f8fafc;
+      border: 1px solid var(--linha);
+      border-radius: var(--radius-sm);
+      padding: 12px 14px;
+      font-family: var(--font-mono);
+      font-size: 0.95rem;
+      color: var(--navy);
+      margin-bottom: 10px;
+      word-break: break-all;
+    }
+
+    .decimal-period-highlight {
+      background: #fef3c7;
+      color: #b45309;
+      font-weight: 800;
+      padding: 1px 3px;
+      border-radius: 3px;
+      border-bottom: 2px solid #f59e0b;
+    }
+
+    .decimal-classification-tag {
+      font-size: 0.82rem;
+      font-weight: 800;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 3px 10px;
+      border-radius: 4px;
+    }
+
+    .tag-rational {
+      background: var(--cor-q-light);
+      color: var(--cor-q);
+      border: 1px solid #fcd34d;
+    }
+
+    .tag-irrational {
+      background: var(--cor-i-light);
+      color: var(--cor-i);
+      border: 1px solid #ddd6fe;
+    }
+
+    /* Reta Numérica Interativa */
+    .number-line-wrapper {
+      background: #ffffff;
+      border: 1px solid var(--linha);
+      border-radius: var(--radius-md);
+      padding: 16px;
+      margin-bottom: 18px;
+    }
+
+    .number-line-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .number-line-title {
+      font-size: 0.92rem;
+      font-weight: 800;
+      color: var(--navy);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .number-line-svg {
+      width: 100%;
+      height: 110px;
+      display: block;
+      user-select: none;
+    }
+
+    .number-line-legend {
+      display: flex;
+      gap: 12px;
+      font-size: 0.76rem;
+      color: var(--muted);
+      flex-wrap: wrap;
+      margin-top: 8px;
+      padding-top: 8px;
+      border-top: 1px solid var(--linha);
+    }
+
+    .legend-tag {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .legend-symbol {
+      display: inline-block;
+      width: 12px;
+      height: 12px;
+      border-radius: 3px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header Institucional -->
+  <header class="site-header">
+    <div class="header-container">
+      <a href="../index.html" class="brand-wrapper" title="Voltar para a página inicial">
+        <div class="brand-logo" aria-hidden="true">
+          <svg viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 19L12 5l8 14H4z" />
+          </svg>
+        </div>
+        <div class="brand-texts">
+          <span class="brand-title">Matemática em Movimento</span>
+          <span class="brand-slogan">Explore. Manipule. Compreenda.</span>
+        </div>
+      </a>
+      <div class="header-actions">
+        <a href="../index.html" class="btn-header">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+          Início
+        </a>
+        <button id="btnFullscreen" class="btn-header" title="Alternar modo tela cheia para projeção em sala de aula">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>
+          Projeção
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Breadcrumbs -->
+  <nav class="breadcrumb-bar" aria-label="Navegação estrutural">
+    <div class="breadcrumb-container">
+      <a href="../index.html">Início</a>
+      <span class="breadcrumb-sep">/</span>
+      <a href="../index.html#catalogo">Números</a>
+      <span class="breadcrumb-sep">/</span>
+      <span class="breadcrumb-current">Conjuntos Numéricos</span>
+    </div>
+  </nav>
+
+  <!-- Conteúdo Principal -->
+  <main class="main-content">
+    <div class="demo-grid">
+
+      <!-- Coluna 1: Laboratório Interativo -->
+      <section class="card" aria-labelledby="lab-heading">
+        <div class="card-eyebrow">
+          <span class="badge-tag badge-fundamental">8º e 9º Anos &amp; Ensino Médio</span>
+          <span>· LABORATÓRIO DE CONJUNTOS NUMÉRICOS</span>
+        </div>
+        <h2 id="lab-heading" class="card-title">Conjuntos Numéricos: N, Z, Q, I e R</h2>
+        <p class="card-subtitle">
+          Explore o diagrama de inclusão dos conjuntos, classifique números no jogo interativo, analise se o decimal é finito, periódico ou irracional, e navegue pela reta numérica.
+        </p>
+
+        <!-- Barra de Botões do Diagrama de Venn -->
+        <div class="venn-toolbar" role="toolbar" aria-label="Filtros do Diagrama de Venn">
+          <button class="btn-venn-filter active-filter" data-set="all">Ver Todos (Visão Geral)</button>
+          <button class="btn-venn-filter" data-set="n">Naturais (N)</button>
+          <button class="btn-venn-filter" data-set="z">Inteiros (Z)</button>
+          <button class="btn-venn-filter" data-set="q">Racionais (Q)</button>
+          <button class="btn-venn-filter" data-set="i">Irracionais (I)</button>
+          <button class="btn-venn-filter" data-set="r">Reais (R)</button>
+          <button id="btnShowInclusions" class="btn-venn-filter" style="border-color:var(--azul); color:var(--azul);">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+            Animar Inclusões (N ⊂ Z ⊂ Q ⊂ R)
+          </button>
+        </div>
+
+        <!-- Palco do Diagrama de Venn SVG -->
+        <div class="venn-container" role="region" aria-label="Diagrama de Venn dos Conjuntos Numéricos">
+          <svg id="vennSvg" class="venn-svg" viewBox="0 0 760 380" aria-label="Diagrama com N dentro de Z, dentro de Q, e Q união I formando R">
+            <!-- Grade sutil -->
+            <defs>
+              <pattern id="vennGrid" width="30" height="30" patternUnits="userSpaceOnUse">
+                <path d="M 30 0 L 0 0 0 30" fill="none" stroke="#f1f5f9" stroke-width="1" />
+              </pattern>
+              <marker id="arrowMarker" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                <path d="M 0 1 L 8 5 L 0 9 z" fill="#18324b" />
+              </marker>
+            </defs>
+            <rect width="760" height="380" fill="url(#vennGrid)" />
+
+            <!-- CONJUNTO DOS REAIS (R) - Caixa Retangular Global -->
+            <rect id="regionR" class="venn-region active-region" x="20" y="20" width="720" height="340" rx="16" fill="#f8fafc" stroke="#18324b" stroke-width="2.5" />
+            <text x="45" y="52" fill="#18324b" font-size="20" font-weight="900" letter-spacing="-0.02em">ℝ</text>
+            <text x="68" y="50" fill="#647684" font-size="12" font-weight="700">REAIS (Q ∪ I)</text>
+
+            <!-- CONJUNTO DOS RACIONAIS (Q) - Elipse/Cápsula Grande à Esquerda -->
+            <rect id="regionQ" class="venn-region active-region" x="40" y="70" width="460" height="270" rx="14" fill="#fef3c7" fill-opacity="0.55" stroke="#d97706" stroke-width="2" />
+            <text x="65" y="98" fill="#d97706" font-size="19" font-weight="900">ℚ</text>
+            <text x="86" y="96" fill="#b45309" font-size="12" font-weight="700">RACIONAIS</text>
+            <!-- Elementos exclusivos de Q -->
+            <text x="75" y="125" fill="#92400e" font-size="11" font-weight="700">1/2</text>
+            <text x="120" y="125" fill="#92400e" font-size="11" font-weight="700">−0,75</text>
+            <text x="430" y="110" fill="#92400e" font-size="11" font-weight="700">0,333…</text>
+            <text x="430" y="140" fill="#92400e" font-size="11" font-weight="700">22/7</text>
+            <text x="430" y="270" fill="#92400e" font-size="11" font-weight="700">5/10</text>
+
+            <!-- CONJUNTO DOS INTEIROS (Z) - Região dentro de Q -->
+            <rect id="regionZ" class="venn-region active-region" x="70" y="145" width="340" height="175" rx="12" fill="#ebf8ff" fill-opacity="0.8" stroke="#2b6cb0" stroke-width="2" />
+            <text x="92" y="172" fill="#2b6cb0" font-size="18" font-weight="900">ℤ</text>
+            <text x="112" y="170" fill="#2b6cb0" font-size="11" font-weight="700">INTEIROS</text>
+            <!-- Elementos exclusivos de Z (negativos) -->
+            <text x="100" y="200" fill="#1e4e8c" font-size="11" font-weight="700">−1</text>
+            <text x="135" y="200" fill="#1e4e8c" font-size="11" font-weight="700">−2</text>
+            <text x="345" y="190" fill="#1e4e8c" font-size="11" font-weight="700">−50</text>
+            <text x="345" y="235" fill="#1e4e8c" font-size="11" font-weight="700">−100</text>
+
+            <!-- CONJUNTO DOS NATURAIS (N) - Região dentro de Z -->
+            <rect id="regionN" class="venn-region active-region" x="100" y="215" width="220" height="90" rx="10" fill="#e8f5e9" fill-opacity="0.95" stroke="#2e7d32" stroke-width="2" />
+            <text x="120" y="240" fill="#2e7d32" font-size="18" font-weight="900">ℕ</text>
+            <text x="140" y="238" fill="#2e7d32" font-size="11" font-weight="700">NATURAIS</text>
+            <!-- Elementos de N -->
+            <text x="130" y="275" fill="#1b5e20" font-size="12" font-weight="800">0</text>
+            <text x="165" y="275" fill="#1b5e20" font-size="12" font-weight="800">1</text>
+            <text x="195" y="275" fill="#1b5e20" font-size="12" font-weight="800">2</text>
+            <text x="225" y="275" fill="#1b5e20" font-size="12" font-weight="800">7</text>
+            <text x="255" y="275" fill="#1b5e20" font-size="12" font-weight="800">√9 (=3)</text>
+
+            <!-- CONJUNTO DOS IRRACIONAIS (I) - Bloco Separado à Direita (Disjunto de Q) -->
+            <rect id="regionI" class="venn-region active-region" x="520" y="70" width="200" height="270" rx="14" fill="#f5f3ff" fill-opacity="0.8" stroke="#7c3aed" stroke-width="2" stroke-dasharray="none" />
+            <text x="540" y="98" fill="#7c3aed" font-size="19" font-weight="900">𝕀</text>
+            <text x="560" y="96" fill="#6d28d9" font-size="12" font-weight="700">IRRACIONAIS</text>
+            <!-- Elementos de I -->
+            <text x="545" y="135" fill="#5b21b6" font-size="12" font-weight="800">√2 ≈ 1,4142…</text>
+            <text x="545" y="175" fill="#5b21b6" font-size="12" font-weight="800">π ≈ 3,14159…</text>
+            <text x="545" y="215" fill="#5b21b6" font-size="12" font-weight="800">√3 ≈ 1,7320…</text>
+            <text x="545" y="255" fill="#5b21b6" font-size="12" font-weight="800">e ≈ 2,71828…</text>
+            <text x="545" y="295" fill="#5b21b6" font-size="12" font-weight="800">√7, φ (áureo)</text>
+
+            <!-- Setas e anotação animada de inclusão -->
+            <g id="inclusionArrowsGroup" style="display: none;">
+              <!-- Seta N -> Z -->
+              <path d="M 320 260 L 370 260" stroke="#18324b" stroke-width="2.5" marker-end="url(#arrowMarker)" stroke-dasharray="3 3" />
+              <!-- Seta Z -> Q -->
+              <path d="M 410 200 L 460 200" stroke="#18324b" stroke-width="2.5" marker-end="url(#arrowMarker)" stroke-dasharray="3 3" />
+              <!-- Seta Q -> R e I -> R -->
+              <path d="M 500 130 L 520 50" stroke="#18324b" stroke-width="2" stroke-dasharray="3 3" />
+            </g>
+          </svg>
+        </div>
+
+        <!-- Info Card do Conjunto Ativo -->
+        <div id="setInfoCallout" class="set-info-callout" role="status">
+          <div class="set-info-title" id="setInfoTitle">
+            <span>Visão Geral: Diagrama de Venn e Inclusão</span>
+          </div>
+          <div class="set-info-desc" id="setInfoDesc">
+            Clique em qualquer região do diagrama acima para inspecionar os conjuntos. Todo número natural é inteiro (<strong>ℕ ⊂ ℤ</strong>), todo inteiro é racional (<strong>ℤ ⊂ ℚ</strong>), e os racionais unidos aos irracionais formam os reais (<strong>ℚ ∪ 𝕀 = ℝ</strong>).
+          </div>
+          <div class="set-info-examples" id="setInfoExamples">
+            Relação Fundamental: ℕ ⊂ ℤ ⊂ ℚ ⊂ ℝ &nbsp;|&nbsp; ℚ ∩ 𝕀 = ∅ &nbsp;|&nbsp; ℚ ∪ 𝕀 = ℝ
+          </div>
+        </div>
+
+        <!-- O CORAÇÃO DA DEMO: PAINEL CLASSIFICADOR DE NÚMEROS -->
+        <div class="classifier-card" role="region" aria-label="Jogo Classificador de Números">
+          <div class="classifier-header">
+            <div class="classifier-title">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg>
+              <span>Jogo: Classificador de Números</span>
+            </div>
+            <div class="score-badge" id="scoreBadge">Acertos: 0 · Tentativas: 0 (0%)</div>
+          </div>
+
+          <p style="font-size:0.86rem; color:var(--muted); margin-bottom:12px;">
+            Analise o número em destaque e <strong>clique nos conjuntos aos quais ele pertence</strong>. Ao clicar, o botão <strong>ficará verde se você acertar</strong> e <strong>ficará vermelho com um aviso explicativo se errar</strong>!
+          </p>
+
+          <!-- Caixa do Número em Destaque -->
+          <div class="number-display-box">
+            <div class="number-to-classify" id="activeNumberText">√9</div>
+            <div class="number-tip" id="activeNumberTip">Atenção às raízes: verifique se é exata antes de decidir!</div>
+          </div>
+
+          <!-- Botões de Seleção dos 5 Conjuntos -->
+          <div class="set-choices-grid" role="group" aria-label="Selecione os conjuntos que contêm o número">
+            <button type="button" class="btn-set-choice choice-n" data-set="N" aria-pressed="false">
+              <span class="choice-badge-indicator" aria-hidden="true">✓</span>
+              <span>ℕ</span>
+              <span class="btn-set-sublabel">Natural</span>
+            </button>
+            <button type="button" class="btn-set-choice choice-z" data-set="Z" aria-pressed="false">
+              <span class="choice-badge-indicator" aria-hidden="true">✓</span>
+              <span>ℤ</span>
+              <span class="btn-set-sublabel">Inteiro</span>
+            </button>
+            <button type="button" class="btn-set-choice choice-q" data-set="Q" aria-pressed="false">
+              <span class="choice-badge-indicator" aria-hidden="true">✓</span>
+              <span>ℚ</span>
+              <span class="btn-set-sublabel">Racional</span>
+            </button>
+            <button type="button" class="btn-set-choice choice-i" data-set="I" aria-pressed="false">
+              <span class="choice-badge-indicator" aria-hidden="true">✓</span>
+              <span>𝕀</span>
+              <span class="btn-set-sublabel">Irracional</span>
+            </button>
+            <button type="button" class="btn-set-choice choice-r" data-set="R" aria-pressed="false">
+              <span class="choice-badge-indicator" aria-hidden="true">✓</span>
+              <span>ℝ</span>
+              <span class="btn-set-sublabel">Real</span>
+            </button>
+          </div>
+
+          <!-- Feedback com Raciocínio Completo -->
+          <div id="feedbackBanner" class="feedback-banner" role="alert">
+            <!-- Gerado dinamicamente -->
+          </div>
+
+          <!-- Ações do Jogo -->
+          <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
+            <button id="btnConfirmAnswer" class="btn btn-primary" style="padding:8px 18px;">
+              Confirmar Resposta
+            </button>
+            <button id="btnNextNumber" class="btn btn-secondary" style="padding:8px 16px;">
+              Próximo Número →
+            </button>
+            <button id="btnResetGame" class="btn-header" style="color:var(--navy); border-color:var(--linha); background:#ffffff;">
+              Reiniciar Jogo
+            </button>
+          </div>
+
+          <!-- Linha do Professor: Digitar qualquer número -->
+          <div class="custom-input-row">
+            <label for="customNumberInput" style="font-size:0.82rem; font-weight:700; color:var(--navy);">
+              Escolher Número do Professor:
+            </label>
+            <input type="text" id="customNumberInput" placeholder="Ex.: 22/7, -4/5, sqrt(16), 0.75, pi" aria-label="Digite um número qualquer para classificar" />
+            <button id="btnClassifyCustom" class="btn-header" style="background:var(--azul); color:#ffffff; border:none; padding:6px 14px;">
+              Classificar Este
+            </button>
+          </div>
+        </div>
+
+        <!-- BLOCO: RACIONAL OU IRRACIONAL? EXPLORAÇÃO DE DECIMAIS -->
+        <div class="decimals-explorer-card">
+          <div class="decimals-title">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"/></svg>
+            <span>Racional ou Irracional? O Laboratório das Casas Decimais</span>
+          </div>
+          <p style="font-size:0.84rem; color:var(--muted); line-height:1.45; margin-bottom:12px;">
+            A divisão de números inteiros sempre resulta em um decimal <strong>finito</strong> ou em uma dízima <strong>periódica</strong>. Já os números irracionais nunca formam ciclos de repetição periódica!
+          </p>
+
+          <div class="decimal-display-area" id="decimalDisplayArea">
+            1/7 = 0,<span class="decimal-period-highlight">142857</span><span class="decimal-period-highlight">142857</span>142857…
+          </div>
+
+          <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+            <div>
+              <span id="decimalClassTag" class="decimal-classification-tag tag-rational">
+                → RACIONAL (ℚ): Decimal infinito periódico (período = 142857)
+              </span>
+            </div>
+            <div style="display:flex; gap:6px;">
+              <button id="btnSample17" class="btn-chip active">1/7</button>
+              <button id="btnSample13" class="btn-chip">1/3</button>
+              <button id="btnSampleSqrt2" class="btn-chip">√2</button>
+              <button id="btnSamplePi" class="btn-chip">π</button>
+              <button id="btnSample38" class="btn-chip">3/8</button>
+              <button id="btnSampleRandom" class="btn-chip" style="background:#eef5f8; color:var(--azul);">Outro Exemplo ⟳</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- RETA NUMÉRICA INTERATIVA -->
+        <div class="number-line-wrapper">
+          <div class="number-line-header">
+            <div class="number-line-title">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"/><polyline points="18 9 21 12 18 15"/><polyline points="6 9 3 12 6 15"/></svg>
+              <span>A Reta Real: Onde Cada Tipo de Número Vive</span>
+            </div>
+            <button id="btnZoomInterval" class="btn-action" style="padding:4px 10px; font-size:0.78rem;">
+              🔍 Zoom no Trecho [0, 1]
+            </button>
+          </div>
+
+          <!-- SVG da Reta Numérica -->
+          <svg id="numberLineSvg" class="number-line-svg" viewBox="0 0 720 110" aria-label="Reta numérica interativa com pontos coloridos por conjunto"></svg>
+
+          <!-- Legenda de Símbolos da Reta -->
+          <div class="number-line-legend">
+            <div class="legend-tag">
+              <span class="legend-symbol" style="background:var(--cor-n); border-radius:50%;"></span>
+              <span>Naturais (0, 1, 2, 3, 4)</span>
+            </div>
+            <div class="legend-tag">
+              <span class="legend-symbol" style="background:var(--cor-z); border-radius:50%;"></span>
+              <span>Inteiros Negativos (−1, −2, −3)</span>
+            </div>
+            <div class="legend-tag">
+              <span class="legend-symbol" style="background:var(--cor-q);"></span>
+              <span>Racionais Fracionários (1/2, 3/4)</span>
+            </div>
+            <div class="legend-tag">
+              <span class="legend-symbol" style="background:var(--cor-i); transform:rotate(45deg);"></span>
+              <span>Irracionais (√2, π, √3)</span>
+            </div>
+          </div>
+        </div>
+
+      </section>
+
+      <!-- Coluna 2: Card "Entenda a Ideia" -->
+      <aside class="card idea-card" aria-labelledby="idea-heading">
+        <div class="card-eyebrow">
+          <span>FUNDAMENTAÇÃO CONCEITUAL</span>
+        </div>
+        <h2 id="idea-heading" class="card-title">Entenda a ideia</h2>
+        <p class="card-subtitle">
+          Os conjuntos numéricos foram inventados pela humanidade conforme surgiam novas necessidades de contagem, medição e cálculo de raízes.
+        </p>
+
+        <!-- Fórmula em Destaque -->
+        <div class="formula-highlight-card">
+          <div class="formula-highlight-label">A Corrente das Inclusões Numéricas</div>
+          <div class="formula-highlight-math" style="font-size:1.1rem; line-height:1.5;">
+            <div style="margin-bottom:6px; color:var(--navy);">
+              ℕ ⊂ ℤ ⊂ ℚ ⊂ ℝ
+            </div>
+            <div style="font-size:0.95rem; color:var(--teal); margin-bottom:4px;">
+              ℚ ∪ 𝕀 = ℝ &nbsp;(União é o todo)
+            </div>
+            <div style="font-size:0.9rem; color:var(--muted);">
+              ℚ ∩ 𝕀 = ∅ &nbsp;(Disjuntos: nenhum número é ambos!)
+            </div>
+          </div>
+        </div>
+
+        <!-- Passos Numerados -->
+        <div class="explanation-steps">
+          <div class="step-item">
+            <span class="step-number" aria-hidden="true">1</span>
+            <div class="step-text">
+              <strong>Naturais (ℕ) e Inteiros (ℤ):</strong> Os naturais surgem para contar elementos discretos (<em>0, 1, 2, 3...</em>). Ao subtrair valores maiores, surgem as dívidas e saldos negativos, expandindo para os inteiros (<em>... −2, −1, 0, 1, 2 ...</em>). Todo natural já é um inteiro!
+            </div>
+          </div>
+          <div class="step-item">
+            <span class="step-number" aria-hidden="true">2</span>
+            <div class="step-text">
+              <strong>Racionais (ℚ):</strong> Números que <em>podem ser escritos na forma de fração a/b</em> com inteiros (<em>b ≠ 0</em>). Inclui decimais exatos (<em>0,75 = 3/4</em>) e dízimas periódicas (<em>0,333... = 1/3</em>).
+            </div>
+          </div>
+          <div class="step-item">
+            <span class="step-number" aria-hidden="true">3</span>
+            <div class="step-text">
+              <strong>Irracionais (𝕀):</strong> Descobertos pelos pitagóricos na diagonal do quadrado unitário (<em>√2</em>). São números com infinitas casas decimais que <strong>nunca se repetem em padrão periódico</strong> (<em>√2, √3, π, e</em>). Não podem ser frações de inteiros!
+            </div>
+          </div>
+          <div class="step-item">
+            <span class="step-number" aria-hidden="true">4</span>
+            <div class="step-text">
+              <strong>Cuidado com Casos Clássicos:</strong>
+              <ul style="margin-top:6px; margin-left:16px; font-size:0.86rem; color:var(--muted); line-height:1.45;">
+                <li><strong>√9 é 3:</strong> Como 3 é inteiro, √9 é natural, inteiro, racional e real! Não é irracional só porque tem símbolo de raiz.</li>
+                <li><strong>22/7 é racional:</strong> É uma fração de dois inteiros (22 e 7), usada como aproximação de π, mas <em>não é</em> o número π.</li>
+                <li><strong>0 é Natural:</strong> Por padrão curricular brasileiro atual, 0 é considerado natural, inteiro par, racional e real.</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <!-- Pergunta para Investigar -->
+        <div class="investigation-box">
+          <div class="investigation-header">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+              <path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5"/>
+              <path d="M9 18h6"/><path d="M10 22h4"/>
+            </svg>
+            <span>Pergunta para investigar</span>
+          </div>
+          <p class="investigation-text">
+            <strong>√16</strong> é racional ou irracional? E <strong>√15</strong>? Use o classificador e o explorador de decimais para conferir. Agora pense: entre <strong>1,4</strong> e <strong>1,5</strong>, existe algum número irracional? E quantos números racionais existem nesse pequeno trecho? Experimente o botão de Zoom na reta numérica!
+          </p>
+        </div>
+      </aside>
+
+    </div>
+  </main>
+
+  <!-- Rodapé Institucional -->
+  <footer class="site-footer">
+    <div class="site-footer-inner">
+      <p><strong>Matemática em Movimento</strong> · Recurso educacional aberto e gratuito para professores e estudantes.</p>
+      <div class="footer-links">
+        <a href="../index.html">Todas as Demonstrações</a>
+        <span>•</span>
+        <a href="../numeros/fracoes_equivalentes.html">Frações Equivalentes</a>
+        <span>•</span>
+        <a href="../numeros/operacoes_com_fracoes.html">Operações com Frações</a>
+        <span>•</span>
+        <a href="../numeros/conjuntos_numericos.html">Conjuntos Numéricos</a>
+        <span>•</span>
+        <a href="../geometria/solidos_geometricos.html">Sólidos Geométricos</a>
+        <span>•</span>
+        <a href="../geometria/semelhanca_de_triangulos.html">Semelhança de Triângulos</a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Lógica Matemática dos Conjuntos, Jogo e Reta Numérica -->
+  <script>
+    /**
+     * Conjuntos Numéricos: N, Z, Q, I e R
+     * Diagrama de Venn Dinâmico, Jogo Classificador com Explicações Honestas,
+     * Algoritmo de Divisão Longa para Dízimas Periódicas e Reta Numérica com Zoom.
+     */
+
+    // Definição e textos dos 5 conjuntos
+    const setsMeta = {
+      all: {
+        title: "Visão Geral: Diagrama de Venn e Inclusão",
+        desc: "Todo número natural é inteiro (<strong>ℕ ⊂ ℤ</strong>), todo inteiro é racional (<strong>ℤ ⊂ ℚ</strong>), e os racionais unidos aos irracionais formam os reais (<strong>ℚ ∪ 𝕀 = ℝ</strong>).",
+        examples: "Relação Fundamental: ℕ ⊂ ℤ ⊂ ℚ ⊂ ℝ  |  ℚ ∩ 𝕀 = ∅  |  ℚ ∪ 𝕀 = ℝ",
+        color: "#18324b"
+      },
+      n: {
+        title: "Conjunto dos Números Naturais (ℕ)",
+        desc: "Conjunto dos números usados para contar objetos e indicar ordem. Começa no zero e segue infinitamente de 1 em 1. Todo número natural também pertence a ℤ, ℚ e ℝ.",
+        examples: "ℕ = {0, 1, 2, 3, 4, 5, 6, 7, ...}",
+        color: "#2e7d32"
+      },
+      z: {
+        title: "Conjunto dos Números Inteiros (ℤ)",
+        desc: "Formado por todos os números naturais mais os seus opostos negativos. Não possui frações não-inteiras nem decimais com vírgula. Todo inteiro é também racional e real.",
+        examples: "ℤ = {..., −4, −3, −2, −1, 0, 1, 2, 3, 4, ...}",
+        color: "#2b6cb0"
+      },
+      q: {
+        title: "Conjunto dos Números Racionais (ℚ)",
+        desc: "Compreende todos os números que <strong>podem ser escritos na forma de fração a/b</strong>, com 'a' e 'b' inteiros (b ≠ 0). Abrange todos os inteiros (ex: 5 = 5/1), decimais exatos (0,75 = 3/4) e dízimas periódicas (0,333... = 1/3).",
+        examples: "ℚ = { a/b | a, b ∈ ℤ, b ≠ 0 } (Ex.: 1/2, −4/5, 0,75, 0,333…, 22/7)",
+        color: "#d97706"
+      },
+      i: {
+        title: "Conjunto dos Números Irracionais (𝕀)",
+        desc: "Números decimais com <strong>infinitas casas decimais não periódicas</strong> que <strong>nunca podem ser representados como uma fração de inteiros</strong>. É totalmente separado dos racionais (ℚ ∩ 𝕀 = ∅).",
+        examples: "𝕀 = { √2, √3, √5, π, e, φ, 3,14159… (não periódico) }",
+        color: "#7c3aed"
+      },
+      r: {
+        title: "Conjunto dos Números Reais (ℝ)",
+        desc: "A união completa de todos os números racionais com todos os números irracionais (<strong>ℝ = ℚ ∪ 𝕀</strong>). Preenche de forma contínua e sem buracos toda a reta numérica.",
+        examples: "ℝ = ℚ ∪ 𝕀 (Qualquer ponto na reta real)",
+        color: "#18324b"
+      }
+    };
+
+    // Elementos DOM do Venn
+    const vennRegions = {
+      n: document.getElementById('regionN'),
+      z: document.getElementById('regionZ'),
+      q: document.getElementById('regionQ'),
+      i: document.getElementById('regionI'),
+      r: document.getElementById('regionR')
+    };
+
+    const setInfoCallout = document.getElementById('setInfoCallout');
+    const setInfoTitle = document.getElementById('setInfoTitle');
+    const setInfoDesc = document.getElementById('setInfoDesc');
+    const setInfoExamples = document.getElementById('setInfoExamples');
+    const btnShowInclusions = document.getElementById('btnShowInclusions');
+    const inclusionArrowsGroup = document.getElementById('inclusionArrowsGroup');
+
+    // Botões de filtro do Venn
+    const vennFilterBtns = document.querySelectorAll('.btn-venn-filter[data-set]');
+
+    function highlightSet(setKey) {
+      vennFilterBtns.forEach(btn => {
+        btn.classList.toggle('active-filter', btn.dataset.set === setKey);
+      });
+
+      // Destaque visual no SVG
+      Object.entries(vennRegions).forEach(([k, el]) => {
+        if (setKey === 'all') {
+          el.classList.add('active-region');
+          el.style.opacity = '1';
+        } else if (setKey === k) {
+          el.classList.add('active-region');
+          el.style.opacity = '1';
+        } else if (setKey === 'z' && k === 'n') {
+          el.classList.add('active-region');
+          el.style.opacity = '0.9';
+        } else if (setKey === 'q' && (k === 'n' || k === 'z')) {
+          el.classList.add('active-region');
+          el.style.opacity = '0.9';
+        } else if (setKey === 'r') {
+          el.classList.add('active-region');
+          el.style.opacity = '1';
+        } else {
+          el.classList.remove('active-region');
+          el.style.opacity = '0.35';
+        }
+      });
+
+      // Atualiza o texto do callout
+      const data = setsMeta[setKey] || setsMeta.all;
+      setInfoCallout.style.borderLeftColor = data.color;
+      setInfoTitle.innerHTML = `<span>${data.title}</span>`;
+      setInfoDesc.innerHTML = data.desc;
+      setInfoExamples.textContent = data.examples;
+    }
+
+    vennFilterBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        highlightSet(btn.dataset.set);
+      });
+    });
+
+    Object.entries(vennRegions).forEach(([k, el]) => {
+      el.addEventListener('click', () => {
+        highlightSet(k);
+      });
+    });
+
+    // Botão de animação de inclusões
+    btnShowInclusions.addEventListener('click', () => {
+      const isVisible = inclusionArrowsGroup.style.display !== 'none';
+      inclusionArrowsGroup.style.display = isVisible ? 'none' : 'block';
+      highlightSet('all');
+      setInfoTitle.innerHTML = `<span>Inclusões: ℕ ⊂ ℤ ⊂ ℚ ⊂ ℝ</span>`;
+      setInfoDesc.innerHTML = "Todo natural é inteiro (<strong>ℕ ⊂ ℤ</strong>), todo inteiro é racional (<strong>ℤ ⊂ ℚ</strong>), e tanto os racionais quanto os irracionais são reais (<strong>ℚ ⊂ ℝ</strong> e <strong>𝕀 ⊂ ℝ</strong>).";
+      setInfoExamples.textContent = "Caminho linear: ℕ ⊂ ℤ ⊂ ℚ ⊂ ℝ  |  Bloco separado: 𝕀 ⊂ ℝ  |  União: ℚ ∪ 𝕀 = ℝ";
+    });
+
+    // ==========================================
+    // JOGO CLASSIFICADOR DE NÚMEROS
+    // ==========================================
+    const challengeNumbers = [
+      {
+        display: "√9",
+        sets: ["N", "Z", "Q", "R"],
+        tip: "Atenção: √9 é uma raiz exata (= 3)!",
+        explanation: "√9 = 3. O número 3 é natural (ℕ), portanto é também inteiro (ℤ), racional (ℚ, pois 3 = 3/1) e real (ℝ). NÃO é irracional, pois a raiz é exata!"
+      },
+      {
+        display: "−3",
+        sets: ["Z", "Q", "R"],
+        tip: "Número negativo sem casas decimais quebradas.",
+        explanation: "−3 é um número inteiro negativo (ℤ). Todo inteiro é racional (ℚ, pois −3 = −3/1) e real (ℝ). Não é natural (ℕ) porque é negativo."
+      },
+      {
+        display: "0",
+        sets: ["N", "Z", "Q", "R"],
+        tip: "O zero é a origem e o ponto de partida dos cardinais.",
+        explanation: "0 é considerado número natural (ℕ), inteiro (ℤ), racional (ℚ, pois 0 = 0/1) e real (ℝ). Não é irracional."
+      },
+      {
+        display: "1/2",
+        sets: ["Q", "R"],
+        tip: "Fração entre 0 e 1.",
+        explanation: "1/2 é uma fração de dois inteiros (= 0,5), logo é racional (ℚ) e real (ℝ). Não é inteiro nem natural, pois não representa unidades inteiras."
+      },
+      {
+        display: "0,333…",
+        sets: ["Q", "R"],
+        tip: "Dízima periódica com período 3 que se repete infinitamente.",
+        explanation: "0,333… é uma dízima periódica simples igual a 1/3. Como pode ser escrita como fração de inteiros, é racional (ℚ) e real (ℝ). Não é irracional!"
+      },
+      {
+        display: "√2",
+        sets: ["I", "R"],
+        tip: "Diagonal do quadrado de lado 1.",
+        explanation: "√2 ≈ 1,41421356… tem infinitas casas decimais que nunca se repetem em padrão periódico. Não pode ser escrito como fração de inteiros: é irracional (𝕀) e real (ℝ)."
+      },
+      {
+        display: "22/7",
+        sets: ["Q", "R"],
+        tip: "Famosa aproximação histórica de Arquimedes para π.",
+        explanation: "22/7 é uma fração de inteiros (22 dividido por 7 = 3,142857142857…), com período de 6 algarismos. É racional (ℚ) e real (ℝ). NÃO é irracional!"
+      },
+      {
+        display: "3,14159…",
+        sets: ["I", "R"],
+        tip: "Decimal infinito sem repetição periódica (número π).",
+        explanation: "3,14159… representa o número π (pi). Suas casas decimais são infinitas e nunca formam repetição periódica: é irracional (𝕀) e real (ℝ)."
+      },
+      {
+        display: "0,75",
+        sets: ["Q", "R"],
+        tip: "Decimal exato com duas casas após a vírgula.",
+        explanation: "0,75 é um decimal exato igual a 75/100 = 3/4. É racional (ℚ) e real (ℝ)."
+      },
+      {
+        display: "−4/5",
+        sets: ["Q", "R"],
+        tip: "Fração negativa.",
+        explanation: "−4/5 = −0,8. Como é fração de inteiros, é racional (ℚ) e real (ℝ)."
+      },
+      {
+        display: "π",
+        sets: ["I", "R"],
+        tip: "Razão entre o comprimento da circunferência e seu diâmetro.",
+        explanation: "π é o irracional mais famoso da matemática. É irracional (𝕀) e real (ℝ)."
+      },
+      {
+        display: "100",
+        sets: ["N", "Z", "Q", "R"],
+        tip: "Número positivo redondo.",
+        explanation: "100 é natural (ℕ), inteiro (ℤ), racional (ℚ) e real (ℝ)."
+      },
+      {
+        display: "5/10",
+        sets: ["Q", "R"],
+        tip: "Fração que simplifica para 1/2.",
+        explanation: "5/10 simplifica para 1/2 = 0,5. É racional (ℚ) e real (ℝ)."
+      },
+      {
+        display: "−√16",
+        sets: ["Z", "Q", "R"],
+        tip: "Raiz exata com sinal negativo na frente.",
+        explanation: "−√16 = −4. Como −4 é inteiro negativo, pertence a ℤ, ℚ e ℝ, mas não a ℕ."
+      },
+      {
+        display: "√5",
+        sets: ["I", "R"],
+        tip: "Raiz quadrada de número primo.",
+        explanation: "√5 ≈ 2,2360679… não é raiz exata: é um número irracional (𝕀) e real (ℝ)."
+      }
+    ];
+
+    let currentQuestionIdx = 0;
+    let scoreHits = 0;
+    let scoreAttempts = 0;
+    let selectedSets = new Set();
+    let currentChallenge = challengeNumbers[0];
+    let questionCompleted = false;
+
+    const setLabels = {
+      N: "Naturais (ℕ)",
+      Z: "Inteiros (ℤ)",
+      Q: "Racionais (ℚ)",
+      I: "Irracionais (𝕀)",
+      R: "Reais (ℝ)"
+    };
+
+    function getWhyNotExplanation(challenge, setName) {
+      const d = challenge.display;
+      if (setName === 'N') {
+        if (d.includes('−') || d.startsWith('-')) {
+          return `O número ${d} é negativo. O conjunto dos Naturais (ℕ = {0, 1, 2, 3...}) NÃO contém números negativos.`;
+        }
+        if (d.includes('/') || d.includes(',') || d.includes('.')) {
+          return `O número ${d} possui parte fracionária ou casas decimais não inteiras, portanto NÃO é um número Natural (ℕ).`;
+        }
+        if (challenge.sets.includes('I')) {
+          return `O número ${d} é irracional (possui infinitas casas decimais sem repetição periódica), logo nunca é Natural (ℕ).`;
+        }
+        return `O número ${d} não pertence aos Naturais (ℕ).`;
+      }
+      if (setName === 'Z') {
+        if (d.includes('/') || d.includes(',') || d.includes('.')) {
+          return `O número ${d} possui casas decimais quebradas ou fração não exata, logo NÃO é um número Inteiro (ℤ).`;
+        }
+        if (challenge.sets.includes('I')) {
+          return `O número ${d} é irracional, portanto não representa uma unidade inteira exata em ℤ.`;
+        }
+        return `O número ${d} não pertence aos Inteiros (ℤ).`;
+      }
+      if (setName === 'Q') {
+        if (challenge.sets.includes('I')) {
+          return `O número ${d} é IRRACIONAL (𝕀): ele tem infinitas casas decimais e NUNCA pode ser escrito na forma de fração a/b de dois números inteiros. Lembre-se: os racionais e irracionais são disjuntos (ℚ ∩ 𝕀 = ∅)!`;
+        }
+        return `O número ${d} não pode ser representado como fração de inteiros.`;
+      }
+      if (setName === 'I') {
+        if (challenge.sets.includes('Q')) {
+          return `O número ${d} é RACIONAL (ℚ) — ele pode ser escrito como fração de inteiros ou é uma raiz exata. Um número NUNCA pode ser racional e irracional ao mesmo tempo (ℚ ∩ 𝕀 = ∅)!`;
+        }
+        return `O número ${d} não é Irracional (𝕀).`;
+      }
+      if (setName === 'R') {
+        return `Todos os números racionais e irracionais estudados pertencem aos Reais (ℝ = ℚ ∪ 𝕀).`;
+      }
+      return challenge.explanation;
+    }
+
+    const activeNumberText = document.getElementById('activeNumberText');
+    const activeNumberTip = document.getElementById('activeNumberTip');
+    const setChoiceButtons = document.querySelectorAll('.btn-set-choice');
+    const feedbackBanner = document.getElementById('feedbackBanner');
+    const scoreBadge = document.getElementById('scoreBadge');
+    const btnConfirmAnswer = document.getElementById('btnConfirmAnswer');
+    const btnNextNumber = document.getElementById('btnNextNumber');
+    const btnResetGame = document.getElementById('btnResetGame');
+    const customNumberInput = document.getElementById('customNumberInput');
+    const btnClassifyCustom = document.getElementById('btnClassifyCustom');
+
+    function loadQuestion(item) {
+      currentChallenge = item;
+      questionCompleted = false;
+      activeNumberText.textContent = item.display;
+      activeNumberTip.textContent = item.tip;
+      selectedSets.clear();
+      setChoiceButtons.forEach(btn => {
+        btn.classList.remove('selected', 'is-correct', 'is-wrong');
+        btn.setAttribute('aria-pressed', 'false');
+        const badge = btn.querySelector('.choice-badge-indicator');
+        if (badge) badge.textContent = '';
+      });
+      feedbackBanner.style.display = 'none';
+      feedbackBanner.className = 'feedback-banner';
+      feedbackBanner.innerHTML = '';
+      btnConfirmAnswer.disabled = false;
+    }
+
+    setChoiceButtons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        const setName = btn.dataset.set;
+        const badge = btn.querySelector('.choice-badge-indicator');
+        const isSetCorrect = currentChallenge.sets.includes(setName);
+
+        // Se já estava selecionado, permite desmarcar/alternar
+        if (selectedSets.has(setName)) {
+          selectedSets.delete(setName);
+          btn.classList.remove('selected', 'is-correct', 'is-wrong');
+          btn.setAttribute('aria-pressed', 'false');
+          if (badge) badge.textContent = '';
+
+          // Se acabou de desmarcar uma opção que era errada
+          if (!isSetCorrect) {
+            feedbackBanner.style.display = 'block';
+            feedbackBanner.className = 'feedback-banner success';
+            feedbackBanner.innerHTML = `
+              <div style="font-weight:800; font-size:0.92rem; margin-bottom:4px; display:flex; align-items:center; gap:6px;">
+                <span>✓ Conjunto incorreto removido!</span>
+              </div>
+              <div>Você desmarcou <strong>${setLabels[setName]}</strong>. Agora selecione os conjuntos corretos para <strong>${currentChallenge.display}</strong>.</div>
+            `;
+          } else {
+            feedbackBanner.style.display = 'none';
+          }
+          return;
+        }
+
+        // Se NÃO estava selecionado, marca agora
+        selectedSets.add(setName);
+        btn.classList.add('selected');
+        btn.setAttribute('aria-pressed', 'true');
+
+        if (isSetCorrect) {
+          // RESPOSTA CERTA -> FICA VERDE IMEDIATAMENTE!
+          btn.classList.remove('is-wrong');
+          btn.classList.add('is-correct');
+          if (badge) badge.textContent = '✓';
+
+          // Checa se o aluno já encontrou TODOS os conjuntos corretos e nenhum errado
+          const correctSetsList = currentChallenge.sets;
+          const allFound = correctSetsList.every(s => selectedSets.has(s));
+          const hasAnyWrong = [...selectedSets].some(s => !correctSetsList.includes(s));
+
+          feedbackBanner.style.display = 'block';
+
+          if (allFound && !hasAnyWrong) {
+            // Acertou todos os conjuntos deste desafio!
+            if (!questionCompleted) {
+              questionCompleted = true;
+              scoreHits++;
+              scoreAttempts++;
+              const pct = Math.round((scoreHits / scoreAttempts) * 100);
+              scoreBadge.textContent = `Acertos: ${scoreHits} · Tentativas: ${scoreAttempts} (${pct}%)`;
+            }
+
+            const setsFullStr = correctSetsList.map(s => setLabels[s]).join(', ');
+            feedbackBanner.className = 'feedback-banner success';
+            feedbackBanner.innerHTML = `
+              <div style="font-weight:800; font-size:0.98rem; margin-bottom:4px; display:flex; align-items:center; gap:6px;">
+                <span>🎉 PARABÉNS! Resposta 100% Correta!</span>
+              </div>
+              <div style="font-size:0.9rem;">
+                O número <strong>${currentChallenge.display}</strong> pertence a todos estes conjuntos: <strong>${setsFullStr}</strong>.
+              </div>
+              <div style="margin-top:6px; font-size:0.86rem; line-height:1.45;">${currentChallenge.explanation}</div>
+              <div style="margin-top:10px;">
+                <button type="button" class="btn btn-primary" onclick="document.getElementById('btnNextNumber').click()" style="padding:6px 14px; font-size:0.82rem;">
+                  Próximo Desafio →
+                </button>
+              </div>
+            `;
+          } else {
+            // Acertou este conjunto específico, mas ainda faltam outros
+            const missingSets = correctSetsList.filter(s => !selectedSets.has(s));
+            const missingStr = missingSets.map(s => setLabels[s]).join(', ');
+
+            feedbackBanner.className = 'feedback-banner success';
+            feedbackBanner.innerHTML = `
+              <div style="font-weight:800; font-size:0.92rem; margin-bottom:4px; display:flex; align-items:center; gap:6px;">
+                <span>✅ Muito bem! Conjunto correto!</span>
+              </div>
+              <div>O número <strong>${currentChallenge.display}</strong> realmente pertence a <strong>${setLabels[setName]}</strong>.</div>
+              ${missingSets.length > 0 ? `
+                <div style="margin-top:6px; font-size:0.84rem; color:#166534;">
+                  💡 <em>Lembre-se da regra de inclusão (ℕ ⊂ ℤ ⊂ ℚ ⊂ ℝ): este número também pertence a outros conjuntos! Marque-os para completar.</em>
+                </div>
+              ` : ''}
+            `;
+          }
+        } else {
+          // RESPOSTA ERRADA -> FICA VERMELHO E EXIBE AVISO INFORMATIVO!
+          btn.classList.remove('is-correct');
+          btn.classList.add('is-wrong');
+          if (badge) badge.textContent = '✕';
+
+          if (!questionCompleted) {
+            scoreAttempts++;
+            const pct = Math.round((scoreHits / scoreAttempts) * 100);
+            scoreBadge.textContent = `Acertos: ${scoreHits} · Tentativas: ${scoreAttempts} (${pct}%)`;
+          }
+
+          feedbackBanner.style.display = 'block';
+          feedbackBanner.className = 'feedback-banner error';
+
+          const whyNot = getWhyNotExplanation(currentChallenge, setName);
+          feedbackBanner.innerHTML = `
+            <div style="font-weight:800; font-size:0.95rem; margin-bottom:4px; display:flex; align-items:center; gap:6px;">
+              <span>❌ Resposta Errada!</span>
+            </div>
+            <div style="font-size:0.9rem;">
+              O número <strong>${currentChallenge.display}</strong> <u>NÃO pertence</u> aos <strong>${setLabels[setName]}</strong>.
+            </div>
+            <div style="margin-top:6px; font-size:0.85rem; line-height:1.45;">
+              ${whyNot}
+            </div>
+            <div style="margin-top:8px; font-size:0.82rem; font-weight:700; color:#991b1b;">
+              💡 Dica: clique novamente no botão vermelho para desmarcá-lo e selecione os conjuntos corretos!
+            </div>
+          `;
+        }
+      });
+    });
+
+    btnConfirmAnswer.addEventListener('click', () => {
+      const correctSets = new Set(currentChallenge.sets);
+
+      if (selectedSets.size === 0) {
+        feedbackBanner.style.display = 'block';
+        feedbackBanner.className = 'feedback-banner error';
+        feedbackBanner.innerHTML = `
+          <div style="font-weight:800; font-size:0.92rem; margin-bottom:4px;">
+            ⚠️ Nenhum conjunto selecionado!
+          </div>
+          <div>Clique em um ou mais botões de conjuntos (ℕ, ℤ, ℚ, 𝕀, ℝ) antes de confirmar.</div>
+        `;
+        return;
+      }
+
+      // Atualiza os botões selecionados com verde (se corretos) ou vermelho (se errados)
+      setChoiceButtons.forEach(btn => {
+        const setName = btn.dataset.set;
+        const badge = btn.querySelector('.choice-badge-indicator');
+        if (selectedSets.has(setName)) {
+          if (correctSets.has(setName)) {
+            btn.classList.remove('is-wrong');
+            btn.classList.add('is-correct');
+            if (badge) badge.textContent = '✓';
+          } else {
+            btn.classList.remove('is-correct');
+            btn.classList.add('is-wrong');
+            if (badge) badge.textContent = '✕';
+          }
+        }
+      });
+
+      const hasWrong = [...selectedSets].some(s => !correctSets.has(s));
+      const missingSets = currentChallenge.sets.filter(s => !selectedSets.has(s));
+      const is100Correct = !hasWrong && missingSets.length === 0;
+
+      if (!questionCompleted) {
+        scoreAttempts++;
+        if (is100Correct) scoreHits++;
+        const pct = Math.round((scoreHits / scoreAttempts) * 100);
+        scoreBadge.textContent = `Acertos: ${scoreHits} · Tentativas: ${scoreAttempts} (${pct}%)`;
+        if (is100Correct) questionCompleted = true;
+      }
+
+      feedbackBanner.style.display = 'block';
+
+      if (is100Correct) {
+        feedbackBanner.className = 'feedback-banner success';
+        const setsFullStr = currentChallenge.sets.map(s => setLabels[s]).join(', ');
+        feedbackBanner.innerHTML = `
+          <div style="font-weight:800; font-size:0.98rem; margin-bottom:4px; display:flex; align-items:center; gap:6px;">
+            <span>🎉 CERTEIRO! Resposta 100% Correta!</span>
+          </div>
+          <div>O número <strong>${currentChallenge.display}</strong> pertence exatamente a: <strong>${setsFullStr}</strong>.</div>
+          <div style="margin-top:6px; font-size:0.86rem; line-height:1.45;">${currentChallenge.explanation}</div>
+          <div style="margin-top:10px;">
+            <button type="button" class="btn btn-primary" onclick="document.getElementById('btnNextNumber').click()" style="padding:6px 14px; font-size:0.82rem;">
+              Próximo Desafio →
+            </button>
+          </div>
+        `;
+      } else {
+        feedbackBanner.className = 'feedback-banner error';
+        let details = '';
+        if (hasWrong) {
+          const wrongList = [...selectedSets].filter(s => !correctSets.has(s)).map(s => setLabels[s]).join(', ');
+          details += `<div style="margin-bottom:4px;">❌ <strong>Conjunto(s) errado(s) marcado(s):</strong> ${wrongList} (destacados em vermelho acima).</div>`;
+        }
+        if (missingSets.length > 0) {
+          const missList = missingSets.map(s => setLabels[s]).join(', ');
+          details += `<div style="margin-bottom:4px;">⚠️ <strong>Faltou marcar:</strong> ${missList}.</div>`;
+        }
+        feedbackBanner.innerHTML = `
+          <div style="font-weight:800; font-size:0.95rem; margin-bottom:6px;">
+            ⚠️ Atenção: sua resposta ainda não está completa ou contém erros!
+          </div>
+          ${details}
+          <div style="margin-top:6px; font-size:0.85rem; line-height:1.45;">${currentChallenge.explanation}</div>
+          <div style="margin-top:6px; font-size:0.82rem; font-weight:700;">
+            Gabarito completo: <span class="feedback-path-badge">${currentChallenge.sets.join(', ')}</span>
+          </div>
+        `;
+      }
+    });
+
+    btnNextNumber.addEventListener('click', () => {
+      currentQuestionIdx = (currentQuestionIdx + 1) % challengeNumbers.length;
+      loadQuestion(challengeNumbers[currentQuestionIdx]);
+    });
+
+    btnResetGame.addEventListener('click', () => {
+      scoreHits = 0;
+      scoreAttempts = 0;
+      scoreBadge.textContent = `Acertos: 0 · Tentativas: 0 (0%)`;
+      currentQuestionIdx = 0;
+      loadQuestion(challengeNumbers[0]);
+    });
+
+    // Classificador Dinâmico do Professor
+    function classifyInput(rawStr) {
+      const clean = rawStr.trim().toLowerCase().replace(/\u2212/g, '-').replace(',', '.');
+      if (!clean) return;
+
+      // 1. Caso Fração a/b
+      if (clean.includes('/')) {
+        const parts = clean.split('/');
+        const num = parseFloat(parts[0]);
+        const den = parseFloat(parts[1]);
+        if (!isNaN(num) && !isNaN(den) && den !== 0) {
+          const val = num / den;
+          const isInt = Number.isInteger(val);
+          const isNat = isInt && val >= 0;
+          const sets = ['Q', 'R'];
+          if (isInt) sets.unshift('Z');
+          if (isNat) sets.unshift('N');
+
+          let expl = `${rawStr} = ${val}. Como pode ser escrito na forma de fração de inteiros, é RACIONAL (ℚ) e REAL (ℝ).`;
+          if (isNat) expl += ` Além disso, resulta no número natural ${val} (ℕ e ℤ).`;
+          else if (isInt) expl += ` Além disso, resulta no número inteiro ${val} (ℤ).`;
+
+          return {
+            display: rawStr,
+            sets: sets,
+            tip: "Número digitado pelo professor",
+            explanation: expl
+          };
+        }
+      }
+
+      // 2. Caso Raiz: sqrt(x) ou √x
+      if (clean.startsWith('sqrt') || clean.startsWith('√')) {
+        const numStr = clean.replace('sqrt', '').replace('√', '').replace('(', '').replace(')', '').trim();
+        const num = parseFloat(numStr);
+        if (!isNaN(num) && num >= 0) {
+          const root = Math.sqrt(num);
+          const isExact = Number.isInteger(root);
+          if (isExact) {
+            return {
+              display: `√${num}`,
+              sets: ['N', 'Z', 'Q', 'R'],
+              tip: `Raiz exata de ${num}!`,
+              explanation: `√${num} = ${root}. Como a raiz é EXATA, é um número natural (ℕ), inteiro (ℤ), racional (ℚ) e real (ℝ). Não é irracional!`
+            };
+          } else {
+            return {
+              display: `√${num}`,
+              sets: ['I', 'R'],
+              tip: `Raiz não exata de ${num}`,
+              explanation: `√${num} ≈ ${root.toFixed(7)}… não possui raiz inteira exata: suas casas decimais são infinitas e não periódicas, sendo IRRACIONAL (𝕀) e REAL (ℝ).`
+            };
+          }
+        }
+      }
+
+      // 3. Caso Pi
+      if (clean === 'pi' || clean === 'π') {
+        return {
+          display: "π",
+          sets: ['I', 'R'],
+          tip: "Constante matemática universal",
+          explanation: "π ≈ 3,14159265… é um decimal infinito não periódico: é IRRACIONAL (𝕀) e REAL (ℝ)."
+        };
+      }
+
+      // 4. Caso Decimal ou Inteiro
+      const val = parseFloat(clean);
+      if (!isNaN(val)) {
+        const isInt = Number.isInteger(val);
+        const isNat = isInt && val >= 0;
+        const sets = ['Q', 'R'];
+        if (isInt) sets.unshift('Z');
+        if (isNat) sets.unshift('N');
+
+        let expl = `${rawStr} é um número racional (ℚ) e real (ℝ).`;
+        if (isNat) expl += ` Como é inteiro maior ou igual a zero, pertence também a ℕ e ℤ.`;
+        else if (isInt) expl += ` Como é inteiro negativo, pertence também a ℤ.`;
+        else expl += ` É um decimal exato, portanto pertence a ℚ e ℝ.`;
+
+        return {
+          display: rawStr,
+          sets: sets,
+          tip: "Número digitado pelo professor",
+          explanation: expl
+        };
+      }
+
+      return null;
+    }
+
+    btnClassifyCustom.addEventListener('click', () => {
+      const parsed = classifyInput(customNumberInput.value);
+      if (parsed) {
+        loadQuestion(parsed);
+      } else {
+        alert("Por favor, digite um número válido (exemplo: 22/7, -4, 0.75, sqrt(16) ou pi).");
+      }
+    });
+
+    customNumberInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        btnClassifyCustom.click();
+      }
+    });
+
+    // ==========================================
+    // EXPLORAÇÃO DE DECIMAIS (Q vs I)
+    // ==========================================
+    const decimalDisplayArea = document.getElementById('decimalDisplayArea');
+    const decimalClassTag = document.getElementById('decimalClassTag');
+
+    // Algoritmo Euclídeo de Divisão Longa para detecção exata de dízimas periódicas
+    function computeFractionDecimal(num, den) {
+      const isNeg = (num < 0) ^ (den < 0);
+      let n = Math.abs(num);
+      const d = Math.abs(den);
+
+      const intPart = Math.floor(n / d);
+      let rem = n % d;
+
+      if (rem === 0) {
+        return {
+          textHtml: `${num}/${den} = ${isNeg ? '−' : ''}${intPart}`,
+          tagHtml: `<span class="decimal-classification-tag tag-rational">→ RACIONAL (ℚ): Inteiro exato</span>`
+        };
+      }
+
+      const digits = [];
+      const seenRemainders = new Map();
+      let loopStart = -1;
+
+      while (rem !== 0 && digits.length < 50) {
+        if (seenRemainders.has(rem)) {
+          loopStart = seenRemainders.get(rem);
+          break;
+        }
+        seenRemainders.set(rem, digits.length);
+        rem *= 10;
+        digits.push(Math.floor(rem / d));
+        rem = rem % d;
+      }
+
+      const signStr = isNeg ? '−' : '';
+
+      if (rem === 0) {
+        // Decimal exato finito
+        const decStr = digits.join('');
+        return {
+          textHtml: `${num}/${den} = ${signStr}${intPart},${decStr}`,
+          tagHtml: `<span class="decimal-classification-tag tag-rational">→ RACIONAL (ℚ): Decimal exato finito (${digits.length} casas)</span>`
+        };
+      } else if (loopStart !== -1) {
+        // Dízima periódica
+        const prePeriod = digits.slice(0, loopStart).join('');
+        const period = digits.slice(loopStart).join('');
+        return {
+          textHtml: `${num}/${den} = ${signStr}${intPart},${prePeriod}<span class="decimal-period-highlight">${period}</span><span class="decimal-period-highlight">${period}</span>${period}…`,
+          tagHtml: `<span class="decimal-classification-tag tag-rational">→ RACIONAL (ℚ): Decimal infinito periódico (Período: "${period}")</span>`
+        };
+      } else {
+        const decStr = digits.join('');
+        return {
+          textHtml: `${num}/${den} = ${signStr}${intPart},${decStr}…`,
+          tagHtml: `<span class="decimal-classification-tag tag-rational">→ RACIONAL (ℚ): Dízima periódica</span>`
+        };
+      }
+    }
+
+    const decimalSamples = {
+      '1/7': () => computeFractionDecimal(1, 7),
+      '1/3': () => computeFractionDecimal(1, 3),
+      '3/8': () => computeFractionDecimal(3, 8),
+      'sqrt2': () => ({
+        textHtml: `√2 ≈ 1,414213562373095048801688724209698078569671875376948073176679…`,
+        tagHtml: `<span class="decimal-classification-tag tag-irrational">→ IRRACIONAL (𝕀): Decimal infinito NÃO periódico (sem repetição cíclica)</span>`
+      }),
+      'pi': () => ({
+        textHtml: `π ≈ 3,141592653589793238462643383279502884197169399375105820974944…`,
+        tagHtml: `<span class="decimal-classification-tag tag-irrational">→ IRRACIONAL (𝕀): Decimal infinito NÃO periódico (constante transcendente)</span>`
+      })
+    };
+
+    function showDecimalSample(key) {
+      const fn = decimalSamples[key];
+      if (fn) {
+        const res = fn();
+        decimalDisplayArea.innerHTML = res.textHtml;
+        decimalClassTag.innerHTML = res.tagHtml;
+      }
+    }
+
+    document.getElementById('btnSample17').addEventListener('click', () => showDecimalSample('1/7'));
+    document.getElementById('btnSample13').addEventListener('click', () => showDecimalSample('1/3'));
+    document.getElementById('btnSample38').addEventListener('click', () => showDecimalSample('3/8'));
+    document.getElementById('btnSampleSqrt2').addEventListener('click', () => showDecimalSample('sqrt2'));
+    document.getElementById('btnSamplePi').addEventListener('click', () => showDecimalSample('pi'));
+
+    const randomSamplesPool = [
+      () => computeFractionDecimal(5, 6),
+      () => computeFractionDecimal(4, 11),
+      () => computeFractionDecimal(22, 7),
+      () => ({
+        textHtml: `√3 ≈ 1,732050807568877293527446341505872366942805253810380628055806…`,
+        tagHtml: `<span class="decimal-classification-tag tag-irrational">→ IRRACIONAL (𝕀): Decimal infinito NÃO periódico</span>`
+      }),
+      () => ({
+        textHtml: `√7 ≈ 2,645751311064590590501615753639260425710259183082450180368334…`,
+        tagHtml: `<span class="decimal-classification-tag tag-irrational">→ IRRACIONAL (𝕀): Decimal infinito NÃO periódico</span>`
+      }),
+      () => ({
+        textHtml: `e ≈ 2,718281828459045235360287471352662497757247093699959574966967…`,
+        tagHtml: `<span class="decimal-classification-tag tag-irrational">→ IRRACIONAL (𝕀): Número de Euler (Irracional e Transcendente)</span>`
+      })
+    ];
+
+    document.getElementById('btnSampleRandom').addEventListener('click', () => {
+      const idx = Math.floor(Math.random() * randomSamplesPool.length);
+      const res = randomSamplesPool[idx]();
+      decimalDisplayArea.innerHTML = res.textHtml;
+      decimalClassTag.innerHTML = res.tagHtml;
+    });
+
+    // ==========================================
+    // RETA NUMÉRICA INTERATIVA COM ZOOM
+    // ==========================================
+    const numberLineSvg = document.getElementById('numberLineSvg');
+    const btnZoomInterval = document.getElementById('btnZoomInterval');
+    let isZoomed = false;
+
+    function renderNumberLine() {
+      numberLineSvg.innerHTML = '';
+      const svgW = 720;
+      const svgH = 110;
+      const cy = 55;
+
+      const minX = isZoomed ? -0.1 : -4.2;
+      const maxX = isZoomed ? 1.1 : 4.2;
+
+      function toSvgX(val) {
+        return 40 + ((val - minX) / (maxX - minX)) * (svgW - 80);
+      }
+
+      // Eixo principal
+      const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+      line.setAttribute('x1', '25');
+      line.setAttribute('y1', cy);
+      line.setAttribute('x2', svgW - 25);
+      line.setAttribute('y2', cy);
+      line.setAttribute('stroke', '#18324b');
+      line.setAttribute('stroke-width', '2.5');
+      numberLineSvg.appendChild(line);
+
+      // Setas nas extremidades
+      const arrowL = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
+      arrowL.setAttribute('points', `25,${cy} 35,${cy-5} 35,${cy+5}`);
+      arrowL.setAttribute('fill', '#18324b');
+      numberLineSvg.appendChild(arrowL);
+
+      const arrowR = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
+      arrowR.setAttribute('points', `${svgW-25},${cy} ${svgW-35},${cy-5} ${svgW-35},${cy+5}`);
+      arrowR.setAttribute('fill', '#18324b');
+      numberLineSvg.appendChild(arrowR);
+
+      // Traços de escala principal
+      if (!isZoomed) {
+        for (let i = -4; i <= 4; i++) {
+          const sx = toSvgX(i);
+          const tick = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+          tick.setAttribute('x1', sx);
+          tick.setAttribute('y1', cy - 8);
+          tick.setAttribute('x2', sx);
+          tick.setAttribute('y2', cy + 8);
+          tick.setAttribute('stroke', '#647684');
+          tick.setAttribute('stroke-width', '1.5');
+          numberLineSvg.appendChild(tick);
+
+          const lbl = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+          lbl.setAttribute('x', sx);
+          lbl.setAttribute('y', cy + 24);
+          lbl.setAttribute('font-size', '12');
+          lbl.setAttribute('font-weight', '700');
+          lbl.setAttribute('fill', '#18324b');
+          lbl.setAttribute('text-anchor', 'middle');
+          lbl.textContent = i;
+          numberLineSvg.appendChild(lbl);
+        }
+
+        // Pontos destacados no modo normal
+        const points = [
+          { val: 0, label: '0', type: 'N', color: '#2e7d32', yOff: -18 },
+          { val: 1, label: '1', type: 'N', color: '#2e7d32', yOff: -18 },
+          { val: 2, label: '2', type: 'N', color: '#2e7d32', yOff: -18 },
+          { val: 3, label: '3', type: 'N', color: '#2e7d32', yOff: -18 },
+          { val: -1, label: '−1', type: 'Z', color: '#2b6cb0', yOff: -18 },
+          { val: -2, label: '−2', type: 'Z', color: '#2b6cb0', yOff: -18 },
+          { val: -3, label: '−3', type: 'Z', color: '#2b6cb0', yOff: -18 },
+          { val: 0.5, label: '1/2', type: 'Q', color: '#d97706', yOff: -26 },
+          { val: 1.5, label: '3/2', type: 'Q', color: '#d97706', yOff: -26 },
+          { val: -1.25, label: '−5/4', type: 'Q', color: '#d97706', yOff: -26 },
+          { val: Math.SQRT2, label: '√2 ≈ 1,41', type: 'I', color: '#7c3aed', yOff: -34 },
+          { val: Math.PI, label: 'π ≈ 3,14', type: 'I', color: '#7c3aed', yOff: -34 },
+          { val: -Math.sqrt(3), label: '−√3 ≈ −1,73', type: 'I', color: '#7c3aed', yOff: -34 }
+        ];
+
+        renderPointsOnLine(points, toSvgX, cy);
+
+      } else {
+        // Modo Zoom [0, 1]
+        for (let i = 0; i <= 10; i++) {
+          const val = i / 10;
+          const sx = toSvgX(val);
+          const tick = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+          tick.setAttribute('x1', sx);
+          tick.setAttribute('y1', cy - 8);
+          tick.setAttribute('x2', sx);
+          tick.setAttribute('y2', cy + 8);
+          tick.setAttribute('stroke', '#647684');
+          tick.setAttribute('stroke-width', i % 5 === 0 ? '2' : '1');
+          numberLineSvg.appendChild(tick);
+
+          const lbl = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+          lbl.setAttribute('x', sx);
+          lbl.setAttribute('y', cy + 24);
+          lbl.setAttribute('font-size', '11');
+          lbl.setAttribute('font-weight', '700');
+          lbl.setAttribute('fill', '#18324b');
+          lbl.setAttribute('text-anchor', 'middle');
+          lbl.textContent = val.toFixed(1).replace('.', ',');
+          numberLineSvg.appendChild(lbl);
+        }
+
+        const zoomedPoints = [
+          { val: 0, label: '0 (N)', type: 'N', color: '#2e7d32', yOff: -18 },
+          { val: 0.25, label: '1/4 (Q)', type: 'Q', color: '#d97706', yOff: -26 },
+          { val: 1/3, label: '1/3 (Q)', type: 'Q', color: '#d97706', yOff: -36 },
+          { val: Math.SQRT2 / 4, label: '√2/4 ≈ 0,35 (I)', type: 'I', color: '#7c3aed', yOff: -20 },
+          { val: 0.5, label: '1/2 (Q)', type: 'Q', color: '#d97706', yOff: -26 },
+          { val: Math.SQRT2 / 2, label: '√2/2 ≈ 0,71 (I)', type: 'I', color: '#7c3aed', yOff: -20 },
+          { val: 0.75, label: '3/4 (Q)', type: 'Q', color: '#d97706', yOff: -30 },
+          { val: Math.sqrt(3) / 2, label: '√3/2 ≈ 0,87 (I)', type: 'I', color: '#7c3aed', yOff: -20 },
+          { val: 1, label: '1 (N)', type: 'N', color: '#2e7d32', yOff: -18 }
+        ];
+
+        renderPointsOnLine(zoomedPoints, toSvgX, cy);
+      }
+    }
+
+    function renderPointsOnLine(pts, toSvgX, cy) {
+      pts.forEach(p => {
+        const sx = toSvgX(p.val);
+
+        // Marcador do ponto
+        if (p.type === 'N' || p.type === 'Z') {
+          const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+          circle.setAttribute('cx', sx);
+          circle.setAttribute('cy', cy);
+          circle.setAttribute('r', '5');
+          circle.setAttribute('fill', p.color);
+          circle.setAttribute('stroke', '#ffffff');
+          circle.setAttribute('stroke-width', '1.5');
+          numberLineSvg.appendChild(circle);
+        } else if (p.type === 'Q') {
+          const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+          rect.setAttribute('x', sx - 4);
+          rect.setAttribute('y', cy - 4);
+          rect.setAttribute('width', '8');
+          rect.setAttribute('height', '8');
+          rect.setAttribute('fill', p.color);
+          rect.setAttribute('stroke', '#ffffff');
+          rect.setAttribute('stroke-width', '1.5');
+          numberLineSvg.appendChild(rect);
+        } else if (p.type === 'I') {
+          const star = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
+          star.setAttribute('points', `${sx},${cy-6} ${sx+5},${cy} ${sx},${cy+6} ${sx-5},${cy}`);
+          star.setAttribute('fill', p.color);
+          star.setAttribute('stroke', '#ffffff');
+          star.setAttribute('stroke-width', '1.5');
+          numberLineSvg.appendChild(star);
+        }
+
+        // Rótulo suspenso com linha guia
+        const guide = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+        guide.setAttribute('x1', sx);
+        guide.setAttribute('y1', cy);
+        guide.setAttribute('x2', sx);
+        guide.setAttribute('y2', cy + p.yOff + 10);
+        guide.setAttribute('stroke', p.color);
+        guide.setAttribute('stroke-width', '1');
+        guide.setAttribute('stroke-dasharray', '2 2');
+        numberLineSvg.appendChild(guide);
+
+        const txt = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+        txt.setAttribute('x', sx);
+        txt.setAttribute('y', cy + p.yOff);
+        txt.setAttribute('font-size', '10');
+        txt.setAttribute('font-weight', '800');
+        txt.setAttribute('fill', p.color);
+        txt.setAttribute('text-anchor', 'middle');
+        txt.textContent = p.label;
+        numberLineSvg.appendChild(txt);
+      });
+    }
+
+    btnZoomInterval.addEventListener('click', () => {
+      isZoomed = !isZoomed;
+      btnZoomInterval.textContent = isZoomed ? '🔍 Restaurar Reta [−4, +4]' : '🔍 Zoom no Trecho [0, 1]';
+      renderNumberLine();
+    });
+
+    // Projeção em tela cheia
+    document.getElementById('btnFullscreen').addEventListener('click', () => {
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().catch(() => {});
+      } else {
+        document.exitFullscreen().catch(() => {});
+      }
+    });
+
+    // Inicialização geral
+    highlightSet('all');
+    loadQuestion(challengeNumbers[0]);
+    showDecimalSample('1/7');
+    renderNumberLine();
+  </script>
+</body>
+</html>

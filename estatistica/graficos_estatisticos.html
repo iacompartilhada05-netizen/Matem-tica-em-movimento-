@@ -1,0 +1,614 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Da Tabela ao Gráfico: Barras, Setores e Histograma · Matemática em Movimento</title>
+  <meta name="description" content="Laboratório estatístico de representação visual de dados. Edite uma tabela de frequências e gere instantaneamente gráficos de barras, pizza (setores) e histograma." />
+  <link rel="stylesheet" href="../css/estilo.css" />
+  <style>
+    .table-editor-wrapper {
+      background: #ffffff;
+      border: 1px solid var(--linha);
+      border-radius: var(--radius-md);
+      padding: 16px;
+      margin-bottom: 16px;
+      box-shadow: var(--shadow-subtle);
+    }
+    .freq-table-input {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.88rem;
+    }
+    .freq-table-input th {
+      background: #edf5f8;
+      color: var(--navy);
+      font-weight: 700;
+      padding: 8px 12px;
+      text-align: left;
+      border-bottom: 1px solid var(--linha);
+    }
+    .freq-table-input td {
+      padding: 6px 12px;
+      border-bottom: 1px solid #edf2f5;
+    }
+    .input-cell {
+      width: 100%;
+      padding: 6px 10px;
+      border: 1px solid var(--linha);
+      border-radius: 6px;
+      font-size: 0.88rem;
+      font-family: inherit;
+      color: var(--tinta);
+      outline: none;
+    }
+    .input-cell:focus {
+      border-color: var(--azul);
+      box-shadow: 0 0 0 2px rgba(53, 107, 140, 0.2);
+    }
+    .btn-del-row {
+      background: transparent;
+      border: none;
+      color: var(--vermelho);
+      cursor: pointer;
+      padding: 4px;
+      border-radius: 4px;
+    }
+    .btn-del-row:hover {
+      background: #fdeeee;
+    }
+    .chart-type-tabs {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 14px;
+      flex-wrap: wrap;
+    }
+    .tab-chart-choice {
+      padding: 8px 16px;
+      border-radius: 8px;
+      border: 1px solid var(--linha);
+      background: #ffffff;
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: var(--muted);
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s ease;
+    }
+    .tab-chart-choice.active {
+      background: var(--navy);
+      color: #ffffff;
+      border-color: var(--navy);
+    }
+    .pie-slice {
+      transition: transform 0.2s ease, opacity 0.2s ease;
+      cursor: pointer;
+    }
+    .pie-slice:hover {
+      opacity: 0.9;
+      transform: scale(1.02);
+      transform-origin: 300px 180px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header Institucional -->
+  <header class="site-header">
+    <div class="header-container">
+      <a href="../index.html" class="brand-wrapper" title="Voltar para a página inicial">
+        <div class="brand-logo" aria-hidden="true">
+          <svg viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 19L12 5l8 14H4z" />
+          </svg>
+        </div>
+        <div class="brand-texts">
+          <span class="brand-title">Matemática em Movimento</span>
+          <span class="brand-slogan">Explore. Manipule. Compreenda.</span>
+        </div>
+      </a>
+      <div class="header-actions">
+        <a href="../index.html" class="btn-header">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+          Início
+        </a>
+        <button id="btnFullscreen" class="btn-header" title="Alternar modo tela cheia para projeção em sala de aula">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>
+          Projeção
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Breadcrumbs -->
+  <nav class="breadcrumb-bar" aria-label="Navegação estrutural">
+    <div class="breadcrumb-container">
+      <a href="../index.html">Início</a>
+      <span class="breadcrumb-sep">/</span>
+      <span>Estatística</span>
+      <span class="breadcrumb-sep">/</span>
+      <span class="breadcrumb-current">Da Tabela ao Gráfico</span>
+    </div>
+  </nav>
+
+  <!-- Conteúdo Principal -->
+  <main class="main-content">
+    <div class="demo-grid">
+
+      <!-- Coluna 1: Laboratório Interativo -->
+      <section class="card" aria-labelledby="lab-heading">
+        <div class="card-eyebrow">
+          <span class="badge-tag badge-fundamental">Fundamental &amp; Médio</span>
+          <span>· LABORATÓRIO DE REPRESENTAÇÃO GRÁFICA</span>
+        </div>
+        <h2 id="lab-heading" class="card-title">Da Tabela ao Gráfico: Barras, Setores e Histograma</h2>
+        <p class="card-subtitle">
+          Edite as contagens ou adicione categorias na tabela de frequências abaixo. O laboratório gera e atualiza instantaneamente as visualizações gráficas.
+        </p>
+
+        <!-- Tabela de Frequência Editável -->
+        <div class="table-editor-wrapper">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+            <span style="font-size:0.85rem; font-weight:800; color:var(--navy); text-transform:uppercase;">
+              Tabela de Frequência Absoluta e Relativa
+            </span>
+            <button id="btnAddCategory" class="btn btn-secondary btn-sm" title="Adicionar nova linha à tabela">
+              + Adicionar Categoria
+            </button>
+          </div>
+
+          <table class="freq-table-input" aria-label="Tabela de frequência editável">
+            <thead>
+              <tr>
+                <th style="width:40%;">Categoria / Variável</th>
+                <th style="width:25%;">Frequência Absoluta (fᵢ)</th>
+                <th style="width:25%;">Frequência Relativa (%)</th>
+                <th style="width:10%; text-align:center;">Ação</th>
+              </tr>
+            </thead>
+            <tbody id="tableBody">
+              <!-- Gerado via JS -->
+            </tbody>
+            <tfoot>
+              <tr style="background:#f8fafc; font-weight:800; color:var(--navy);">
+                <td>Total (N)</td>
+                <td id="totalAbsCell">0</td>
+                <td id="totalRelCell">100.0%</td>
+                <td></td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+
+        <!-- Abas dos Três Gráficos -->
+        <div class="chart-type-tabs" role="tablist">
+          <button class="tab-chart-choice active" data-chart="bar" role="tab" aria-selected="true">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 20V10"/><path d="M12 20V4"/><path d="M6 20v-6"/></svg>
+            Gráfico de Barras
+          </button>
+          <button class="tab-chart-choice" data-chart="pie" role="tab" aria-selected="false">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.21 15.89A10 10 0 1 1 8 2.83"/><path d="M22 12A10 10 0 0 0 12 2v10z"/></svg>
+            Gráfico de Setores (Pizza)
+          </button>
+          <button class="tab-chart-choice" data-chart="hist" role="tab" aria-selected="false">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="10" width="4" height="10" rx="1"/><rect x="8" y="5" width="4" height="15" rx="1"/><rect x="13" y="2" width="4" height="18" rx="1"/><rect x="18" y="8" width="4" height="12" rx="1"/></svg>
+            Histograma Contínuo
+          </button>
+        </div>
+
+        <!-- Palco Gráfico SVG -->
+        <div class="svg-stage-wrapper">
+          <svg id="chartSvg" class="svg-stage" viewBox="0 0 620 370" aria-label="Visualização gráfica dinâmica"></svg>
+        </div>
+
+        <!-- Dica de manipulação -->
+        <div class="manipulation-hint">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/>
+          </svg>
+          <span>Altere os valores na tabela ou clique nas abas para comparar como o mesmo conjunto de dados é visto em barras, setores ou histograma.</span>
+        </div>
+
+        <!-- Resultado dinâmico em destaque -->
+        <div class="dynamic-result-box" aria-live="polite">
+          <div class="result-title" id="chartResultTitle">Análise Visual da Distribuição</div>
+          <div id="chartDynamicOutput" class="result-formula">
+            Total da amostra: 0 registros
+          </div>
+        </div>
+
+        <!-- Barra de Botões -->
+        <div class="controls-toolbar">
+          <button id="btnExampleData" class="btn btn-primary">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"/></svg>
+            Gerar dados de exemplo
+          </button>
+          <button id="btnResetTable" class="btn btn-secondary">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+            Restaurar Padrão
+          </button>
+        </div>
+      </section>
+
+      <!-- Coluna 2: Card "Entenda a Ideia" -->
+      <aside class="card idea-card" aria-labelledby="idea-heading">
+        <div class="card-eyebrow">
+          <span>FUNDAMENTAÇÃO CONCEITUAL</span>
+        </div>
+        <h2 id="idea-heading" class="card-title">Entenda a ideia</h2>
+        <p class="card-subtitle">
+          A escolha do gráfico correto depende do objetivo da comunicação e do tipo de variável estudada.
+        </p>
+
+        <!-- Fórmula em Destaque -->
+        <div class="formula-highlight-card">
+          <div class="formula-highlight-label">Frequência Relativa e Ângulo do Setor</div>
+          <div class="formula-highlight-math" style="font-size:1.15rem;">
+            fᵣ (%) = (fᵢ / N) × 100 &nbsp;|&nbsp; Ângulo (θ) = fᵣ × 3.6°
+          </div>
+        </div>
+
+        <!-- Passos Numerados -->
+        <div class="explanation-steps">
+          <div class="step-item">
+            <span class="step-number" aria-hidden="true">1</span>
+            <div class="step-text">
+              <strong>Gráfico de Barras:</strong> Excelente para comparar quantidades discretas e ordens de grandeza entre categorias independentes (ex.: modalidades esportivas).
+            </div>
+          </div>
+          <div class="step-item">
+            <span class="step-number" aria-hidden="true">2</span>
+            <div class="step-text">
+              <strong>Gráfico de Setores (Pizza):</strong> Ideal para comunicar a <em>relação de partes com o todo</em> (100%). Cada fatia tem um ângulo proporcional à porcentagem da categoria.
+            </div>
+          </div>
+          <div class="step-item">
+            <span class="step-number" aria-hidden="true">3</span>
+            <div class="step-text">
+              <strong>Histograma:</strong> Usado para variáveis numéricas contínuas agrupadas em faixas ou classes sem espaços entre as colunas, evidenciando o formato da distribuição.
+            </div>
+          </div>
+        </div>
+
+        <!-- Pergunta para investigar (requisito do usuário) -->
+        <div class="investigation-box">
+          <div class="investigation-header">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+              <path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5"/>
+              <path d="M9 18h6"/><path d="M10 22h4"/>
+            </svg>
+            <span>Pergunta para investigar</span>
+          </div>
+          <p class="investigation-text">
+            Qual gráfico comunica melhor a <strong>proporção</strong> entre as categorias em relação ao todo? E qual mostra com mais precisão a <strong>quantidade absoluta</strong>? Compare as abas e justifique!
+          </p>
+        </div>
+      </aside>
+
+    </div>
+  </main>
+
+  <!-- Rodapé Institucional -->
+  <footer class="site-footer">
+    <div class="site-footer-inner">
+      <p><strong>Matemática em Movimento</strong> · Recurso educacional aberto e gratuito para professores e estudantes.</p>
+      <div class="footer-links">
+        <a href="../index.html">Todas as Demonstrações</a>
+        <span>•</span>
+        <a href="../estatistica/media_mediana_moda.html">Média, Mediana e Moda</a>
+        <span>•</span>
+        <a href="../estatistica/dispersao.html">Dispersão e Desvio Padrão</a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Lógica Matemática e Interatividade -->
+  <script>
+    /**
+     * Matemática em Movimento — Demonstração: Da Tabela ao Gráfico
+     * Conversão dinâmica de tabelas em Barras, Setores e Histograma em SVG com honestidade numérica.
+     */
+
+    const PALETTE = ['#2c7a78', '#356b8c', '#d5a64a', '#8c5ca3', '#3993a4', '#d97d54', '#558b2f'];
+
+    // Estado da tabela
+    const state = {
+      activeChart: 'bar',
+      categories: [
+        { name: 'Futebol', count: 35 },
+        { name: 'Vôlei', count: 25 },
+        { name: 'Basquete', count: 20 },
+        { name: 'Natação', count: 12 },
+        { name: 'Atletismo', count: 8 }
+      ],
+      scenarioIdx: 0
+    };
+
+    const defaultCategories = [
+      { name: 'Futebol', count: 35 },
+      { name: 'Vôlei', count: 25 },
+      { name: 'Basquete', count: 20 },
+      { name: 'Natação', count: 12 },
+      { name: 'Atletismo', count: 8 }
+    ];
+
+    const exampleScenarios = [
+      [
+        { name: '0 a 2 horas', count: 15 },
+        { name: '2 a 4 horas', count: 30 },
+        { name: '4 a 6 horas', count: 40 },
+        { name: '6 a 8 horas', count: 12 },
+        { name: 'Mais de 8h', count: 3 }
+      ],
+      [
+        { name: 'Ônibus', count: 45 },
+        { name: 'A pé', count: 25 },
+        { name: 'Bicicleta', count: 15 },
+        { name: 'Carro', count: 10 },
+        { name: 'Outros', count: 5 }
+      ],
+      [
+        { name: 'Português', count: 28 },
+        { name: 'Matemática', count: 32 },
+        { name: 'Ciências', count: 22 },
+        { name: 'História', count: 18 }
+      ]
+    ];
+
+    // Elementos DOM
+    const tableBody = document.getElementById('tableBody');
+    const totalAbsCell = document.getElementById('totalAbsCell');
+    const totalRelCell = document.getElementById('totalRelCell');
+    const chartSvg = document.getElementById('chartSvg');
+    const chartResultTitle = document.getElementById('chartResultTitle');
+    const chartDynamicOutput = document.getElementById('chartDynamicOutput');
+
+    function renderTable() {
+      const total = state.categories.reduce((acc, cat) => acc + (cat.count || 0), 0);
+      totalAbsCell.textContent = total.toLocaleString('pt-BR');
+
+      let html = '';
+      state.categories.forEach((cat, idx) => {
+        const pct = total > 0 ? ((cat.count / total) * 100).toFixed(1) : '0.0';
+        html += `
+          <tr>
+            <td>
+              <input type="text" class="input-cell" data-idx="${idx}" data-field="name" value="${cat.name}" aria-label="Nome da categoria ${idx+1}" />
+            </td>
+            <td>
+              <input type="number" class="input-cell" data-idx="${idx}" data-field="count" value="${cat.count}" min="0" max="9999" aria-label="Frequência da categoria ${cat.name}" />
+            </td>
+            <td style="font-weight:700; color:var(--navy); font-family:var(--font-mono);">
+              ${pct}%
+            </td>
+            <td style="text-align:center;">
+              <button class="btn-del-row" data-idx="${idx}" title="Excluir categoria">✕</button>
+            </td>
+          </tr>
+        `;
+      });
+      tableBody.innerHTML = html;
+
+      // Vincula eventos dos inputs da tabela
+      tableBody.querySelectorAll('input').forEach(inp => {
+        inp.addEventListener('input', (e) => {
+          const idx = parseInt(e.target.getAttribute('data-idx'), 10);
+          const field = e.target.getAttribute('data-field');
+          if (field === 'name') {
+            state.categories[idx].name = e.target.value;
+          } else {
+            state.categories[idx].count = Math.max(0, parseInt(e.target.value, 10) || 0);
+          }
+          updateScene(false);
+        });
+      });
+
+      // Vincula exclusão de linha
+      tableBody.querySelectorAll('.btn-del-row').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          const idx = parseInt(e.target.getAttribute('data-idx'), 10);
+          if (state.categories.length > 2) {
+            state.categories.splice(idx, 1);
+            updateScene(true);
+          }
+        });
+      });
+    }
+
+    // ===================================================================
+    // Renderização dos Gráficos
+    // ===================================================================
+
+    function renderBarChart(total) {
+      chartResultTitle.textContent = "Gráfico de Barras: Comparação de Quantidades Absolutas";
+      const BASE_Y = 300;
+      const MAX_H = 220;
+      const numCats = state.categories.length;
+      const maxCount = Math.max(...state.categories.map(c => c.count), 1);
+      const barW = Math.max(30, Math.min(80, 480 / numCats - 16));
+      const spacing = (520 - (numCats * barW)) / (numCats + 1);
+
+      let svgHtml = '';
+      // Grade horizontal
+      [0, 0.25, 0.5, 0.75, 1.0].forEach(frac => {
+        const y = BASE_Y - frac * MAX_H;
+        const val = Math.round(frac * maxCount);
+        svgHtml += `
+          <line x1="50" y1="${y}" x2="580" y2="${y}" stroke="#e8eef3" stroke-width="1" />
+          <text x="42" y="${y + 4}" font-size="10" fill="#8ca0ae" text-anchor="end">${val}</text>
+        `;
+      });
+
+      state.categories.forEach((cat, idx) => {
+        const h = (cat.count / maxCount) * MAX_H;
+        const x = 60 + spacing * (idx + 1) + barW * idx;
+        const y = BASE_Y - h;
+        const color = PALETTE[idx % PALETTE.length];
+        const pct = total > 0 ? ((cat.count / total) * 100).toFixed(1) : 0;
+
+        svgHtml += `
+          <g>
+            <rect x="${x}" y="${y}" width="${barW}" height="${h}" fill="${color}" rx="5" />
+            <text x="${x + barW/2}" y="${y - 8}" font-size="11" font-weight="800" fill="${color}" text-anchor="middle">${cat.count}</text>
+            <text x="${x + barW/2}" y="${BASE_Y + 18}" font-size="11" font-weight="700" fill="var(--navy)" text-anchor="middle">${cat.name}</text>
+            <text x="${x + barW/2}" y="${BASE_Y + 32}" font-size="10" font-weight="600" fill="var(--muted)" text-anchor="middle">(${pct}%)</text>
+          </g>
+        `;
+      });
+
+      svgHtml += `<line x1="50" y1="${BASE_Y}" x2="580" y2="${BASE_Y}" stroke="var(--navy)" stroke-width="2" />`;
+      chartSvg.innerHTML = svgHtml;
+    }
+
+    function renderPieChart(total) {
+      chartResultTitle.textContent = "Gráfico de Setores (Pizza): Proporção das Partes em Relação ao Todo";
+      if (total === 0) {
+        chartSvg.innerHTML = `<text x="310" y="180" font-size="14" fill="#8ca0ae" text-anchor="middle">Insira valores na tabela para gerar o gráfico</text>`;
+        return;
+      }
+
+      const CX = 240;
+      const CY = 180;
+      const R = 130;
+      let startAngle = 0;
+      let slicesHtml = '';
+      let legendHtml = '';
+
+      state.categories.forEach((cat, idx) => {
+        const pct = cat.count / total;
+        const angle = pct * 2 * Math.PI;
+        const endAngle = startAngle + angle;
+        const color = PALETTE[idx % PALETTE.length];
+
+        const x1 = CX + R * Math.cos(startAngle);
+        const y1 = CY + R * Math.sin(startAngle);
+        const x2 = CX + R * Math.cos(endAngle);
+        const y2 = CY + R * Math.sin(endAngle);
+        const largeArc = angle > Math.PI ? 1 : 0;
+
+        // Caminho da fatia (setor)
+        slicesHtml += `
+          <path class="pie-slice" d="M ${CX} ${CY} L ${x1} ${y1} A ${R} ${R} 0 ${largeArc} 1 ${x2} ${y2} Z" fill="${color}" stroke="#ffffff" stroke-width="2" />
+        `;
+
+        // Legenda à direita
+        const legY = 70 + idx * 30;
+        legendHtml += `
+          <g transform="translate(420, ${legY})">
+            <rect x="0" y="0" width="14" height="14" rx="3" fill="${color}" />
+            <text x="22" y="12" font-size="12" font-weight="700" fill="var(--navy)">${cat.name}: ${(pct * 100).toFixed(1)}%</text>
+            <text x="22" y="24" font-size="10" font-weight="600" fill="var(--muted)">(${cat.count} unidades)</text>
+          </g>
+        `;
+
+        startAngle = endAngle;
+      });
+
+      chartSvg.innerHTML = slicesHtml + legendHtml;
+    }
+
+    function renderHistogramChart(total) {
+      chartResultTitle.textContent = "Histograma: Distribuição em Classes Contínuas Consecutivas";
+      const BASE_Y = 300;
+      const MAX_H = 220;
+      const numCats = state.categories.length;
+      const maxCount = Math.max(...state.categories.map(c => c.count), 1);
+      const totalWidth = 460;
+      const barW = totalWidth / numCats;
+      const startX = 80;
+
+      let svgHtml = '';
+      // Linhas horizontais de grade
+      [0, 0.25, 0.5, 0.75, 1.0].forEach(frac => {
+        const y = BASE_Y - frac * MAX_H;
+        const val = Math.round(frac * maxCount);
+        svgHtml += `
+          <line x1="50" y1="${y}" x2="580" y2="${y}" stroke="#e8eef3" stroke-width="1" />
+          <text x="42" y="${y + 4}" font-size="10" fill="#8ca0ae" text-anchor="end">${val}</text>
+        `;
+      });
+
+      state.categories.forEach((cat, idx) => {
+        const h = (cat.count / maxCount) * MAX_H;
+        const x = startX + idx * barW;
+        const y = BASE_Y - h;
+        const color = PALETTE[idx % PALETTE.length];
+
+        // Barras coladas sem vão entre si (característica chave do histograma)
+        svgHtml += `
+          <g>
+            <rect x="${x}" y="${y}" width="${barW}" height="${h}" fill="${color}" fill-opacity="0.8" stroke="#ffffff" stroke-width="1.5" />
+            <text x="${x + barW/2}" y="${y - 8}" font-size="11" font-weight="800" fill="${color}" text-anchor="middle">${cat.count}</text>
+            <text x="${x + barW/2}" y="${BASE_Y + 18}" font-size="10" font-weight="700" fill="var(--navy)" text-anchor="middle">${cat.name}</text>
+          </g>
+        `;
+      });
+
+      svgHtml += `<line x1="50" y1="${BASE_Y}" x2="580" y2="${BASE_Y}" stroke="var(--navy)" stroke-width="2" />`;
+      chartSvg.innerHTML = svgHtml;
+    }
+
+    function updateScene(refreshTable = true) {
+      if (refreshTable) renderTable();
+
+      const total = state.categories.reduce((acc, cat) => acc + (cat.count || 0), 0);
+      chartDynamicOutput.innerHTML = `
+        Total da amostra: <strong>${total.toLocaleString('pt-BR')}</strong> registros · <strong>${state.categories.length}</strong> categorias analisadas
+      `;
+
+      if (state.activeChart === 'bar') {
+        renderBarChart(total);
+      } else if (state.activeChart === 'pie') {
+        renderPieChart(total);
+      } else if (state.activeChart === 'hist') {
+        renderHistogramChart(total);
+      }
+    }
+
+    // Abas
+    document.querySelectorAll('.tab-chart-choice').forEach(tab => {
+      tab.addEventListener('click', () => {
+        document.querySelectorAll('.tab-chart-choice').forEach(t => {
+          t.classList.remove('active');
+          t.setAttribute('aria-selected', 'false');
+        });
+        tab.classList.add('active');
+        tab.setAttribute('aria-selected', 'true');
+        state.activeChart = tab.getAttribute('data-chart');
+        updateScene(false);
+      });
+    });
+
+    // Adicionar Linha
+    document.getElementById('btnAddCategory').addEventListener('click', () => {
+      state.categories.push({ name: `Item ${state.categories.length + 1}`, count: 10 });
+      updateScene(true);
+    });
+
+    // Restaurar Padrão
+    document.getElementById('btnResetTable').addEventListener('click', () => {
+      state.categories = JSON.parse(JSON.stringify(defaultCategories));
+      updateScene(true);
+    });
+
+    // Gerar Dados de Exemplo
+    document.getElementById('btnExampleData').addEventListener('click', () => {
+      state.scenarioIdx = (state.scenarioIdx + 1) % exampleScenarios.length;
+      state.categories = JSON.parse(JSON.stringify(exampleScenarios[state.scenarioIdx]));
+      updateScene(true);
+    });
+
+    document.getElementById('btnFullscreen').addEventListener('click', () => {
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().catch(() => {});
+      } else {
+        document.exitFullscreen().catch(() => {});
+      }
+    });
+
+    updateScene(true);
+  </script>
+</body>
+</html>
